@@ -1,7 +1,7 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "date": "2026-08-17",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
   "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
@@ -9,7 +9,9 @@
   "normalisation_verbatim": "\\r\\n -> espace ; caractère U+0002 (césure) supprimé ; espaces multiples réduits. Aucune autre retouche, fautes du Tome incluses.",
   "regle_maison": "Une règle vit ici et nulle part ailleurs (D5). Ce fichier est la maison unique ; les fichiers lot1/lot2 sont des artefacts de construction.",
   "version_affichee": "C'est CETTE version (meta.version) que la fiche affiche (compensation D8-bis, item VERSION-VISIBLE).",
-  "corrections_v101": "28 verbatims du lot 1 : apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé. STOP #1 et #2 du rapport CC #02-a."
+  "corrections_v101": "v1.0.1 : 28 verbatims du lot 1, apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé.",
+  "corrections_v102": "v1.0.2 : 29e écart, competences.artisanats.verbatim_interdiction (Tome p.17), même cause, même remède. Manqué en v1.0.1 parce que mon critère cherchait la clé « verbatim » exacte au lieu de toute clé de verbatim — le critère est élargi.",
+  "champs_sous_gate": "Toute clé dont le nom CONTIENT « verbatim », sauf deux exceptions nommées : meta.normalisation_verbatim (méta-texte) et age_et_gates.seuil.verbatim_fred (citation d'arbitrage hors Tome)."
  },
  "caracteristiques": {
   "source": {
@@ -476,7 +478,7 @@
     ],
     "section": "Artisanats"
    },
-   "verbatim_interdiction": "Les artisanats sont des professions plus complexe, limité à 1 par personnage même si celui-ci possède plus d'une compétence. Ils sont INTERDITS AUX ENFANTS.",
+   "verbatim_interdiction": "Les artisanats sont des professions plus complexe, limité à 1 par personnage même si celui-ci possède plus d’une compétence. Ils sont INTERDITS AUX ENFANTS.",
    "max_par_personnage": 1,
    "interdit_mineurs": null,
    "application_app": "Gate par tranche d'âge : voir bloc age_et_gates. ⛔ Ne PAS utiliser un marqueur « mineur » — corrigé le 2026-08-17.",
