@@ -1,1 +1,1945 @@
-{}
+{
+ "meta": {
+  "fichier": "rules.json",
+  "version": "1.0.2",
+  "date": "2026-08-17",
+  "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
+  "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
+  "source": "Tome des règles V1.2 (PDF projet) + Aide-mémoire (vérification croisée)",
+  "normalisation_verbatim": "\\r\\n -> espace ; caractère U+0002 (césure) supprimé ; espaces multiples réduits. Aucune autre retouche, fautes du Tome incluses.",
+  "regle_maison": "Une règle vit ici et nulle part ailleurs (D5). Ce fichier est la maison unique ; les fichiers lot1/lot2 sont des artefacts de construction.",
+  "version_affichee": "C'est CETTE version (meta.version) que la fiche affiche (compensation D8-bis, item VERSION-VISIBLE).",
+  "corrections_v101": "v1.0.1 : 28 verbatims du lot 1, apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé.",
+  "corrections_v102": "v1.0.2 : 29e écart, competences.artisanats.verbatim_interdiction (Tome p.17), même cause, même remède. Manqué en v1.0.1 parce que mon critère cherchait la clé « verbatim » exacte au lieu de toute clé de verbatim — le critère est élargi.",
+  "champs_sous_gate": "Toute clé dont le nom CONTIENT « verbatim », sauf deux exceptions nommées : meta.normalisation_verbatim (méta-texte) et age_et_gates.seuil.verbatim_fred (citation d'arbitrage hors Tome)."
+ },
+ "caracteristiques": {
+  "source": {
+   "page": 5,
+   "section": "Les caractéristiques / table CARACTÉRISTIQUES"
+  },
+  "creation": {
+   "repartition": [
+    3,
+    2,
+    1
+   ],
+   "verbatim": "Un personnage niveau 1 peut placer dans l'ordre qu'il le désire les chiffres suivants dans les caractéristiques de son choix : 3-2-1. Aucune caractéristique ne peut aller au-delà de 5.",
+   "max": 5
+  },
+  "table": {
+   "note": "Table littérale p.5. Lecture CUMULATIVE tranchée par Fred (A4) : chaque palier atteint s'ajoute.",
+   "puissance": {
+    "1": "+0 Lutte",
+    "2": "+1 Lutte",
+    "3": "+1 Dégât",
+    "4": "+1 Lutte",
+    "5": "+2 Lutte"
+   },
+   "resistance": {
+    "1": "+0 PV",
+    "2": "+1 PV",
+    "3": "+1 sauvegarde",
+    "4": "+1 PV",
+    "5": "+2 PV"
+   },
+   "esprit": {
+    "1": "-Illettré",
+    "2": "+1 Mana",
+    "3": "+1 Don, +1 langue",
+    "4": "+1 Mana",
+    "5": "+2 Mana"
+   }
+  },
+  "illettre": {
+   "source": {
+    "page": 5,
+    "section": "Illettré"
+   },
+   "verbatim": "Un personnage commençant avec 1 d’Esprit inférieur ne sait ni lire ni écrire. Si son esprit augmente pour une raison ou pour une autre, le personnage n’apprend pas à lire ou écrire."
+  },
+  "table_cumulative": {
+   "regle": "Effet total à la valeur V = somme des paliers 1..V. Dérivé de la table p.5, arbitrage A4.",
+   "puissance": {
+    "1": {
+     "lutte": 0,
+     "degats": 0
+    },
+    "2": {
+     "lutte": 1,
+     "degats": 0
+    },
+    "3": {
+     "lutte": 1,
+     "degats": 1
+    },
+    "4": {
+     "lutte": 2,
+     "degats": 1
+    },
+    "5": {
+     "lutte": 4,
+     "degats": 1
+    }
+   },
+   "resistance": {
+    "1": {
+     "pv": 0,
+     "sauvegardes": 0
+    },
+    "2": {
+     "pv": 1,
+     "sauvegardes": 0
+    },
+    "3": {
+     "pv": 1,
+     "sauvegardes": 1
+    },
+    "4": {
+     "pv": 2,
+     "sauvegardes": 1
+    },
+    "5": {
+     "pv": 4,
+     "sauvegardes": 1
+    }
+   },
+   "esprit": {
+    "1": {
+     "mana": 0,
+     "dons": 0,
+     "langues": 0,
+     "illettre": true
+    },
+    "2": {
+     "mana": 1,
+     "dons": 0,
+     "langues": 0,
+     "illettre": false
+    },
+    "3": {
+     "mana": 1,
+     "dons": 1,
+     "langues": 1,
+     "illettre": false
+    },
+    "4": {
+     "mana": 2,
+     "dons": 1,
+     "langues": 1,
+     "illettre": false
+    },
+    "5": {
+     "mana": 4,
+     "dons": 1,
+     "langues": 1,
+     "illettre": false
+    }
+   },
+   "temoin": "Guerrier (PV base 6) + Nain (+1 PV) + Résistance 3 (+1 PV) = 8 PV. Test obligatoire.",
+   "note_creation": "À la création (3-2-1) aucune carac ne dépasse 3 ; les valeurs 4-5 viennent de l'XP d'héritage ou des niveaux."
+  }
+ },
+ "evolution": {
+  "source": {
+   "page": 5,
+   "section": "Évolution constante / table ÉVOLUTION"
+  },
+  "regles": {
+   "montee": "Il n'est pas possible de monter de plus de 1 niveau par GN et pour monter de niveau, il faut réussir une quête précise.",
+   "au_dela_niv5": "Au-delà du niveau 5, le personnage obtient 1 don par niveau supplémentaire et peut faire des quêtes personnelles pour obtenir plus de pouvoirs."
+  },
+  "table": [
+   {
+    "niv": 1,
+    "dons": 1,
+    "carac": "3-2-1",
+    "competence": 1
+   },
+   {
+    "niv": 2,
+    "dons": 1
+   },
+   {
+    "niv": 3,
+    "dons": 1
+   },
+   {
+    "niv": 4,
+    "dons": 1
+   },
+   {
+    "niv": 5,
+    "dons": 1
+   }
+  ],
+  "note": "La capacité de branche par niveau vient des tables de classes (lot 2)."
+ },
+ "factions": {
+  "source": {
+   "page": 7,
+   "section": "Faction"
+  },
+  "regle_filtrage": "CRITÈRE (pas de liste manuelle) : le wizard n'offre que les races et classes dont le champ faction vaut la faction choisie ou 'toute'.",
+  "changement": "Changer de faction en jeu n'est pas possible, mais les joueurs peuvent créer un personnage pour chaque faction et alterner leur rôle durant l'événement.",
+  "liste": [
+   {
+    "id": "sanctum",
+    "nom": "Sanctum",
+    "verbatim": "Les races et individus de Sanctum proviennent de civilisations avancées. Leur force réside dans l'union, la persévérance et l'organisation. En général, les membres de cette faction sont bienveillants, ayant tendance à penser aux besoins des autres avant les leurs."
+   },
+   {
+    "id": "legion",
+    "nom": "Légion",
+    "verbatim": "La Légion regroupe les races et individus souillés par une forme de corruption, qu’elle soit de naissance ou acquise, comme si un humain faisait un pacte avec une entité démoniaque. Leur force réside dans le nombre, la brutalité et la volonté de tout faire pour l’emporter. En général, les membres de cette faction sont malveillants, ayant tendance à penser à leurs besoins avant ceux des autres."
+   }
+  ],
+  "avantage_de_depart": {
+   "arbitrage": "A3 — tranché par Fred. Ma lecture (« phrase morte ») était fausse.",
+   "regle": "L'avantage de départ d'une faction EST l'accès exclusif à certaines races et classes, plus son atelier (p.17). Il n'existe aucun bonus chiffré séparé.",
+   "critere": "L'app ne code aucune liste à la main : l'avantage affiché pour une faction X = { races où faction ∈ (X, 'toute') } ∪ { classes où faction ∈ (X, 'toute') }, en mettant en avant les entrées exclusives (faction == X).",
+   "consequence_ui": "L'écran de choix de faction affiche ce que chaque faction débloque — c'est l'information de jeu, pas une décoration."
+  }
+ },
+ "races": {
+  "source": {
+   "pages": [
+    6,
+    7
+   ],
+   "section": "Les Races"
+  },
+  "liste": [
+   {
+    "id": "humain",
+    "nom": "Humain",
+    "faction": "toute",
+    "bonus": [
+     {
+      "choix": [
+       "+1 PV",
+       "+1 Mana"
+      ]
+     }
+    ],
+    "description_physique": "Aucune description spécifique.",
+    "langues_depart": [
+     "commun"
+    ]
+   },
+   {
+    "id": "elfe",
+    "nom": "Elfe",
+    "faction": "sanctum",
+    "bonus": [
+     "+1 Mana",
+     {
+      "nom": "Transfère",
+      "verbatim": "Les elfes peuvent, une 1/heure, donner leur Mana restant à une cible consentante au contact ou prendre celui d'une cible consentante."
+     }
+    ],
+    "description_physique": "Oreilles pointues visibles, pas de barbe.",
+    "langues_depart": [
+     "commun",
+     "elfe"
+    ]
+   },
+   {
+    "id": "nain",
+    "nom": "Nain",
+    "faction": "sanctum",
+    "bonus": [
+     "+1 PV",
+     {
+      "nom": "Tenace",
+      "verbatim": "Les nains sont immunisés aux capacités les renversant (mettre à terre) ou qui les déplacent de force (comme la bousculade par la lutte)."
+     }
+    ],
+    "description_physique": "Barbe longue OU symboles runiques rouges sur la peau.",
+    "langues_depart": [
+     "commun",
+     "nain"
+    ]
+   },
+   {
+    "id": "orc",
+    "nom": "Orc",
+    "faction": "legion",
+    "bonus": [
+     "+1 en Lutte",
+     "+2 PV",
+     {
+      "nom": "Cannibalisme",
+      "verbatim": "Peut récupérer tous ses PV en mangeant un cadavre en 1 minute de RP."
+     }
+    ],
+    "description_physique": "Peau verte (avec ou sans masque d'orc)",
+    "langues_depart": [
+     "commun",
+     "orc"
+    ]
+   },
+   {
+    "id": "drow",
+    "nom": "Drow",
+    "faction": "legion",
+    "bonus": [
+     "+2 Mana",
+     {
+      "nom": "Camouflage",
+      "verbatim": "Lorsque le personnage n’est pas observé, il peut devenir invisible dans l’ombre ou la forêt, mais doit se déplacer lentement."
+     }
+    ],
+    "description_physique": "Oreilles pointues, peau noire et cheveux blancs.",
+    "langues_depart": [
+     "commun",
+     "abyssal"
+    ]
+   },
+   {
+    "id": "gobelin",
+    "nom": "Gobelin",
+    "faction": "legion",
+    "bonus": [
+     {
+      "nom": "Esquive",
+      "verbatim": "1/heure, peut éviter une attaque infligeant des dégâts en criant \"Esquive !\""
+     }
+    ],
+    "malus": [
+     "-1 PV"
+    ],
+    "description_physique": "peau jaune ou orange.",
+    "langues_depart": [
+     "commun",
+     "orc"
+    ]
+   }
+  ]
+ },
+ "langues": {
+  "source": {
+   "page": 7,
+   "section": "Langues"
+  },
+  "regle": "Obtient les langues de départ dues à sa race, une supplémentaire à 3 d'esprit et plus s'il prend la compétence d'érudit. Lorsque le personnage parle une langue autre que le commun, il doit commencer sa phrase en déclarant quelle langue il parle.",
+  "liste": [
+   {
+    "id": "commun",
+    "nom": "Commun"
+   },
+   {
+    "id": "nain",
+    "nom": "Nain"
+   },
+   {
+    "id": "elfe",
+    "nom": "Elfe"
+   },
+   {
+    "id": "orc",
+    "nom": "Orc"
+   },
+   {
+    "id": "runique",
+    "nom": "Runique"
+   },
+   {
+    "id": "abyssal",
+    "nom": "Abyssal"
+   },
+   {
+    "id": "druidique",
+    "nom": "Druidique",
+    "restriction": "Langage secret des druides, seuls les druides y ont accès et le possèdent dès le début."
+   },
+   {
+    "id": "des_morts",
+    "nom": "Langue des morts",
+    "restriction": "Langage des morts-vivants : Uniquement accessible aux sorciers et chevaliers de la mort, mais ne commence pas avec."
+   }
+  ]
+ },
+ "dons": {
+  "source": {
+   "page": 8,
+   "section": "Les Dons"
+  },
+  "intro": "Les dons sont des capacités que tous les personnages obtiennent au fil des niveaux.",
+  "liste": [
+   {
+    "id": "affinite_magique",
+    "nom": "Affinité magique",
+    "verbatim": "Le personnage obtient +1 Mana, peut être pris plusieurs fois.",
+    "cumulable": true
+   },
+   {
+    "id": "agilite",
+    "nom": "Agilité",
+    "verbatim": "Immunité à ce qui met à terre ou empêche de se déplacer."
+   },
+   {
+    "id": "brise_bouclier",
+    "nom": "Brise bouclier",
+    "verbatim": "1/heure, détruit un bouclier frappé par une arme de corps à corps tenue à 2 mains (pas d’arme d’hast)."
+   },
+   {
+    "id": "bluff",
+    "nom": "Bluff",
+    "verbatim": "Immunité aux capacités de torture, communication avec les morts et détections du mensonge."
+   },
+   {
+    "id": "courage",
+    "nom": "Courage",
+    "verbatim": "Le personnage est immunisé aux effets de peur."
+   },
+   {
+    "id": "derniere_chance",
+    "nom": "Dernière chance",
+    "verbatim": "1/heure, permet de survivre à un coup fatal à 1 PV en criant ''dernière chance''."
+   },
+   {
+    "id": "frappe_arcanique",
+    "nom": "Frappe Arcanique",
+    "verbatim": "Permet de faire une attaque qui coûte 1 Mana pour rajouter 1 dégât. Perdue si ratée."
+   },
+   {
+    "id": "incantation_rapide",
+    "nom": "Incantation rapide",
+    "verbatim": "Retire 2 mots aux capacités d’incantations."
+   },
+   {
+    "id": "meditation",
+    "nom": "Méditation",
+    "verbatim": "Le personnage récupère 1 PV OU Mana par minute de repos."
+   },
+   {
+    "id": "port_armure_magique",
+    "nom": "Port armure magique",
+    "verbatim": "Peut avoir jusqu’à 3 bloque d’armure sans perdre de Mana."
+   },
+   {
+    "id": "resilient",
+    "nom": "Résilient",
+    "verbatim": "Le personnage obtient +2 PV tant qu’il ne porte ni armure ni bouclier."
+   },
+   {
+    "id": "robustesse",
+    "nom": "Robustesse",
+    "verbatim": "Le personnage obtient +1 PV, peut être pris plusieurs fois.",
+    "cumulable": true
+   },
+   {
+    "id": "science_de_la_lutte",
+    "nom": "Science de la lutte",
+    "verbatim": "+1 en Lutte et gagne la Lutte en cas d’égalité."
+   }
+  ]
+ },
+ "competences": {
+  "source": {
+   "page": 17,
+   "section": "Chapitre 4 : Les compétences"
+  },
+  "regle_niv1": "1 compétence au niveau 1 (table p.5). A5 tranché : cette compétence PEUT être un artisanat pour un joueur de 12 ans et plus ; jamais pour un enfant de 11 ans et moins.",
+  "simples": [
+   {
+    "id": "erudit",
+    "nom": "Érudit",
+    "base": "Le personnage choisit 1 langue supplémentaire et apprend à lire. S'il n'est pas illettré (plus de 1 d'esprit), il obtient 2 langues supplémentaires.",
+    "avance": "Le personnage peut, à chaque GN, demander une information à un MJ."
+   },
+   {
+    "id": "riche",
+    "nom": "Riche",
+    "base": "Le personnage commence avec 1 Po comme argent de départ.",
+    "avance": "Le personnage obtient 2 Pa par GN et 2 Pa de plus chaque fois qu'il accomplit une quête."
+   },
+   {
+    "id": "herboriste",
+    "nom": "Herboriste",
+    "materiel": "Serpe, Bol et Mortier",
+    "base": "Le personnage peut allez récolter jusqu'à 5 Alchimites par GN dans le jardin.",
+    "avance": "1 fois par GN, un évènement aura lieu au jardin dans lequel une créature pourra être vaincue et tout herboriste survivant peut récolter 1 Arcanite sur la créature (le maximum d'Arcanite récupéré dépend de la créature)."
+   },
+   {
+    "id": "mineur",
+    "nom": "Mineur",
+    "materiel": "Pioche et/ou pelle.",
+    "base": "Le personnage peut allez récolter jusqu'à 15 Pc par GN dans la mine.",
+    "avance": "1 fois par GN, un évènement aura lieu de la mine dans lequel une créature pourra être vaincu et tout mineur survivant peut récolter 1 métal rare (dépendamment de la créature, Adamantium, Aurorium ou Mythril)."
+   }
+  ],
+  "artisanats": {
+   "source": {
+    "pages": [
+     17,
+     18
+    ],
+    "section": "Artisanats"
+   },
+   "verbatim_interdiction": "Les artisanats sont des professions plus complexe, limité à 1 par personnage même si celui-ci possède plus d’une compétence. Ils sont INTERDITS AUX ENFANTS.",
+   "max_par_personnage": 1,
+   "interdit_mineurs": null,
+   "application_app": "Gate par tranche d'âge : voir bloc age_et_gates. ⛔ Ne PAS utiliser un marqueur « mineur » — corrigé le 2026-08-17.",
+   "liste": [
+    {
+     "id": "marchand",
+     "nom": "Marchand",
+     "capacites": [
+      {
+       "nom": "Poche cachée",
+       "verbatim": "Le personnage est immunisé contre la capacité de Bandit et, concernant la règle de fouille générale, il choisit ce qu’il donne à la personne le fouillant (1 objet ou sa monnaie qu’il porte)."
+      },
+      {
+       "nom": "Diplomate",
+       "verbatim": "Le tavernier peut dire ‘’pour-parler’’ pour forcer des adversaires à l’écouter plutôt que de l’attaquer pendant 2 minutes. Si le tavernier ou un de ses alliés tente d’en profiter pour utiliser une capacité ou attaquer par surprise, l’effet du ‘’pour-parler’’ est rompu.",
+       "note": "A1 tranché : le Tome écrit « tavernier », erreur de texte confirmée par Fred. Lire « marchand ». Le verbatim reste intact pour la gate ; l'app affiche « marchand »."
+      },
+      {
+       "nom": "Troc",
+       "verbatim": "Le personnage peut une fois par jour échanger de la monnaie contre des ressources, ou vice versa, auprès d’un MJ."
+      }
+     ],
+     "restriction": "LE MARCHAND NE PEUT PAS PORTÉ PLUS D'UNE RUNE ARME ET UNE RUNE D'AMULETTE MAGIQUE, COMME LES AUTRES."
+    },
+    {
+     "id": "alchimiste",
+     "nom": "Alchimiste",
+     "materiel": "Beaucoup de flacons et de jus multicolore. Atelier Rang 1 (pour avancer).",
+     "capacites": [
+      {
+       "nom": "Cuisinier",
+       "verbatim": "Le personnage peut durant le GN offrir jusqu’à 3 repas décorum offrant +1 PV et +1 Mana pendant 1heure. Les bénéficiaires doivent être différents."
+      },
+      {
+       "nom": "Premier-Soins",
+       "verbatim": "Le personnage s’y connaît en médecine, il peut soigner tous les PV d’une cible en 1 minutes de RP. S’il a la capacité herbe de guérison, tous ses soins augmentes de 1."
+      },
+      {
+       "nom": "Alchimie",
+       "verbatim": "Le personnage peut concevoir une substance alchimique avec de l’Alchimite. La substance doit être contenue dans un flacon transparent et le liquide doit avoir la couleur associée et être buvable."
+      }
+     ]
+    },
+    {
+     "id": "forgeron",
+     "nom": "Forgeron",
+     "materiel": "Marteau et enclume. Atelier Rang 1 (pour avancer).",
+     "capacites": [
+      {
+       "nom": "Réparation",
+       "verbatim": "Peux réparer Armes, Armures, bouclier et objet métallique en 2 minutes de RP hors combat."
+      },
+      {
+       "nom": "Ajustement",
+       "verbatim": "Le forgeron peut conférer à 3 armures un ajustement sur mesure, conférant pour le GN +1 bloc OU réduire de 1 le malus de mana de l’armure. Si l’armure est réparée autrement que par le forgeron, elle perd se bonus."
+      },
+      {
+       "nom": "Forge",
+       "verbatim": "Peut concevoir des Armes, Armures et bouclier en Métal rare. Construire un objet demande de dérouler un ressort (fournis par l’animation)."
+      }
+     ]
+    },
+    {
+     "id": "runiste",
+     "nom": "Runiste",
+     "materiel": "Boule de cristal. Atelier Rang 1 (pour avancer).",
+     "capacites": [
+      {
+       "nom": "Catalyst",
+       "verbatim": "Le personnage peut porter sur lui plus d’une rune d’arme magique et rune d’amulette magique, mais ne peut tout de même n’en utiliser qu’un à la fois."
+      },
+      {
+       "nom": "Marque",
+       "verbatim": "Le Runiste peut marquer 3 sujet volontaire (autre que lui) par GN d’une rune conférant 1 utilisation d’une des capacités de classe du runiste choisit au moment de créer la rune. Les runes durent un maximum de 1h, et le runiste ne peut en avoir activé qu’une à la fois."
+      },
+      {
+       "nom": "Rune",
+       "verbatim": "Peux concevoir des runes d’Armes ou Amulette magiques à partir d’Arcanite. Fabriquer demande la transcription d’une phrase runique (fournis par l’animation)."
+      }
+     ],
+     "alias_possible": "A2 tranché : « Arcaniste » (p.17, p.19) = erreur de texte. L'app affiche « Runiste » partout."
+    }
+   ],
+   "note_ateliers_p17": "p.17 dit « alchimistes, forgeron et arcaniste » → lire « runiste » (A2). p.17 dit « tavernier, herboriste et mineurs » → lire « marchand » (A1).",
+   "interdit_tranche": "≤11"
+  }
+ },
+ "heritage": {
+  "source": {
+   "page": 20,
+   "section": "Chapitre 5 : L'Héritage"
+  },
+  "regle_generale": "Que ce soit l'XP permanent ou temporaire, le joueur ne peut les utiliser qu'à la création du personnage.",
+  "xp_permanent": "Chaque joueur reçoit 1 XP permanent pour chaque GN auquel il participe et 1 supplémentaire pour chaque final de saison. Ce type d'expérience appartient au joueur et non au personnage. Ces XP sont récupérés lorsque le joueur créer un nouveau personnage.",
+  "xp_temporaire": "Chaque personnage peut commencer avec des désavantages et handicapes lui conférant des XP exclusivement pour ce personnage à sa création.",
+  "desavantages": {
+   "regle_plafond": {
+    "verbatim": "Seuls 3 désavantages confèrent de l’XP.",
+    "application_wizard": "A6 tranché : le wizard laisse cocher plus de 3 désavantages (RP libre) mais ne compte l'XP que des 3 premiers cochés, avec message explicite à l'écran."
+   },
+   "liste": [
+    {
+     "id": "ampute_bras",
+     "nom": "Amputé (bras)",
+     "xp": 3,
+     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n’est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
+     "note": "A7 tranché : deux lignes distinctes dans le wizard."
+    },
+    {
+     "id": "ampute_main",
+     "nom": "Amputé (main ou doigts)",
+     "xp": 1,
+     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n’est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
+     "note": "A7 tranché : même texte du Tome, variante à 1 XP."
+    },
+    {
+     "id": "asthmatique",
+     "nom": "Asthmatique",
+     "xp": 1,
+     "verbatim": "Vous avez de la difficulté à respirer correctement lors d’efforts physiques intenses. Il vous est impossible de courir ou combattre pendant plus de deux minutes sans vous effondrer à terre le souffle court."
+    },
+    {
+     "id": "boiteux",
+     "nom": "Boiteux",
+     "xp": 2,
+     "verbatim": "Votre jambe manque de force et vous êtes incapable de vous déplacer correctement avec celle-ci. Cette blessure ou maladie vous empêche de courir et vous devez vous déplacer avec une cane ou bâton."
+    },
+    {
+     "id": "borgne_ou_myope",
+     "nom": "Borgne ou Myope",
+     "xp": 1,
+     "verbatim": "Vous avez besoin de lunette, il vous manque 1 œil ou bien celui-ci ne fonctionne plus (dois alors porter un cache-œil)."
+    },
+    {
+     "id": "bossu",
+     "nom": "Bossu",
+     "xp": 1,
+     "verbatim": "Vous êtes né bossu. Ceci n’a pas de désavantage en tant que tel autre que cela demande un élément de costume obligatoire pour votre personnage."
+    },
+    {
+     "id": "muet",
+     "nom": "Muet",
+     "xp": 3,
+     "verbatim": "Vous êtes incapable de parler. Ce désavantage peut aussi bien être une perte de voix totale qu'une perte partielle qui permet uniquement quelque grognement."
+    },
+    {
+     "id": "fragile",
+     "nom": "Fragile",
+     "xp": 3,
+     "verbatim": "Votre personnage n’est pas habitué à la douleur et vous ferez un RP exagérer à la moindre blessure."
+    },
+    {
+     "id": "honorable",
+     "nom": "Honorable",
+     "xp": 1,
+     "verbatim": "Votre personnage ne peut pas mentir ou combattre de manière déloyale. (Interdit aux paladins et chevalier de la mort).",
+     "interdit_classes": [
+      "paladin",
+      "chevalier_de_la_mort"
+     ]
+    },
+    {
+     "id": "malchance",
+     "nom": "Malchance",
+     "xp": 2,
+     "verbatim": "Votre personnage est né malchanceux. Vous devez porter un X rouge au visage. Les PNJ vous maltraiteront et les joueurs sont invités à faire pareil."
+    },
+    {
+     "id": "menteur",
+     "nom": "Menteur",
+     "xp": 1,
+     "verbatim": "Votre personnage aime mentir de manière crédible et le fera dès que possible. (Interdit aux paladins).",
+     "interdit_classes": [
+      "paladin"
+     ]
+    },
+    {
+     "id": "naif",
+     "nom": "Naïf",
+     "xp": 1,
+     "verbatim": "Votre personnage fait confiance au monde et tient pour acquis que ce que l’on lui dit est vrai. Vous êtes facile à tromper et croyez en la bonté des gens."
+    },
+    {
+     "id": "peureux",
+     "nom": "Peureux",
+     "xp": 2,
+     "verbatim": "Votre personnage évite le combat et ne participeras que si le risque de ne pas participer est plus grand que de fuir."
+    },
+    {
+     "id": "raciste",
+     "nom": "Raciste",
+     "xp": 1,
+     "verbatim": "Votre personnage refuse de faire confiance, alliance ou toléré la présence d’une race (de personnage). +1XP si c’est une race de sa faction (devra travailler avec, mais difficilement).",
+     "variante_xp": 2
+    }
+   ]
+  },
+  "avantages": {
+   "source_autorite": "Tome p.20 (la feuille Roublard omet l'option Don : le Tome tranche).",
+   "liste": [
+    {
+     "achat": "+1 PV",
+     "cout_xp": 1
+    },
+    {
+     "achat": "+1 PM",
+     "cout_xp": 1
+    },
+    {
+     "achat": "+2 Pa d'argent de départ",
+     "cout_xp": 1
+    },
+    {
+     "achat": "+1 de Lutte",
+     "cout_xp": 2
+    },
+    {
+     "achat": "+1 Po d'argent de départ",
+     "cout_xp": 2
+    },
+    {
+     "achat": "+1 Capacité de niveau 1",
+     "cout_xp": 3
+    },
+    {
+     "achat": "+2 Po d'argent de départ",
+     "cout_xp": 3
+    },
+    {
+     "achat": "+1 Capacité de niveau 2",
+     "cout_xp": 4
+    },
+    {
+     "achat": "+1 Compétence",
+     "cout_xp": 5
+    },
+    {
+     "achat": "+1 Point de Caractéristique",
+     "cout_xp": 6,
+     "max_achats": 2
+    },
+    {
+     "achat": "+1 Don",
+     "cout_xp": 2,
+     "max_achats": 3,
+     "restriction": "ne peux pas être échangé contre une capacité si magicien"
+    }
+   ]
+  }
+ },
+ "classes_squelette": {
+  "source": {
+   "pages": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+   ],
+   "section": "Chapitre 3 : Les classes (en-têtes)"
+  },
+  "note_lot2": "Capacités de base détaillées et tables de branches par niveau = lot 2.",
+  "regle_sous_branche": "Sous-branche choisie à la création, pas de panachage (défaut verrouillé, prompt t002).",
+  "liste": [
+   {
+    "id": "druide",
+    "nom": "Druide",
+    "faction": "toute",
+    "pv_base": 4,
+    "mana_base": 3,
+    "branches": [
+     "Chaman",
+     "Élémentaliste",
+     "Clerc"
+    ],
+    "focus_requis": "bâton/baguette en main pour Signe ou incantation",
+    "page": 9
+   },
+   {
+    "id": "guerrier",
+    "nom": "Guerrier",
+    "faction": "toute",
+    "pv_base": 6,
+    "mana_base": 1,
+    "branches": [
+     "Barbare",
+     "Ravageur",
+     "Gladiateur"
+    ],
+    "echange": "Le guerrier peut toujours prendre un don au lieu d'une capacité.",
+    "page": 10
+   },
+   {
+    "id": "magicien",
+    "nom": "Magicien",
+    "faction": "toute",
+    "pv_base": 3,
+    "mana_base": 4,
+    "branches": [
+     "Ensorceleur",
+     "Archimage",
+     "Mystique"
+    ],
+    "echange": "Le mage peut toujours prendre une capacité au lieu d'un don (de niveau équivalent ou inférieur au don obtenue).",
+    "focus_requis": "bâton/baguette en main pour Signe ou incantation",
+    "page": 11
+   },
+   {
+    "id": "roublard",
+    "nom": "Roublard",
+    "faction": "toute",
+    "pv_base": 5,
+    "mana_base": 2,
+    "branches": [
+     "Assassin",
+     "Brigand",
+     "Barde"
+    ],
+    "page": 12
+   },
+   {
+    "id": "chevalier_de_la_mort",
+    "nom": "Chevalier de la mort",
+    "faction": "legion",
+    "pv_base": 5,
+    "mana_base": 3,
+    "branches": [
+     "Inquisiteur",
+     "Immortel",
+     "Faucheur"
+    ],
+    "code": "Le Chevalier n’attaquera jamais un mort-vivant intelligent Le Chevalier de la mort mettra à mort les mourants à la fin d’un combat Le Chevalier de la mort doit toujours tenir une promesse de son mieux et accepter un juste duel.",
+    "page": 13
+   },
+   {
+    "id": "sorcier",
+    "nom": "Sorcier",
+    "faction": "legion",
+    "pv_base": 3,
+    "mana_base": 2,
+    "branches": [
+     "Conjurateur",
+     "Cultiste",
+     "Nécromancien"
+    ],
+    "ressource_speciale": {
+     "nom": "Énergie",
+     "verbatim": "Mage de sang. Les PV et Mana du sorcier s’additionnent et deviennent la même ressource (énergie) Désormais son maximum de PV (donc d’énergie) devient 20.",
+     "max": 20
+    },
+    "focus_requis": "bâton/baguette en main pour Signe ou incantation",
+    "page": 14
+   },
+   {
+    "id": "medjai",
+    "nom": "Medjai",
+    "faction": "sanctum",
+    "pv_base": 5,
+    "mana_base": 3,
+    "branches": [
+     "Occultiste",
+     "Mutant",
+     "Sorcelier"
+    ],
+    "page": 15
+   },
+   {
+    "id": "paladin",
+    "nom": "Paladin",
+    "faction": "sanctum",
+    "pv_base": 5,
+    "mana_base": 3,
+    "branches": [
+     "Croisé",
+     "Gardien",
+     "Dévot"
+    ],
+    "code": "Le paladin ne peut pas mentir Le paladin ne peut pas attaquer par surprise ou une cible au sol Le paladin doit toujours tenir une promesse de son mieux et accepter un juste duel.",
+    "page": 16
+   }
+  ]
+ },
+ "plafonds": {
+  "source": {
+   "page": 2,
+   "section": "Point de vie et dégâts / Maximum"
+  },
+  "pv_max": {
+   "valeur": 15,
+   "verbatim": "Les points de vie d'un personnage ne peuvent pas dépasser 15.",
+   "exception": "Sorcier : énergie max 20 (p.14)."
+  },
+  "degats": "les dégâts infligés avec une arme à une main sont limités à 3, tandis qu'avec une arme à deux mains (hormis les armes d'hast), ils sont limités à 5."
+ },
+ "age_et_gates": {
+  "statut": "Seuil TRANCHÉ (Fred, 2026-08-17). Contenu des règles simplifiées ≤11 ans : BLOQUÉ, en attente.",
+  "seuil": {
+   "enfant": "11 ans et moins",
+   "joueur_regulier": "12 ans et plus",
+   "verbatim_fred": "Les enfants (pour fiches) est de 11 ans et moins. Donc les joueurs de 12 ans et + peuvent être forgeron.",
+   "etendue_reelle": "L'âge des joueurs va de 1 an et plus."
+  },
+  "correction_importante": "Nos mémoires disaient « artisanats interdits aux MINEURS ». C'était FAUX (phrase de Claude, pas du Tome). Le Tome dit « enfants », et enfant = 11 ans et moins. Un joueur de 12, 15 ou 17 ans PEUT prendre un artisanat.",
+  "gate_artisanats": {
+   "regle": "Les 4 artisanats sont masqués et bloqués si et seulement si la tranche du personnage est « 11 ans et moins ».",
+   "test_par_le_contraire": "artisanatsDisponibles(tranche='≤11') === 0",
+   "jumelle_positive": "artisanatsDisponibles(tranche='12+') === 4, sur les mêmes données."
+  },
+  "donnee_stockee": {
+   "champ": "trancheAge : '≤11' | '12+'",
+   "interdits": "Aucune date de naissance, aucun âge exact, aucun nom réel. La tranche vit sur l'appareil, jamais envoyée.",
+   "justification": "C'est le minimum qui fait fonctionner une règle de jeu (Loi 25 : minimisation)."
+  },
+  "regles_simplifiees_11_et_moins": {
+   "statut": "BLOQUÉ #30 — jeu de règles simplifié confirmé par Fred, détails à venir. ⛔ N'inventer aucune règle provisoire.",
+   "ligne_de_coupe": "Si le contenu n'arrive pas à temps : le wizard demande la tranche d'âge ; à « 11 ans et moins » il affiche que la fiche est fournie par l'organisation et renvoie au papier, sans jamais bloquer l'app. Les admins impriment les fiches vierges."
+  }
+ },
+ "branches_de_classes": {
+  "source": {
+   "pages": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  "classes": [
+   {
+    "classe_id": "druide",
+    "source": {
+     "page": 9,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "druide.base.herbe_de_guerison",
+      "nom": "Herbe de guérison",
+      "verbatim": "Le druide peut soigner tous les PV d’une cible en 2 minute de RP hors combat en utilisant de l’herbe sur les blessures de la cible."
+     },
+     {
+      "id": "druide.base.langage_druidique",
+      "nom": "Langage druidique",
+      "verbatim": "Le druide connaît la langue druidique de base."
+     }
+    ],
+    "branches": [
+     {
+      "id": "druide.chaman",
+      "nom": "Chaman",
+      "capacites": [
+       {
+        "id": "druide.chaman.1",
+        "niveau": 1,
+        "nom": "Liane",
+        "verbatim": "Signe : Vitis, empêche de se déplacer 1 min ou jusqu’à ce qu’elle subît des dégâts."
+       },
+       {
+        "id": "druide.chaman.2",
+        "niveau": 2,
+        "nom": "Sanctuaire",
+        "verbatim": "1 Mana, Incantation, rend le druide invulnérable (main liée), mais ne peux rien faire à par parler. Durée maximum 2 minutes."
+       },
+       {
+        "id": "druide.chaman.3",
+        "niveau": 3,
+        "nom": "Peau d’écorce",
+        "verbatim": "-1 de Mana permanent. Le druide obtient +3 PV s’il ne porte pas d’armure."
+       },
+       {
+        "id": "druide.chaman.4",
+        "niveau": 4,
+        "nom": "Enchevêtrement",
+        "verbatim": "1 Mana, Incantation, 3 cibles ne peuvent plus courir 2 minutes. Agilité ne protège pas contre ceci."
+       },
+       {
+        "id": "druide.chaman.5",
+        "niveau": 5,
+        "nom": "Liberté",
+        "verbatim": "1 Mana, Immunise la cible à la lutte et aux capacités de déplacement ou d'entrave au mouvement. Buff. Durée 1heure."
+       }
+      ]
+     },
+     {
+      "id": "druide.elementaliste",
+      "nom": "Élémentaliste",
+      "capacites": [
+       {
+        "id": "druide.elementaliste.1",
+        "niveau": 1,
+        "nom": "Main de feu",
+        "verbatim": "1 Mana, Incantation, la cible fait 1 dégât de feu à main nue (augmenté par bonus de dégâts personnel). Durée 15min."
+       },
+       {
+        "id": "druide.elementaliste.2",
+        "niveau": 2,
+        "nom": "Rafale",
+        "verbatim": "1 Mana, Incantation, force à la cible à reculer de 10 pas."
+       },
+       {
+        "id": "druide.elementaliste.3",
+        "niveau": 3,
+        "nom": "Appel de la foudre",
+        "verbatim": "1 Mana, Incantation, inflige à 3 cibles 2 Dégâts magiques."
+       },
+       {
+        "id": "druide.elementaliste.4",
+        "niveau": 4,
+        "nom": "Séisme",
+        "verbatim": "1 Mana, Incantation, 3 cibles tombe à terre."
+       },
+       {
+        "id": "druide.elementaliste.5",
+        "niveau": 5,
+        "nom": "Vol",
+        "verbatim": "2 Mana, Incantation, permet au druide de voler (poing en l’air), ne peux être attaqué que par ceux qui vol ou à distance. Ceci est un Buff. Durée 1heure."
+       }
+      ]
+     },
+     {
+      "id": "druide.clerc",
+      "nom": "Clerc",
+      "capacites": [
+       {
+        "id": "druide.clerc.1",
+        "niveau": 1,
+        "nom": "Guérison",
+        "verbatim": "1 Mana, Incantation, soigne 3 PV à la cible toucher."
+       },
+       {
+        "id": "druide.clerc.2",
+        "niveau": 2,
+        "nom": "Réparation",
+        "verbatim": "1 Mana, Incantation, peut réparer au toucher un objet, bouclier ou armure. Uniquement hors combat pour l’armure."
+       },
+       {
+        "id": "druide.clerc.3",
+        "niveau": 3,
+        "nom": "Divination",
+        "verbatim": "2 Mana, Incantation, Permet de poser une question à un animateur. L'animateur peux donner des réponses énigmatiques ou incomplète, mais toujours véridique."
+       },
+       {
+        "id": "druide.clerc.4",
+        "niveau": 4,
+        "nom": "Vague de Soin",
+        "verbatim": "1 Mana, Incantation soigne 3 cibles différentes de 2 PV à vue."
+       },
+       {
+        "id": "druide.clerc.5",
+        "niveau": 5,
+        "nom": "Rappel à la vie",
+        "verbatim": "2 Mana, Incantation, ramène 1 mort à 1 PV au toucher. Pas plus de 2 minutes après la mort."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "guerrier",
+    "source": {
+     "page": 10,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "guerrier.base.lutteur",
+      "nom": "Lutteur",
+      "verbatim": "Le personnage obtient +1 en Lutte. Le guerrier peut toujours prendre un don au lieu d’une capacité."
+     }
+    ],
+    "branches": [
+     {
+      "id": "guerrier.barbare",
+      "nom": "Barbare",
+      "capacites": [
+       {
+        "id": "guerrier.barbare.1",
+        "niveau": 1,
+        "nom": "Rage",
+        "verbatim": "1/heure, Le guerrier tombe en rage +3 PV, +1 de Lutte et le personnage est immunisé à tous les capacités qui le calmerait. Durée. 2 min, mais doit attaquer."
+       },
+       {
+        "id": "guerrier.barbare.2",
+        "niveau": 2,
+        "nom": "Intimidation",
+        "verbatim": "1/heure, La cible à vue ne peut plus attaquer le guerrier. Durée. 15 secondes, sauf si le guerrier l’attaque."
+       },
+       {
+        "id": "guerrier.barbare.3",
+        "niveau": 3,
+        "nom": "Assommage",
+        "verbatim": "1/heure, et hors combat, le personnage peut donner un (faux) coup à la tête de sa cible pour la rendre inconsciente. Durée. 5 min ou jusqu’à ce qu’il subisse des dégâts."
+       },
+       {
+        "id": "guerrier.barbare.4",
+        "niveau": 4,
+        "nom": "Dernier souffle",
+        "verbatim": "1/heure, lorsque le guerrier est tué, il attend 15 secondes, puis se relève plein PV au combat. S’il n’est pas tué, il meurt tout de même après 1minute."
+       },
+       {
+        "id": "guerrier.barbare.5",
+        "niveau": 5,
+        "nom": "Brise-Membre",
+        "verbatim": "1/heure, une attaque de mêlée handicape le membre touché, le rendant inutilisable jusqu’à ce qu’une capacité lui retire l’effet."
+       }
+      ]
+     },
+     {
+      "id": "guerrier.ravageur",
+      "nom": "Ravageur",
+      "capacites": [
+       {
+        "id": "guerrier.ravageur.1",
+        "niveau": 1,
+        "nom": "Brise bouclier",
+        "verbatim": "1/heure, détruit un bouclier frapper par une arme de corps à corps tenue à 2 mains (pas d’arme d’hast)."
+       },
+       {
+        "id": "guerrier.ravageur.2",
+        "niveau": 2,
+        "nom": "Renversement",
+        "verbatim": "1/heure, en frappant les jambes ou bouclier de la cible, elle tombe à terre."
+       },
+       {
+        "id": "guerrier.ravageur.3",
+        "niveau": 3,
+        "nom": "Désarmement",
+        "verbatim": "1/heure, en frappant l’arme de la cible, celle si la lance au loin."
+       },
+       {
+        "id": "guerrier.ravageur.4",
+        "niveau": 4,
+        "nom": "Brute",
+        "verbatim": "+1 dégât avec les armes tenues à 2 mains (pas armes d’haste)."
+       },
+       {
+        "id": "guerrier.ravageur.5",
+        "niveau": 5,
+        "nom": "Critique",
+        "verbatim": "1/heure, Une attaque de corps à corps infligeant +3 dégâts divins. Le coup est conservé si rater."
+       }
+      ]
+     },
+     {
+      "id": "guerrier.gladiateur",
+      "nom": "Gladiateur",
+      "capacites": [
+       {
+        "id": "guerrier.gladiateur.1",
+        "niveau": 1,
+        "nom": "Interception",
+        "verbatim": "3/heure, le guerrier peut rediriger une attaque ou pouvoir à proximité sur lui."
+       },
+       {
+        "id": "guerrier.gladiateur.2",
+        "niveau": 2,
+        "nom": "Vigueur",
+        "verbatim": "1 fois aux 30 secondes, le guerrier peut dépenser 1 Mana pour récupérer 2 PV."
+       },
+       {
+        "id": "guerrier.gladiateur.3",
+        "niveau": 3,
+        "nom": "Ancrage",
+        "verbatim": "À volonté, Le guerrier peut ancrer son pied au sol et crier ‘’Ancrage’’. Jusqu’à ce qu’il se déplace ou attaque, toute attaque le touchant n’inflige que 1 de dégâts."
+       },
+       {
+        "id": "guerrier.gladiateur.4",
+        "niveau": 4,
+        "nom": "Cri de guerre",
+        "verbatim": "1/heure, brise toute forme de contrôle mentaux (peur, confusion, charme) sur lui et ses alliés qui l’entendent."
+       },
+       {
+        "id": "guerrier.gladiateur.5",
+        "niveau": 5,
+        "nom": "Esquive",
+        "verbatim": "1/heure, peut éviter une attaque infligeant des dégâts en criant ‘’Esquive !’’."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "magicien",
+    "source": {
+     "page": 11,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "magicien.base.elementaliste",
+      "nom": "Élémentaliste",
+      "verbatim": "1/heure et par niveau, le magicien peut convertir les dégâts d’une de ces capacités en un autre élément : Feu, Froid, Foudre (magique) ou Acide (poison)."
+     },
+     {
+      "id": "magicien.base.identification",
+      "nom": "Identification",
+      "verbatim": "le mage peut identifier au toucher les propriétés d’un effet magique sur une personne, un lieu ou un objet, il peut également savoir si une personne porte une rune magique (sans forcément savoir ou il est caché)."
+     }
+    ],
+    "branches": [
+     {
+      "id": "magicien.ensorceleur",
+      "nom": "Ensorceleur",
+      "capacites": [
+       {
+        "id": "magicien.ensorceleur.1",
+        "niveau": 1,
+        "nom": "Flamme",
+        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible."
+       },
+       {
+        "id": "magicien.ensorceleur.2",
+        "niveau": 2,
+        "nom": "Bourrasque",
+        "verbatim": "Signe : Anima, force la cible à faire un tour sur elle-même."
+       },
+       {
+        "id": "magicien.ensorceleur.3",
+        "niveau": 3,
+        "nom": "Onde de choc",
+        "verbatim": "Signe : Tremor. La cible elle tombe à terre. 1 fois par cible par heure."
+       },
+       {
+        "id": "magicien.ensorceleur.4",
+        "niveau": 4,
+        "nom": "Frayeur",
+        "verbatim": "Signe : Anxietas. La cible doit fuir le mage. Durée 30 sec."
+       },
+       {
+        "id": "magicien.ensorceleur.5",
+        "niveau": 5,
+        "nom": "Désintégration",
+        "verbatim": "Signe : Extinctio. Inflige 4 dégâts de feu, coûte 1 Mana."
+       }
+      ]
+     },
+     {
+      "id": "magicien.archimage",
+      "nom": "Archimage",
+      "capacites": [
+       {
+        "id": "magicien.archimage.1",
+        "niveau": 1,
+        "nom": "Boule de feu",
+        "verbatim": "1 Mana, Incantation, inflige 3 dégâts à une cible à environ 10m ou moins. Ne peux pas être fait 2 fois de suite sur la même cible."
+       },
+       {
+        "id": "magicien.archimage.2",
+        "niveau": 2,
+        "nom": "Invisibilité",
+        "verbatim": "1 Mana, Incantation, la cible est invisible 1 minute, mais ne peux pas attaquer ou se déplacer directement vers quelqu’un."
+       },
+       {
+        "id": "magicien.archimage.3",
+        "niveau": 3,
+        "nom": "Appel de la foudre",
+        "verbatim": "1 Mana, Incantation, Inflige à 3 cibles 2 Dégâts magiques."
+       },
+       {
+        "id": "magicien.archimage.4",
+        "niveau": 4,
+        "nom": "Téléportation",
+        "verbatim": "1 Mana, Incantation, permet au mage de partir immatériel à une destination précise sans être suivi. Le mage revient matériel s'il arrête de se déplacer ou tourne en rond."
+       },
+       {
+        "id": "magicien.archimage.5",
+        "niveau": 5,
+        "nom": "Champs de force",
+        "verbatim": "2 Mana, Incantation, empêchent d’être approché au corps à corps tant que le mage reste sur place."
+       }
+      ]
+     },
+     {
+      "id": "magicien.mystique",
+      "nom": "Mystique",
+      "capacites": [
+       {
+        "id": "magicien.mystique.1",
+        "niveau": 1,
+        "nom": "Fracassement",
+        "verbatim": "1 Mana. Détruit un objet/armure/bouclier toucher par la main du mage (pas une arme tenue en main)."
+       },
+       {
+        "id": "magicien.mystique.2",
+        "niveau": 2,
+        "nom": "Réparation",
+        "verbatim": "1 Mana, Incantation, peut réparer au toucher un objet, bouclier ou armure. Uniquement hors combat pour l’armure."
+       },
+       {
+        "id": "magicien.mystique.3",
+        "niveau": 3,
+        "nom": "Scrutation",
+        "verbatim": "Permet d’aller voir et espionner un lieu en hors-jeu en laissant son bâton sur place, si le bâton a été déplacé à son retour, le mage meurt."
+       },
+       {
+        "id": "magicien.mystique.4",
+        "niveau": 4,
+        "nom": "Dissipation",
+        "verbatim": "1 Mana, Incantation. Mets fin à un effet magique à vue. Les objets magiques de la cible cessent de fonctionner pour 1 heure."
+       },
+       {
+        "id": "magicien.mystique.5",
+        "niveau": 5,
+        "nom": "Faux souvenir",
+        "verbatim": "1 Mana. En mettant la main sur la tête de la cible 5 secondes, remplace un souvenir par un autre crédible, hors combat."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "roublard",
+    "source": {
+     "page": 12,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "roublard.base.bandit",
+      "nom": "Bandit",
+      "verbatim": "1/heure, Peut prend un objet (Rune/Matériel/Potion/Composante) à une cible morte ou immobiliser sans avoir à le fouiller. Si la cible n’a aucun objet, elle donne toute sa monnaie."
+     },
+     {
+      "id": "roublard.base.vol_a_la_tire",
+      "nom": "Vol à la tire",
+      "verbatim": "Le roublard peut en 15 secondes ouvrir une porte ou voler les pièces d’une cible que le roublard a gardé la main dessus à son insu."
+     }
+    ],
+    "branches": [
+     {
+      "id": "roublard.assassin",
+      "nom": "Assassin",
+      "capacites": [
+       {
+        "id": "roublard.assassin.1",
+        "niveau": 1,
+        "nom": "Backstab",
+        "verbatim": "Le premier coup avec une dague, arc ou arbalète sur une cible inflige +2 dégâts si touchés dans le dos."
+       },
+       {
+        "id": "roublard.assassin.2",
+        "niveau": 2,
+        "nom": "Torture",
+        "verbatim": "À chaque 5 minutes de RP de torture sur une cible immobilisée, le roublard peut poser une question auquel elle devra répondre de son mieux."
+       },
+       {
+        "id": "roublard.assassin.3",
+        "niveau": 3,
+        "nom": "Assommage",
+        "verbatim": "1/heure, et hors combat, le personnage peut donner un (faux) coup à la tête de sa cible pour la rendre inconsciente. Durée. 5 min ou jusqu’à ce qu’elle subisse des dégâts."
+       },
+       {
+        "id": "roublard.assassin.4",
+        "niveau": 4,
+        "nom": "Aveuglement",
+        "verbatim": "1/heure, le roublard fait semblant de jeter du sable au visage d’une cible proche, l’aveuglant (dois mettre un bras devant ses yeux). Durée. 15 sec."
+       },
+       {
+        "id": "roublard.assassin.5",
+        "niveau": 5,
+        "nom": "Assassinat",
+        "verbatim": "Le roublard doit glisser lentement une dague sous la gorge de la cible (en 3 sec), ce qui la tue. Seulement hors combat. Aucune sauvegarde, aucune esquive ne sont autorisées."
+       }
+      ]
+     },
+     {
+      "id": "roublard.brigand",
+      "nom": "Brigand",
+      "capacites": [
+       {
+        "id": "roublard.brigand.1",
+        "niveau": 1,
+        "nom": "Camouflage",
+        "verbatim": "Lorsque le roublard n’est pas observé, il peut devenir invisible dans l’ombre ou la végétation, mais doit se déplacer lentement."
+       },
+       {
+        "id": "roublard.brigand.2",
+        "niveau": 2,
+        "nom": "Évasion",
+        "verbatim": "1/heure, le roublard peut crier ‘’évasion 10 sec’’. Et s’enfuir en courant dans une direction sans ennemi sans que personne le poursuivre pour 10 secondes."
+       },
+       {
+        "id": "roublard.brigand.3",
+        "niveau": 3,
+        "nom": "Renversement",
+        "verbatim": "1/heure, en frappant les jambes ou boucliers de la cible, elle tombe à terre."
+       },
+       {
+        "id": "roublard.brigand.4",
+        "niveau": 4,
+        "nom": "Esquive",
+        "verbatim": "1/heure, peut éviter une attaque infligeant des dégâts en criant ‘’Esquive !’’."
+       },
+       {
+        "id": "roublard.brigand.5",
+        "niveau": 5,
+        "nom": "Feinter la mort",
+        "verbatim": "1/heure, lorsque le roublard devrait subir des dégâts fatals, il tombe au sol à 1 PV. Il peut même dire en Hors-jeu qu’il est mort. Sauf contre la capacité de détection des morts."
+       }
+      ]
+     },
+     {
+      "id": "roublard.barde",
+      "nom": "Barde",
+      "capacites": [
+       {
+        "id": "roublard.barde.1",
+        "niveau": 1,
+        "nom": "Inspiration",
+        "verbatim": "1 Mana, en chantant ou jouant de la musique en combat ses alliés ont +1 PV pour le combat. Ceci n’est pas un buff et plusieurs bardes peuvent cumuler leurs inspirations."
+       },
+       {
+        "id": "roublard.barde.2",
+        "niveau": 2,
+        "nom": "Charme",
+        "verbatim": "1 Mana, après avoir dit 2 compliments différents à une cible, celle-ci considère le roublard comme un ami pour 5 minutes. Si résisté, ne peux être retenter avant 1 heure."
+       },
+       {
+        "id": "roublard.barde.3",
+        "niveau": 3,
+        "nom": "Motivation",
+        "verbatim": "2 Mana, faisant un discours d’encouragement à une cible, ceci lui confère +1 dégât pour 15 minutes. Ceci est un Buff."
+       },
+       {
+        "id": "roublard.barde.4",
+        "niveau": 4,
+        "nom": "Confusion",
+        "verbatim": "1 Mana et incantation, La cible à vue inverse alliée et ennemi pour 1 minute, 10 minutes si hors combat. Ne peux pas être lancé 2 fois sur la même cible dans la même heure"
+       },
+       {
+        "id": "roublard.barde.5",
+        "niveau": 5,
+        "nom": "Suggestion",
+        "verbatim": "1 Mana, Le roublard maintient un contact visuel et fait une suggestion convaincante à une cible, qui doit l'accomplir au mieux pendant 10 minutes."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "chevalier_de_la_mort",
+    "source": {
+     "page": 13,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "chevalier_de_la_mort.base.poigne_mortelle",
+      "nom": "Poigne mortelle",
+      "verbatim": "Signe : Mortalis, Le chevalier force une cible à se rendre à lui tant qu'il reste immobile et que la cible n'est pas attaquée."
+     },
+     {
+      "id": "chevalier_de_la_mort.base.detection_des_morts",
+      "nom": "Détection des morts",
+      "verbatim": "Le chevalier de la mort peut savoir l’état de santé d’une cible à vue (si elle est vivante, morte ou morte-vivante)."
+     },
+     {
+      "id": "chevalier_de_la_mort.base.armure_des_damnes",
+      "nom": "Armure des damnés",
+      "verbatim": "Si le chevalier de la mort n’a pas d’armure, il obtient +1 PV, s’il porte une armure, il peut avoir jusqu’à 3 blocs d’armure sans perdre de mana. Ceci peut se cumuler avec le don port d’armure magique."
+     }
+    ],
+    "branches": [
+     {
+      "id": "chevalier_de_la_mort.inquisiteur",
+      "nom": "Inquisiteur",
+      "capacites": [
+       {
+        "id": "chevalier_de_la_mort.inquisiteur.1",
+        "niveau": 1,
+        "nom": "Châtiment",
+        "verbatim": "1/heure, Une attaque de corps à corps infligeant +2 dégâts de froid (perdue si raté)."
+       },
+       {
+        "id": "chevalier_de_la_mort.inquisiteur.2",
+        "niveau": 2,
+        "nom": "Damnation",
+        "verbatim": "1 Mana, Signe : Damnare, inflige 3 dégâts de froid."
+       },
+       {
+        "id": "chevalier_de_la_mort.inquisiteur.3",
+        "niveau": 3,
+        "nom": "Frayeur",
+        "verbatim": "Signe : Anxietas. La cible doit fuir le chevalier. Durée 30 sec."
+       },
+       {
+        "id": "chevalier_de_la_mort.inquisiteur.4",
+        "niveau": 4,
+        "nom": "Force du colosse",
+        "verbatim": "2 Mana, Incantation, confèrent à une cible +1 dégât et +1 Lutte, ceci est un Buff. Durée 15 minutes"
+       },
+       {
+        "id": "chevalier_de_la_mort.inquisiteur.5",
+        "niveau": 5,
+        "nom": "Arme divine",
+        "verbatim": "L’arme du chevalier de la mort inflige des dégâts divin (ignore les armures et résistances)."
+       }
+      ]
+     },
+     {
+      "id": "chevalier_de_la_mort.immortel",
+      "nom": "Immortel",
+      "capacites": [
+       {
+        "id": "chevalier_de_la_mort.immortel.1",
+        "niveau": 1,
+        "nom": "Intimidation",
+        "verbatim": "1/heure, La cible à vue ne peut plus attaquer le chevalier. Durée. 15 secondes, sauf si le chevalier l’attaque."
+       },
+       {
+        "id": "chevalier_de_la_mort.immortel.2",
+        "niveau": 2,
+        "nom": "+1 sauvegarde",
+        "verbatim": "+1 sauvegarde"
+       },
+       {
+        "id": "chevalier_de_la_mort.immortel.3",
+        "niveau": 3,
+        "nom": "Vigilance",
+        "verbatim": "Le chevalier de la mort voit les créatures invisibles (il doit dire ''vigilance'' à voix haute dès qu'il voit une personne invisible)."
+       },
+       {
+        "id": "chevalier_de_la_mort.immortel.4",
+        "niveau": 4,
+        "nom": "Jugement",
+        "verbatim": "1/heure, Le chevalier amène une cible avec lui en hors-jeu pour un duel, un seul des 2 peut en ressortir vivant."
+       },
+       {
+        "id": "chevalier_de_la_mort.immortel.5",
+        "niveau": 5,
+        "nom": "Damné",
+        "verbatim": "+5 PV, et immunité aux poisons et maladies (max 1 dégâts de poison par attaque), récupère 3 PV/min hors combat, mais ne peut plus être soigné par autrui."
+       }
+      ]
+     },
+     {
+      "id": "chevalier_de_la_mort.faucheur",
+      "nom": "Faucheur",
+      "capacites": [
+       {
+        "id": "chevalier_de_la_mort.faucheur.1",
+        "niveau": 1,
+        "nom": "Frappe de sang",
+        "verbatim": "Une attaque de corps à corps infligeant +1 dégât, mais coûte 1 PV si réussi."
+       },
+       {
+        "id": "chevalier_de_la_mort.faucheur.2",
+        "niveau": 2,
+        "nom": "Armée des morts",
+        "verbatim": "1 Mana, Incantation, Relève 3 morts en zombie, 5 PV, frape de 1, ne peuvent pas courir."
+       },
+       {
+        "id": "chevalier_de_la_mort.faucheur.3",
+        "niveau": 3,
+        "nom": "Frappe Vampirique",
+        "verbatim": "1/heure, Une attaque de corps à corps soignant le chevalier du montant de dégâts infligé, récupéré si raté."
+       },
+       {
+        "id": "chevalier_de_la_mort.faucheur.4",
+        "niveau": 4,
+        "nom": "Gargantua",
+        "verbatim": "2 Mana, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois."
+       },
+       {
+        "id": "chevalier_de_la_mort.faucheur.5",
+        "niveau": 5,
+        "nom": "Extinction",
+        "verbatim": "1/heure, Inflige 5 dégâts de froid à tous ceux près de lui (environ 10 mètres), le chevalier de la mort tombe à 1PV."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "sorcier",
+    "source": {
+     "page": 14,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [],
+    "branches": [
+     {
+      "id": "sorcier.conjurateur",
+      "nom": "Conjurateur",
+      "capacites": [
+       {
+        "id": "sorcier.conjurateur.1",
+        "niveau": 1,
+        "nom": "Drain de vie",
+        "verbatim": "1 fois par cible par heure. En touchant une cible, inflige 2 dégâts de froid et soigne autant le sorcier."
+       },
+       {
+        "id": "sorcier.conjurateur.2",
+        "niveau": 2,
+        "nom": "Damnation",
+        "verbatim": "1 Énergie , Signe : Damnare, inflige 3 dégâts de froid."
+       },
+       {
+        "id": "sorcier.conjurateur.3",
+        "niveau": 3,
+        "nom": "Frayeur",
+        "verbatim": "Signe : Anxietas. La cible doit fuir le Sorcier. Durée 30 sec."
+       },
+       {
+        "id": "sorcier.conjurateur.4",
+        "niveau": 4,
+        "nom": "Noirceur",
+        "verbatim": "Signe : Caecitas. La cible est aveuglée (dois mettre un bras devant ses yeux). Durée. 30 sec."
+       },
+       {
+        "id": "sorcier.conjurateur.5",
+        "niveau": 5,
+        "nom": "Désintégration",
+        "verbatim": "1 Énergie , Signe : Extinctio. Inflige 4 dégâts de feu."
+       }
+      ]
+     },
+     {
+      "id": "sorcier.cultiste",
+      "nom": "Cultiste",
+      "capacites": [
+       {
+        "id": "sorcier.cultiste.1",
+        "niveau": 1,
+        "nom": "Silence",
+        "verbatim": "1 Énergie, Incantation, la cible ne peut plus parler, incanter ou faire de sort pendant 1 minute, si hors combat, 5 minutes."
+       },
+       {
+        "id": "sorcier.cultiste.2",
+        "niveau": 2,
+        "nom": "Lance d’os",
+        "verbatim": "Inflige 3 dégâts magique à une cible à vue, chaque utilisation brise un membre du sorcier pour 1 heure (le rendant inutilisable). Dois attendre 5 sec entre chaque utilisation."
+       },
+       {
+        "id": "sorcier.cultiste.3",
+        "niveau": 3,
+        "nom": "Amnésie",
+        "verbatim": "1 Énergie, En mettant la main sur la tête de la cible 5 secondes, fait oublier un souvenir de la cible, utilisable hors combat."
+       },
+       {
+        "id": "sorcier.cultiste.4",
+        "niveau": 4,
+        "nom": "Téléportation",
+        "verbatim": "1 Énergie, Incantation, permet au sorcier de partir immatériel à une destination précise sans être suivit. Il revient matériel s'il arrête de se déplacer ou tourne en rond."
+       },
+       {
+        "id": "sorcier.cultiste.5",
+        "niveau": 5,
+        "nom": "Malédiction",
+        "verbatim": "2 Énergies, Incantation, afflige une malédiction à vue que la cible ne peut plus courir OU ses dégâts sont de 1 maximum OU ne peux plus être soigné. Durée. 2 heures."
+       }
+      ]
+     },
+     {
+      "id": "sorcier.necromancien",
+      "nom": "Nécromancien",
+      "capacites": [
+       {
+        "id": "sorcier.necromancien.1",
+        "niveau": 1,
+        "nom": "Réanimation",
+        "verbatim": "Incantation, 1 fois par cible par heure. Relève 3 morts en zombie, 3 PV, frape de 1, ne peuvent pas courir."
+       },
+       {
+        "id": "sorcier.necromancien.2",
+        "niveau": 2,
+        "nom": "Bouclier d’os",
+        "verbatim": "Incantation, utilise et détruit un cadavre pour que le sorcier obtient +3 PV, jusqu’à leur utilisation. Ceci est un Buff."
+       },
+       {
+        "id": "sorcier.necromancien.3",
+        "niveau": 3,
+        "nom": "Communication avec les morts",
+        "verbatim": "Incantation, 1 fois par cadavre, Le sorcier peut poser 5 questions de oui ou non à un cadavre. De plus, Il obtient la langue des morts (ou une autre s'il la possède déjà)."
+       },
+       {
+        "id": "sorcier.necromancien.4",
+        "niveau": 4,
+        "nom": "Gargantua",
+        "verbatim": "2 Énergies, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois."
+       },
+       {
+        "id": "sorcier.necromancien.5",
+        "niveau": 5,
+        "nom": "Goule",
+        "verbatim": "2 Énergies, Incantation, Relève 1 mort en goule 6 PV, frappe de 2 dégâts de poison, peuvent courir, ce que la goule tue devient également une goule."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "medjai",
+    "source": {
+     "page": 15,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "medjai.base.immortel",
+      "nom": "Immortel",
+      "verbatim": "Le Medjai ne peut pas récupérer de PV autrement que par les potions, mais revient à la vie dès qu’il n’y a plus de combat ou d’ennemi autour de lui pendant 2 minutes."
+     },
+     {
+      "id": "medjai.base.mutation",
+      "nom": "Mutation",
+      "verbatim": "Les capacités retirant 1 de mana permanent réduise à jamais le mana maximum du Medjai. Si sa valeur tombe à 0, il ne peut plus choisir l’une de ces capacités."
+     }
+    ],
+    "branches": [
+     {
+      "id": "medjai.occultiste",
+      "nom": "Occultiste",
+      "capacites": [
+       {
+        "id": "medjai.occultiste.1",
+        "niveau": 1,
+        "nom": "Flamme",
+        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible."
+       },
+       {
+        "id": "medjai.occultiste.2",
+        "niveau": 2,
+        "nom": "Silence",
+        "verbatim": "1 Mana, Incantation, la cible ne peut plus parler ou incanter pendant 1 minute, si hors combat 5 minutes."
+       },
+       {
+        "id": "medjai.occultiste.3",
+        "niveau": 3,
+        "nom": "Force",
+        "verbatim": "3/heure, La cible (à une portée d'environ 10 mètres ou moins) est repoussée de 3 pas."
+       },
+       {
+        "id": "medjai.occultiste.4",
+        "niveau": 4,
+        "nom": "Force de limace",
+        "verbatim": "1 Mana, Incantation, la cible ne fait que 1 de dégâts et as -2 de Lutte. Durée 1 minute."
+       },
+       {
+        "id": "medjai.occultiste.5",
+        "niveau": 5,
+        "nom": "Suggestion",
+        "verbatim": "1 Mana, Le Medjai maintient un contact visuel et fait une suggestion convaincante à une cible, qui doit l'accomplir au mieux pendant 10 minutes."
+       }
+      ]
+     },
+     {
+      "id": "medjai.mutant",
+      "nom": "Mutant",
+      "capacites": [
+       {
+        "id": "medjai.mutant.1",
+        "niveau": 1,
+        "nom": "Massif",
+        "verbatim": "-1 Mana permanent, Le Medjai obtient +1 en Lutte et +2 PV."
+       },
+       {
+        "id": "medjai.mutant.2",
+        "niveau": 2,
+        "nom": "Costaud",
+        "verbatim": "-1 Mana permanent, Le Medjai obtient +1 dégât s’il tiens son arme à 2 mains (pas armes d’haste)."
+       },
+       {
+        "id": "medjai.mutant.3",
+        "niveau": 3,
+        "nom": "Vision parfaite",
+        "verbatim": "-1 Mana permanent, Le Medjai peut voir l'invisible (il doit dire ''vigilance'' à voix haute dès qu'il voit une personne invisible) et il est immunisé à l'aveuglement."
+       },
+       {
+        "id": "medjai.mutant.4",
+        "niveau": 4,
+        "nom": "Régénération",
+        "verbatim": "-1 Mana permanent, Le Medjai peut être soigné et récupère 1 PV par minute hors combat."
+       },
+       {
+        "id": "medjai.mutant.5",
+        "niveau": 5,
+        "nom": "Armure de vent",
+        "verbatim": "-2 Mana permanent, Le Medjai est immunisé aux attaques à distance infligeant des dégâts."
+       }
+      ]
+     },
+     {
+      "id": "medjai.sorcelier",
+      "nom": "Sorcelier",
+      "capacites": [
+       {
+        "id": "medjai.sorcelier.1",
+        "niveau": 1,
+        "nom": "Frappe occulte",
+        "verbatim": "3/heure, Une attaque de corps à corps infligeant +1 dégât, réussi ou raté."
+       },
+       {
+        "id": "medjai.sorcelier.2",
+        "niveau": 2,
+        "nom": "Renversement",
+        "verbatim": "1/heure, en frappant les jambes ou boucliers de la cible, elle tombe à terre."
+       },
+       {
+        "id": "medjai.sorcelier.3",
+        "niveau": 3,
+        "nom": "Arme liée",
+        "verbatim": "Le Medjai se lie à 1 arme qu’il peut toujours appeler à lui (demander en H-J qu’on lui lance) et peux 1/heure lancer son arme et se téléporter à elle."
+       },
+       {
+        "id": "medjai.sorcelier.4",
+        "niveau": 4,
+        "nom": "Brise arcane",
+        "verbatim": "1/heure, Le medjai peut briser une barrière ou défense magique ou retirer 4 de Mana à une cible en la frappant."
+       },
+       {
+        "id": "medjai.sorcelier.5",
+        "niveau": 5,
+        "nom": "Esquive",
+        "verbatim": "1/heure, peut éviter une attaque infligeant des dégâts en criant ‘’Esquive !’’."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "classe_id": "paladin",
+    "source": {
+     "page": 16,
+     "section": "Chapitre 3 : Les classes (table)"
+    },
+    "capacites_de_base": [
+     {
+      "id": "paladin.base.detection_du_mensonge",
+      "nom": "Détection du mensonge",
+      "verbatim": "1/ heure, Le paladin peut savoir si la dernière affirmation d’une cible est un mensonge."
+     },
+     {
+      "id": "paladin.base.imposition",
+      "nom": "Imposition",
+      "verbatim": "1/heure et par cible, peut soigner la cible de 3 PV par le toucher."
+     },
+     {
+      "id": "paladin.base.armure_sacree",
+      "nom": "Armure sacrée",
+      "verbatim": "Si le paladin n’a pas d’armure, il obtient +1 PV, s’il porte une armure, il peut avoir jusqu’à 3 blocs d’armure sans perdre de mana. Ceci peut se cumuler avec le don port d’armure magique."
+     }
+    ],
+    "branches": [
+     {
+      "id": "paladin.croise",
+      "nom": "Croisé",
+      "capacites": [
+       {
+        "id": "paladin.croise.1",
+        "niveau": 1,
+        "nom": "Châtiment",
+        "verbatim": "1/heure, Une attaque de corps à corps infligeant +2 dégâts de feu (perdue si raté)."
+       },
+       {
+        "id": "paladin.croise.2",
+        "niveau": 2,
+        "nom": "Fracassement",
+        "verbatim": "1 Mana. Détruit un objet/armure/bouclier toucher par la main du paladin (pas une arme tenue en main)."
+       },
+       {
+        "id": "paladin.croise.3",
+        "niveau": 3,
+        "nom": "Radiance",
+        "verbatim": "1 Mana, Signe : Fulgor, inflige 3 dégâts de feu."
+       },
+       {
+        "id": "paladin.croise.4",
+        "niveau": 4,
+        "nom": "Force du colosse",
+        "verbatim": "2 Mana, Incantation, confèrent à une cible +1 dégât et +1 Lutte, ceci est un Buff. Durée 15 minutes"
+       },
+       {
+        "id": "paladin.croise.5",
+        "niveau": 5,
+        "nom": "Arme divine",
+        "verbatim": "L’arme du Paladin inflige des dégâts divins (ignore les armures et résistances)."
+       }
+      ]
+     },
+     {
+      "id": "paladin.gardien",
+      "nom": "Gardien",
+      "capacites": [
+       {
+        "id": "paladin.gardien.1",
+        "niveau": 1,
+        "nom": "Protection",
+        "verbatim": "1 Mana, la cible touchée devient invulnérable pour 2 minutes sauf si elle sépare ses mains, se déplace ou attaque."
+       },
+       {
+        "id": "paladin.gardien.2",
+        "niveau": 2,
+        "nom": "+1 sauvegarde",
+        "verbatim": "+1 sauvegarde"
+       },
+       {
+        "id": "paladin.gardien.3",
+        "niveau": 3,
+        "nom": "Vigilance",
+        "verbatim": "Le Paladin voit les créatures invisibles (il doit dire ''vigilance'' à voix haute dès qu'il voit une personne invisible)."
+       },
+       {
+        "id": "paladin.gardien.4",
+        "niveau": 4,
+        "nom": "Santé divine",
+        "verbatim": "Le paladin obtient +2 PV, et une immunité aux poison et maladie. (il ne subit que 1 dégâts maximum par attaque de poison)."
+       },
+       {
+        "id": "paladin.gardien.5",
+        "niveau": 5,
+        "nom": "Bouclier divin",
+        "verbatim": "Le bouclier du paladin est indestructible, mais le paladin ne peut pas l’utiliser en duel contre un joueur n’ayant pas de bouclier ou d’arme d’hast."
+       }
+      ]
+     },
+     {
+      "id": "paladin.devot",
+      "nom": "Dévot",
+      "capacites": [
+       {
+        "id": "paladin.devot.1",
+        "niveau": 1,
+        "nom": "Guérison",
+        "verbatim": "1 Mana, Incantation, soigne 3 PV à la cible toucher."
+       },
+       {
+        "id": "paladin.devot.2",
+        "niveau": 2,
+        "nom": "Délivrance",
+        "verbatim": "1 Mana, Incantation, Retire tout effet négatif d’une cible sauf une malédiction."
+       },
+       {
+        "id": "paladin.devot.3",
+        "niveau": 3,
+        "nom": "Vague de Soin",
+        "verbatim": "1 Mana, Incantation, soigne 3 cibles différentes de 2 PV à vue."
+       },
+       {
+        "id": "paladin.devot.4",
+        "niveau": 4,
+        "nom": "Aura de bravoure",
+        "verbatim": "Le paladin et ses alliés proches sont immunisés aux effets de peur."
+       },
+       {
+        "id": "paladin.devot.5",
+        "niveau": 5,
+        "nom": "Rappel à la vie",
+        "verbatim": "2 Mana, Incantation, ramène 1 mort à 1 PV au toucher. Pas plus de 2 minutes après la mort."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

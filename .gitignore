@@ -8,3 +8,6 @@ dist-ssr
 !.env.example
 .DS_Store
 *.log
+
+# Archives (jamais de zip dans le dépôt)
+*.zip

@@ -24,8 +24,17 @@ npm run build
 npm run preview
 ```
 
+## Tests
+
+```bash
+npm test          # vitest run
+npm run lint      # tsc --noEmit
+```
+
 ## Statut
 
-Scaffold initial (phase 1). Aucune règle de jeu n'est encore intégrée
-(`src/data/rules.json` est un placeholder) — le contenu sera livré séparément.
-Pas de backend/Supabase à ce stade.
+Fondations données (brief #02-a) : `src/data/rules.json` (v1.0.0) est la source
+unique des règles (D5), `src/data/tome_extraits.json` sert uniquement de témoin
+à la gate de fidélité et n'est jamais lu par l'app. Magasin local Dexie
+(`src/db/db.ts`, base `terra` v1) avec harnais de migration D7. Aucune UI n'est
+branchée sur ces modules à ce stade. Pas de backend/Supabase.
