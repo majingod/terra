@@ -1,14 +1,15 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "date": "2026-08-17",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
   "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
   "source": "Tome des règles V1.2 (PDF projet) + Aide-mémoire (vérification croisée)",
   "normalisation_verbatim": "\\r\\n -> espace ; caractère U+0002 (césure) supprimé ; espaces multiples réduits. Aucune autre retouche, fautes du Tome incluses.",
   "regle_maison": "Une règle vit ici et nulle part ailleurs (D5). Ce fichier est la maison unique ; les fichiers lot1/lot2 sont des artefacts de construction.",
-  "version_affichee": "C'est CETTE version (meta.version) que la fiche affiche (compensation D8-bis, item VERSION-VISIBLE)."
+  "version_affichee": "C'est CETTE version (meta.version) que la fiche affiche (compensation D8-bis, item VERSION-VISIBLE).",
+  "corrections_v101": "28 verbatims du lot 1 : apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé. STOP #1 et #2 du rapport CC #02-a."
  },
  "caracteristiques": {
   "source": {
@@ -53,7 +54,7 @@
     "page": 5,
     "section": "Illettré"
    },
-   "verbatim": "Un personnage commençant avec 1 d'Esprit inférieur ne sait ni lire ni écrire. Si son esprit augmente pour une raison ou pour une autre, le personnage n'apprend pas à lire ou écrire."
+   "verbatim": "Un personnage commençant avec 1 d’Esprit inférieur ne sait ni lire ni écrire. Si son esprit augmente pour une raison ou pour une autre, le personnage n’apprend pas à lire ou écrire."
   },
   "table_cumulative": {
    "regle": "Effet total à la valeur V = somme des paliers 1..V. Dérivé de la table p.5, arbitrage A4.",
@@ -188,7 +189,7 @@
    {
     "id": "legion",
     "nom": "Légion",
-    "verbatim": "La Légion regroupe les races et individus souillés par une forme de corruption, qu'elle soit de naissance ou acquise, comme si un humain faisait un pacte avec une entité démoniaque. Leur force réside dans le nombre, la brutalité et la volonté de tout faire pour l'emporter. En général, les membres de cette faction sont malveillants, ayant tendance à penser à leurs besoins avant ceux des autres."
+    "verbatim": "La Légion regroupe les races et individus souillés par une forme de corruption, qu’elle soit de naissance ou acquise, comme si un humain faisait un pacte avec une entité démoniaque. Leur force réside dans le nombre, la brutalité et la volonté de tout faire pour l’emporter. En général, les membres de cette faction sont malveillants, ayant tendance à penser à leurs besoins avant ceux des autres."
    }
   ],
   "avantage_de_depart": {
@@ -284,7 +285,7 @@
      "+2 Mana",
      {
       "nom": "Camouflage",
-      "verbatim": "Lorsque le personnage n'est pas observé, il peut devenir invisible dans l'ombre ou la forêt, mais doit se déplacer lentement."
+      "verbatim": "Lorsque le personnage n’est pas observé, il peut devenir invisible dans l’ombre ou la forêt, mais doit se déplacer lentement."
      }
     ],
     "description_physique": "Oreilles pointues, peau noire et cheveux blancs.",
@@ -378,7 +379,7 @@
    {
     "id": "brise_bouclier",
     "nom": "Brise bouclier",
-    "verbatim": "1/heure, détruit un bouclier frappé par une arme de corps à corps tenue à 2 mains (pas d'arme d'hast)."
+    "verbatim": "1/heure, détruit un bouclier frappé par une arme de corps à corps tenue à 2 mains (pas d’arme d’hast)."
    },
    {
     "id": "bluff",
@@ -403,7 +404,7 @@
    {
     "id": "incantation_rapide",
     "nom": "Incantation rapide",
-    "verbatim": "Retire 2 mots aux capacités d'incantations."
+    "verbatim": "Retire 2 mots aux capacités d’incantations."
    },
    {
     "id": "meditation",
@@ -413,12 +414,12 @@
    {
     "id": "port_armure_magique",
     "nom": "Port armure magique",
-    "verbatim": "Peut avoir jusqu'à 3 bloque d'armure sans perdre de Mana."
+    "verbatim": "Peut avoir jusqu’à 3 bloque d’armure sans perdre de Mana."
    },
    {
     "id": "resilient",
     "nom": "Résilient",
-    "verbatim": "Le personnage obtient +2 PV tant qu'il ne porte ni armure ni bouclier."
+    "verbatim": "Le personnage obtient +2 PV tant qu’il ne porte ni armure ni bouclier."
    },
    {
     "id": "robustesse",
@@ -429,7 +430,7 @@
    {
     "id": "science_de_la_lutte",
     "nom": "Science de la lutte",
-    "verbatim": "+1 en Lutte et gagne la Lutte en cas d'égalité."
+    "verbatim": "+1 en Lutte et gagne la Lutte en cas d’égalité."
    }
   ]
  },
@@ -486,16 +487,16 @@
      "capacites": [
       {
        "nom": "Poche cachée",
-       "verbatim": "Le personnage est immunisé contre la capacité de Bandit et, concernant la règle de fouille générale, il choisit ce qu'il donne à la personne le fouillant (1 objet ou sa monnaie qu'il porte)."
+       "verbatim": "Le personnage est immunisé contre la capacité de Bandit et, concernant la règle de fouille générale, il choisit ce qu’il donne à la personne le fouillant (1 objet ou sa monnaie qu’il porte)."
       },
       {
        "nom": "Diplomate",
-       "verbatim": "Le tavernier peut dire ''pour-parler'' pour forcer des adversaires à l'écouter plutôt que de l'attaquer pendant 2 minutes. Si le tavernier ou un de ses alliés tente d'en profiter pour utiliser une capacité ou attaquer par surprise, l'effet du ''pour-parler'' est rompu.",
+       "verbatim": "Le tavernier peut dire ‘’pour-parler’’ pour forcer des adversaires à l’écouter plutôt que de l’attaquer pendant 2 minutes. Si le tavernier ou un de ses alliés tente d’en profiter pour utiliser une capacité ou attaquer par surprise, l’effet du ‘’pour-parler’’ est rompu.",
        "note": "A1 tranché : le Tome écrit « tavernier », erreur de texte confirmée par Fred. Lire « marchand ». Le verbatim reste intact pour la gate ; l'app affiche « marchand »."
       },
       {
        "nom": "Troc",
-       "verbatim": "Le personnage peut une fois par jour échanger de la monnaie contre des ressources, ou vice versa, auprès d'un MJ."
+       "verbatim": "Le personnage peut une fois par jour échanger de la monnaie contre des ressources, ou vice versa, auprès d’un MJ."
       }
      ],
      "restriction": "LE MARCHAND NE PEUT PAS PORTÉ PLUS D'UNE RUNE ARME ET UNE RUNE D'AMULETTE MAGIQUE, COMME LES AUTRES."
@@ -507,15 +508,15 @@
      "capacites": [
       {
        "nom": "Cuisinier",
-       "verbatim": "Le personnage peut durant le GN offrir jusqu'à 3 repas décorum offrant +1 PV et +1 Mana pendant 1heure. Les bénéficiaires doivent être différents."
+       "verbatim": "Le personnage peut durant le GN offrir jusqu’à 3 repas décorum offrant +1 PV et +1 Mana pendant 1heure. Les bénéficiaires doivent être différents."
       },
       {
        "nom": "Premier-Soins",
-       "verbatim": "Le personnage s'y connaît en médecine, il peut soigner tous les PV d'une cible en 1 minutes de RP. S'il a la capacité herbe de guérison, tous ses soins augmentes de 1."
+       "verbatim": "Le personnage s’y connaît en médecine, il peut soigner tous les PV d’une cible en 1 minutes de RP. S’il a la capacité herbe de guérison, tous ses soins augmentes de 1."
       },
       {
        "nom": "Alchimie",
-       "verbatim": "Le personnage peut concevoir une substance alchimique avec de l'Alchimite. La substance doit être contenue dans un flacon transparent et le liquide doit avoir la couleur associée et être buvable."
+       "verbatim": "Le personnage peut concevoir une substance alchimique avec de l’Alchimite. La substance doit être contenue dans un flacon transparent et le liquide doit avoir la couleur associée et être buvable."
       }
      ]
     },
@@ -530,11 +531,11 @@
       },
       {
        "nom": "Ajustement",
-       "verbatim": "Le forgeron peut conférer à 3 armures un ajustement sur mesure, conférant pour le GN +1 bloc OU réduire de 1 le malus de mana de l'armure. Si l'armure est réparée autrement que par le forgeron, elle perd se bonus."
+       "verbatim": "Le forgeron peut conférer à 3 armures un ajustement sur mesure, conférant pour le GN +1 bloc OU réduire de 1 le malus de mana de l’armure. Si l’armure est réparée autrement que par le forgeron, elle perd se bonus."
       },
       {
        "nom": "Forge",
-       "verbatim": "Peut concevoir des Armes, Armures et bouclier en Métal rare. Construire un objet demande de dérouler un ressort (fournis par l'animation)."
+       "verbatim": "Peut concevoir des Armes, Armures et bouclier en Métal rare. Construire un objet demande de dérouler un ressort (fournis par l’animation)."
       }
      ]
     },
@@ -545,15 +546,15 @@
      "capacites": [
       {
        "nom": "Catalyst",
-       "verbatim": "Le personnage peut porter sur lui plus d'une rune d'arme magique et rune d'amulette magique, mais ne peut tout de même n'en utiliser qu'un à la fois."
+       "verbatim": "Le personnage peut porter sur lui plus d’une rune d’arme magique et rune d’amulette magique, mais ne peut tout de même n’en utiliser qu’un à la fois."
       },
       {
        "nom": "Marque",
-       "verbatim": "Le Runiste peut marquer 3 sujet volontaire (autre que lui) par GN d'une rune conférant 1 utilisation d'une des capacités de classe du runiste choisit au moment de créer la rune. Les runes durent un maximum de 1h, et le runiste ne peut en avoir activé qu'une à la fois."
+       "verbatim": "Le Runiste peut marquer 3 sujet volontaire (autre que lui) par GN d’une rune conférant 1 utilisation d’une des capacités de classe du runiste choisit au moment de créer la rune. Les runes durent un maximum de 1h, et le runiste ne peut en avoir activé qu’une à la fois."
       },
       {
        "nom": "Rune",
-       "verbatim": "Peux concevoir des runes d'Armes ou Amulette magiques à partir d'Arcanite. Fabriquer demande la transcription d'une phrase runique (fournis par l'animation)."
+       "verbatim": "Peux concevoir des runes d’Armes ou Amulette magiques à partir d’Arcanite. Fabriquer demande la transcription d’une phrase runique (fournis par l’animation)."
       }
      ],
      "alias_possible": "A2 tranché : « Arcaniste » (p.17, p.19) = erreur de texte. L'app affiche « Runiste » partout."
@@ -573,7 +574,7 @@
   "xp_temporaire": "Chaque personnage peut commencer avec des désavantages et handicapes lui conférant des XP exclusivement pour ce personnage à sa création.",
   "desavantages": {
    "regle_plafond": {
-    "verbatim": "Seuls 3 désavantages confèrent de l'XP.",
+    "verbatim": "Seuls 3 désavantages confèrent de l’XP.",
     "application_wizard": "A6 tranché : le wizard laisse cocher plus de 3 désavantages (RP libre) mais ne compte l'XP que des 3 premiers cochés, avec message explicite à l'écran."
    },
    "liste": [
@@ -581,21 +582,21 @@
      "id": "ampute_bras",
      "nom": "Amputé (bras)",
      "xp": 3,
-     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n'est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
+     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n’est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
      "note": "A7 tranché : deux lignes distinctes dans le wizard."
     },
     {
      "id": "ampute_main",
      "nom": "Amputé (main ou doigts)",
      "xp": 1,
-     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n'est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
+     "verbatim": "Vous avez un bras en moins. Seulement 1 XP si ce n’est que la main ou des doigts. Ce membre ne peut pas repousser grâce à la magie ou les potions.",
      "note": "A7 tranché : même texte du Tome, variante à 1 XP."
     },
     {
      "id": "asthmatique",
      "nom": "Asthmatique",
      "xp": 1,
-     "verbatim": "Vous avez de la difficulté à respirer correctement lors d'efforts physiques intenses. Il vous est impossible de courir ou combattre pendant plus de deux minutes sans vous effondrer à terre le souffle court."
+     "verbatim": "Vous avez de la difficulté à respirer correctement lors d’efforts physiques intenses. Il vous est impossible de courir ou combattre pendant plus de deux minutes sans vous effondrer à terre le souffle court."
     },
     {
      "id": "boiteux",
@@ -613,7 +614,7 @@
      "id": "bossu",
      "nom": "Bossu",
      "xp": 1,
-     "verbatim": "Vous êtes né bossu. Ceci n'a pas de désavantage en tant que tel autre que cela demande un élément de costume obligatoire pour votre personnage."
+     "verbatim": "Vous êtes né bossu. Ceci n’a pas de désavantage en tant que tel autre que cela demande un élément de costume obligatoire pour votre personnage."
     },
     {
      "id": "muet",
@@ -625,7 +626,7 @@
      "id": "fragile",
      "nom": "Fragile",
      "xp": 3,
-     "verbatim": "Votre personnage n'est pas habitué à la douleur et vous ferez un RP exagérer à la moindre blessure."
+     "verbatim": "Votre personnage n’est pas habitué à la douleur et vous ferez un RP exagérer à la moindre blessure."
     },
     {
      "id": "honorable",
@@ -656,7 +657,7 @@
      "id": "naif",
      "nom": "Naïf",
      "xp": 1,
-     "verbatim": "Votre personnage fait confiance au monde et tient pour acquis que ce que l'on lui dit est vrai. Vous êtes facile à tromper et croyez en la bonté des gens."
+     "verbatim": "Votre personnage fait confiance au monde et tient pour acquis que ce que l’on lui dit est vrai. Vous êtes facile à tromper et croyez en la bonté des gens."
     },
     {
      "id": "peureux",
@@ -668,7 +669,7 @@
      "id": "raciste",
      "nom": "Raciste",
      "xp": 1,
-     "verbatim": "Votre personnage refuse de faire confiance, alliance ou toléré la présence d'une race (de personnage). +1XP si c'est une race de sa faction (devra travailler avec, mais difficilement).",
+     "verbatim": "Votre personnage refuse de faire confiance, alliance ou toléré la présence d’une race (de personnage). +1XP si c’est une race de sa faction (devra travailler avec, mais difficilement).",
      "variante_xp": 2
     }
    ]
@@ -826,7 +827,7 @@
     ],
     "ressource_speciale": {
      "nom": "Énergie",
-     "verbatim": "Mage de sang. Les PV et Mana du sorcier s'additionnent et deviennent la même ressource (énergie) Désormais son maximum de PV (donc d'énergie) devient 20.",
+     "verbatim": "Mage de sang. Les PV et Mana du sorcier s’additionnent et deviennent la même ressource (énergie) Désormais son maximum de PV (donc d’énergie) devient 20.",
      "max": 20
     },
     "focus_requis": "bâton/baguette en main pour Signe ou incantation",
