@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-terre-950 text-stone-100 antialiased;
+  }
+}
+
+@layer components {
+  .btn-grand {
+    @apply flex min-h-touch w-full items-center justify-center rounded-2xl border-4 border-ambre-500
+      bg-ambre-500 px-6 py-4 text-xl font-bold text-terre-950 shadow-lg transition-transform
+      active:scale-95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-ambre-400;
+  }
+  .btn-secondaire {
+    @apply flex min-h-touch w-full items-center justify-center rounded-2xl border-4 border-stone-100
+      bg-transparent px-6 py-4 text-xl font-bold text-stone-100 shadow-lg transition-transform
+      active:scale-95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-stone-100;
+  }
+  .carte {
+    @apply rounded-2xl border-2 border-sang-700 bg-terre-900 p-5 shadow-md;
+  }
+}
