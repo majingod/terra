@@ -37,7 +37,7 @@ import {
   refusCompetences,
   refusDons,
 } from '../rules/talents'
-import { bassinCapacites, capaciteParId } from './capacites'
+import { bassinCapacites } from './capacites'
 import type { FicheCreation } from './types'
 
 export const ETAPES = [
@@ -113,9 +113,8 @@ export function problemesDestin(fiche: FicheCreation): string[] {
   }
   const aVariante = listeDesavantages().filter((d) => d.variante_xp !== undefined)
   for (const desavantage of aVariante) {
-    if (ordre.includes(desavantage.id)) {
-      const raceRefusee = raceDe(fiche.racisteVar)
-      if (!raceRefusee) problemes.push(`sous-choix obligatoire : ${desavantage.nom}`)
+    if (ordre.includes(desavantage.id) && !fiche.racisteVar) {
+      problemes.push(`sous-choix obligatoire : ${desavantage.nom}`)
     }
   }
   const xpPerm = fiche.xpPerm ?? 0
@@ -258,101 +257,101 @@ export function surplusLangues(fiche: FicheCreation): number {
 // ---------------------------------------------------------------------------
 
 export interface Changement {
+  /** Fiche résultante — appliquée seulement à la CONFIRMATION. */
   fiche: FicheCreation
-  /** Retraits automatiques, nommés pour la fenêtre de répercussions. */
+  /** Impacts nommés pour la fenêtre « Si tu continues : ». */
   retraits: string[]
 }
+
+const CAP_CHOIX_VIDE: Record<string, string[]> = { 1: [], 2: [] }
 
 function nomVoie(classeId: string | undefined, voieId: string | undefined): string {
   const voie = branchesDe(classeId ?? '').find((b) => b.id === voieId)
   return voie ? voie.nom : (voieId ?? '')
 }
 
-/** Retire les choix de capacités devenus impossibles ; nomme chaque retrait. */
-function retirerCapChoixInvalides(fiche: FicheCreation, retraits: string[]): FicheCreation {
-  if (!fiche.capChoix) return fiche
-  const capChoix: Record<string, string[]> = {}
-  const achats = { ...(fiche.achats ?? {}) }
-  for (const [niveau, ids] of Object.entries(fiche.capChoix)) {
-    const bassin = new Set(
-      bassinCapacites(fiche.classe, fiche.voie, Number(niveau)).map((c) => c.id),
-    )
-    const gardes: string[] = []
-    for (const id of ids) {
-      if (bassin.has(id)) {
-        gardes.push(id)
-        continue
-      }
-      const capacite = capaciteParId(fiche.classe, id)
-      const libelle = capacite ? `« ${capacite.nom} »` : id
-      // L'achat en conflit est retiré AVEC son choix (spec répercussions).
-      const achatDuNiveau = listeAchats().find((a) => {
-        const effet = effetAchat(a.achat)
-        return effet.type === 'capacite' && effet.niveau === Number(niveau)
-      })
-      if (achatDuNiveau && (achats[achatDuNiveau.achat] ?? 0) > 0) {
-        achats[achatDuNiveau.achat] -= 1
-        if (achats[achatDuNiveau.achat] === 0) delete achats[achatDuNiveau.achat]
-        retraits.push(`Achat « ${achatDuNiveau.achat} » retiré avec son choix ${libelle}`)
-      } else {
-        retraits.push(`Choix de capacité ${libelle} retiré`)
-      }
-    }
-    if (gardes.length > 0) capChoix[niveau] = gardes
-  }
-  return { ...fiche, capChoix, achats }
+function nbCapChoix(fiche: FicheCreation): number {
+  return Object.values(fiche.capChoix ?? {}).reduce((somme, ids) => somme + ids.length, 0)
 }
 
-/** Retire les désavantages interdits à la classe ; nomme chaque retrait. */
-function retirerDesavantagesInterdits(fiche: FicheCreation, retraits: string[]): FicheCreation {
-  if (!fiche.classe || !fiche.desavOrdre) return fiche
-  const interdits = desavantagesInterditsPour(fiche.classe)
-  const idsInterdits = new Set(interdits.map((d) => d.id))
-  const gardes = fiche.desavOrdre.filter((id) => !idsInterdits.has(id))
-  for (const desavantage of interdits) {
-    if (fiche.desavOrdre.includes(desavantage.id)) {
-      retraits.push(`Désavantage « ${desavantage.nom} » décoché (interdit à cette classe)`)
-    }
-  }
-  return { ...fiche, desavOrdre: gardes }
-}
-
+/**
+ * Changement de voie (maquette v3) : si la capacité de niveau 1 de la
+ * NOUVELLE voie avait été achetée, ce choix est retiré — « tu l'auras
+ * d'office avec ta nouvelle voie ». L'achat lui-même reste (à rechoisir).
+ */
 export function changerVoie(fiche: FicheCreation, nouvelleVoie: string): Changement {
   if (fiche.voie === nouvelleVoie) return { fiche, retraits: [] }
   const retraits: string[] = []
-  let suite: FicheCreation = { ...fiche, voie: nouvelleVoie }
-  suite = retirerCapChoixInvalides(suite, retraits)
-  return { fiche: suite, retraits }
+  const capChoix = { ...(fiche.capChoix ?? {}) }
+  const capNiveau1 = branchesDe(fiche.classe ?? '')
+    .find((b) => b.id === nouvelleVoie)
+    ?.capacites.find((c) => c.niveau === 1)
+  if (capNiveau1 && (capChoix['1'] ?? []).includes(capNiveau1.id)) {
+    capChoix['1'] = (capChoix['1'] ?? []).filter((id) => id !== capNiveau1.id)
+    retraits.push(
+      `Ton achat de capacité « ${capNiveau1.nom} » sera retiré : tu l'auras d'office avec ta nouvelle voie.`,
+    )
+  }
+  return { fiche: { ...fiche, voie: nouvelleVoie, capChoix }, retraits }
 }
 
+/**
+ * Changement de classe (maquette v3) : la voie est retirée, les choix de
+ * capacités d'héritage sont à rechoisir (achats conservés), les
+ * désavantages interdits à la nouvelle classe sont décochés.
+ */
 export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Changement {
   if (fiche.classe === nouvelleClasse) return { fiche, retraits: [] }
   const retraits: string[] = []
-  let suite: FicheCreation = { ...fiche, classe: nouvelleClasse }
-  if (fiche.voie) {
-    retraits.push(`Voie « ${nomVoie(fiche.classe, fiche.voie)} » retirée`)
-    suite = { ...suite, voie: undefined }
+  if (fiche.voie) retraits.push(`Ta voie « ${nomVoie(fiche.classe, fiche.voie)} » sera retirée.`)
+  if (nbCapChoix(fiche) > 0) retraits.push(`Tes capacités d'héritage seront à rechoisir.`)
+  const interdits = desavantagesInterditsPour(nouvelleClasse)
+  const decoches = interdits.filter((d) => (fiche.desavOrdre ?? []).includes(d.id))
+  for (const desavantage of decoches) {
+    retraits.push(`Le désavantage « ${desavantage.nom} » sera décoché (interdit à cette classe).`)
   }
-  suite = retirerDesavantagesInterdits(suite, retraits)
-  suite = retirerCapChoixInvalides(suite, retraits)
-  return { fiche: suite, retraits }
+  const idsDecoches = new Set(decoches.map((d) => d.id))
+  return {
+    fiche: {
+      ...fiche,
+      classe: nouvelleClasse,
+      voie: undefined,
+      capChoix: { ...CAP_CHOIX_VIDE },
+      desavOrdre: (fiche.desavOrdre ?? []).filter((id) => !idsDecoches.has(id)),
+    },
+    retraits,
+  }
 }
 
+/**
+ * Changement de faction (maquette v3) : une race ou classe réservée à
+ * l'autre faction est retirée ; les langues au choix sont à revoir quand la
+ * race part ; les capacités d'héritage sont à rechoisir quand la classe part.
+ */
 export function changerFaction(fiche: FicheCreation, nouvelleFaction: string): Changement {
   if (fiche.faction === nouvelleFaction) return { fiche, retraits: [] }
   const retraits: string[] = []
   let suite: FicheCreation = { ...fiche, faction: nouvelleFaction }
-  if (fiche.race && !racesPourFaction(nouvelleFaction).some((r) => r.id === fiche.race)) {
-    const race = raceDe(fiche.race)
-    retraits.push(`Race « ${race?.nom ?? fiche.race} » retirée`)
+  const race = raceDe(fiche.race)
+  const raceRetiree =
+    race !== undefined && !racesPourFaction(nouvelleFaction).some((r) => r.id === race.id)
+  const classe = getRules().classes_squelette.liste.find((c) => c.id === fiche.classe)
+  const classeRetiree =
+    classe !== undefined && !classesPourFaction(nouvelleFaction).some((c) => c.id === classe.id)
+  if (raceRetiree) {
+    retraits.push(`Ta race « ${race.nom} » sera retirée (réservée à l'autre faction).`)
     suite = { ...suite, race: undefined, humainChoix: undefined }
+    if ((fiche.langChoix ?? []).length > 0) {
+      retraits.push(`Tes langues supplémentaires seront à revoir.`)
+      suite = { ...suite, langChoix: [] }
+    }
   }
-  if (fiche.classe && !classesPourFaction(nouvelleFaction).some((c) => c.id === fiche.classe)) {
-    const classe = getRules().classes_squelette.liste.find((c) => c.id === fiche.classe)
-    retraits.push(`Classe « ${classe?.nom ?? fiche.classe} » retirée`)
-    if (fiche.voie) retraits.push(`Voie « ${nomVoie(fiche.classe, fiche.voie)} » retirée`)
-    suite = { ...suite, classe: undefined, voie: undefined }
-    suite = retirerCapChoixInvalides(suite, retraits)
+  if (classeRetiree) {
+    retraits.push(
+      `Ta classe « ${classe.nom} »${fiche.voie ? ` et ta voie « ${nomVoie(fiche.classe, fiche.voie)} »` : ''} seront retirées.`,
+    )
+    if (nbCapChoix(fiche) > 0) retraits.push(`Tes capacités d'héritage seront à rechoisir.`)
+    suite = { ...suite, classe: undefined, voie: undefined, capChoix: { ...CAP_CHOIX_VIDE } }
   }
   return { fiche: suite, retraits }
 }

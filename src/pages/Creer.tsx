@@ -1,10 +1,11 @@
 /**
- * Wizard de création t004 — 9 étapes, hors ligne, persistance Dexie à
- * CHAQUE étape (D8-bis), fenêtre de répercussions à deux régimes,
- * navigation par pastilles nommées.
+ * Wizard de création t004, conforme à la maquette A v3 validée : 9 étapes,
+ * hors ligne, persistance Dexie à CHAQUE geste (D8-bis), fenêtre de
+ * répercussions (rien ne s'applique avant Continuer), barre de progression
+ * et pastilles nommées, bandeau vivant fixé au-dessus de la navigation.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { db, nouvellePersonnageVierge } from '../db'
 import { branchesDe, capacitesDeBase } from '../rules/branches'
 import { getRules, getVersion } from '../rules/load'
@@ -14,7 +15,7 @@ import type { FicheCreation } from '../wizard/types'
 import {
   ETAPES,
   etapeValide,
-  surplusCompetences,
+  etapesValides,
   surplusDons,
   surplusLangues,
   trancheQuiContinue,
@@ -36,9 +37,8 @@ import Pastilles from './creation/Pastilles'
 const ID_BROUILLON = 1
 
 interface EtatFenetre {
-  retraits: string[]
-  surplus: string[]
-  avant: FicheCreation
+  impacts: string[]
+  appliquer: () => void
 }
 
 export default function Creer() {
@@ -84,37 +84,48 @@ export default function Creer() {
   function allerEtape(index: number) {
     setEtape(index)
     persister(fiche, index)
-    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: 0, behavior: reduit ? 'auto' : 'smooth' })
+    window.scrollTo({ top: 0 })
   }
 
   /**
-   * Applique un changement à répercussions : les retraits automatiques sont
-   * déjà faits (régime 1) ; les surplus créés sont listés pour le joueur
-   * (régime 2). La fenêtre nomme tout ; Annuler restaure la fiche d'avant.
+   * Changement à répercussions : rien ne s'applique tant que la fenêtre
+   * n'est pas confirmée ; Annuler ferme sans rien changer.
    */
-  function appliquerChangement(changement: Changement, avant: FicheCreation) {
-    const surplus: string[] = []
-    const donsEnTrop = surplusDons(changement.fiche)
-    if (donsEnTrop > surplusDons(avant)) {
-      surplus.push(`À l'étape Talents : retire ${donsEnTrop} don${donsEnTrop > 1 ? 's' : ''}`)
+  function appliquerChangement(changement: Changement) {
+    if (changement.retraits.length === 0) {
+      maj(changement.fiche)
+      return
     }
-    const compsEnTrop = surplusCompetences(changement.fiche)
-    if (compsEnTrop > surplusCompetences(avant)) {
-      surplus.push(
-        `À l'étape Talents : retire ${compsEnTrop} compétence${compsEnTrop > 1 ? 's' : ''}`,
-      )
+    setFenetre({
+      impacts: changement.retraits,
+      appliquer: () => maj(changement.fiche),
+    })
+  }
+
+  function continuer() {
+    const suivante = etape + 1
+    // Quitter Forces avec un surplus (Esprit qui a baissé) : la fenêtre
+    // nomme ce que le joueur devra retirer, puis on avance.
+    if (ETAPES[etape].id === 'forces') {
+      const impacts: string[] = []
+      const donsEnTrop = surplusDons(fiche)
+      const languesEnTrop = surplusLangues(fiche)
+      if (donsEnTrop > 0) {
+        impacts.push(
+          `Ton Esprit a baissé : retire ${donsEnTrop} don${donsEnTrop > 1 ? 's' : ''} à l'étape Talents.`,
+        )
+      }
+      if (languesEnTrop > 0) {
+        impacts.push(
+          `Retire ${languesEnTrop} langue${languesEnTrop > 1 ? 's' : ''} à l'étape Langues.`,
+        )
+      }
+      if (impacts.length > 0) {
+        setFenetre({ impacts, appliquer: () => allerEtape(suivante) })
+        return
+      }
     }
-    const languesEnTrop = surplusLangues(changement.fiche)
-    if (languesEnTrop > surplusLangues(avant)) {
-      surplus.push(
-        `À l'étape Langues : retire ${languesEnTrop} langue${languesEnTrop > 1 ? 's' : ''}`,
-      )
-    }
-    maj(changement.fiche)
-    if (changement.retraits.length > 0 || surplus.length > 0) {
-      setFenetre({ retraits: changement.retraits, surplus, avant })
-    }
+    allerEtape(suivante)
   }
 
   async function enregistrer() {
@@ -159,17 +170,23 @@ export default function Creer() {
   }
 
   const etapeId = ETAPES[etape].id
+  const derniere = etape === ETAPES.length - 1
   const valide = etapeValide(fiche, etapeId)
+  const fichePrete = etapesValides(fiche)[ETAPES.length - 1]
   const renvoye = fiche.trancheAge !== undefined && fiche.trancheAge !== trancheQuiContinue()
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="pas-a-imprimer sticky top-0 z-20 -mx-4 -mt-6 flex flex-col border-b border-ligne bg-fond px-4 pt-2">
-        {fiche.classe && (
-          <div className="pb-1">
-            <Bandeau fiche={fiche} />
-          </div>
-        )}
+    <div className="pb-[168px]">
+      <header className="pas-a-imprimer px-1 pb-0.5 pt-2 text-center">
+        <Link
+          to="/"
+          className="grad-or font-wordmark text-sm font-extrabold tracking-[0.24em]"
+        >
+          TERRA MORTIS
+        </Link>
+        <h1 className="grad-or m-0 font-titre text-[27px] font-bold">Créer un personnage</h1>
+      </header>
+      <div className="pas-a-imprimer">
         <Pastilles fiche={fiche} etape={etape} onAller={allerEtape} />
       </div>
 
@@ -178,36 +195,61 @@ export default function Creer() {
         <EtapeCamp fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
       )}
       {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
-      {etapeId === 'destin' && <EtapeDestin fiche={fiche} onMaj={maj} />}
-      {etapeId === 'forces' && (
-        <EtapeForces fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
+      {etapeId === 'destin' && (
+        <EtapeDestin fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
       )}
-      {etapeId === 'talents' && <EtapeTalents fiche={fiche} onMaj={maj} />}
+      {etapeId === 'forces' && <EtapeForces fiche={fiche} onMaj={maj} />}
+      {etapeId === 'talents' && (
+        <EtapeTalents fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
+      )}
       {etapeId === 'langues' && <EtapeLangues fiche={fiche} onMaj={maj} />}
       {etapeId === 'nom' && <EtapeNom fiche={fiche} onMaj={maj} />}
-      {etapeId === 'fiche' && <EtapeFiche fiche={fiche} onEnregistrer={() => void enregistrer()} />}
+      {etapeId === 'fiche' && <EtapeFiche fiche={fiche} />}
 
-      {etape < ETAPES.length - 1 && !renvoye && (
-        <button
-          type="button"
-          className="btn-continuer pas-a-imprimer"
-          disabled={!valide}
-          onClick={() => allerEtape(etape + 1)}
-        >
-          Continuer
-        </button>
-      )}
+      {!derniere && <Bandeau fiche={fiche} />}
+
+      <div className="pas-a-imprimer fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-transparent via-fond/90 to-fond px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5">
+        <div className="mx-auto flex w-full max-w-[640px] gap-2.5">
+          {etape > 0 && (
+            <button
+              type="button"
+              className="btn-ghost flex-none"
+              aria-label="Étape précédente"
+              onClick={() => allerEtape(etape - 1)}
+            >
+              ‹
+            </button>
+          )}
+          {derniere ? (
+            <button
+              type="button"
+              className="btn-cta"
+              disabled={!fichePrete}
+              onClick={() => void enregistrer()}
+            >
+              Créer la fiche
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn-cta"
+              disabled={!valide || renvoye}
+              onClick={continuer}
+            >
+              Continuer
+            </button>
+          )}
+        </div>
+      </div>
 
       {fenetre && (
         <Fenetre
-          titre="Ton choix a des répercussions"
-          retraits={fenetre.retraits}
-          aRetirerParJoueur={fenetre.surplus}
-          onConfirmer={() => setFenetre(null)}
-          onAnnuler={() => {
-            maj(fenetre.avant)
+          impacts={fenetre.impacts}
+          onContinuer={() => {
+            fenetre.appliquer()
             setFenetre(null)
           }}
+          onAnnuler={() => setFenetre(null)}
         />
       )}
     </div>

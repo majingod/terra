@@ -7,7 +7,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-fond font-corps text-stone-100 antialiased;
+    @apply bg-fond font-corps text-[#dee3ea] antialiased;
   }
 }
 
@@ -26,22 +26,72 @@
     @apply rounded-2xl border-2 border-sang-700 bg-terre-900 p-5 shadow-md;
   }
 
-  /* --- Wizard t004 (maquette validée) --- */
-  .panneau-w {
-    @apply rounded-2xl border border-ligne bg-panneau p-4;
-  }
-  .btn-continuer {
-    @apply flex min-h-touch w-full items-center justify-center rounded-xl bg-cta px-6 py-3
-      font-titre text-xl font-bold text-white shadow-lg transition-transform active:scale-95
-      disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100
-      focus-visible:outline focus-visible:outline-4 focus-visible:outline-or;
+  /* --- Wizard t004, maquette A v3 --- */
+  .grad-or {
+    background: linear-gradient(180deg, #f6c452, #ef8a1f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .titre-etape {
-    @apply font-titre text-2xl font-bold text-or;
+    @apply grad-or font-titre text-[26px] font-bold;
+  }
+  .titre-mini {
+    @apply grad-or mt-3 font-titre text-[21px] font-bold;
+  }
+  .btn-cta {
+    @apply flex min-h-touch flex-1 items-center justify-center rounded-xl border-0 bg-cta px-4
+      py-3 font-corps text-[17.5px] font-semibold text-white active:bg-[#c65f08]
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-ghost {
+    @apply flex min-h-touch items-center justify-center rounded-xl border-[1.5px] border-ligne
+      bg-panneau px-4 py-3 font-corps text-[16.5px] text-[#dee3ea];
+  }
+  .badge {
+    @apply mr-1 inline-block rounded-[7px] border border-ligne bg-[#1a2334] px-2 py-0.5
+      font-sans text-[12.5px] text-[#b8c2d4];
+  }
+  .badge-xp {
+    @apply border-[#4a1c22] bg-[#2a1216] text-[#f08a8a];
+  }
+  .badge-pv {
+    @apply border-[#1e3d28] bg-[#122418] text-[#7fd39a];
+  }
+  .badge-mana {
+    @apply border-[#1e3560] bg-[#12203a] text-[#8db8f2];
+  }
+  .badge-lutte {
+    @apply border-[#4a3410] bg-[#2a1c08] text-[#ecb060];
+  }
+  .badge-gold {
+    @apply border-[#443008] bg-[#251b06] text-or;
+  }
+  .note {
+    @apply my-2 rounded-[10px] border border-ligne border-l-[3px] border-l-[#e0a93a] bg-panneau
+      px-3 py-2.5 text-[15px] text-[#96a0b1];
+  }
+  .err-note {
+    @apply my-2 rounded-[10px] border border-[#5a2323] bg-[#1c0f10] px-3 py-2.5 text-[15px]
+      text-[#f0a5a5];
+  }
+  .chip {
+    @apply min-h-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] px-4 py-2
+      font-corps text-[15.5px] text-[#dee3ea];
+  }
+  .chip-on {
+    @apply border-or bg-[#1c1305] text-or;
+  }
+  .subsel-btn {
+    @apply min-h-11 flex-1 rounded-[9px] border-[1.5px] border-ligne bg-[#0b101b] px-2 py-2
+      font-corps text-[15px] text-[#dee3ea];
+  }
+  .subsel-btn-on {
+    @apply border-cta bg-[#161009] text-or;
   }
   /* Une carte choisie se place en haut, SOUS les en-têtes collants. */
   .carte-choix {
-    scroll-margin-top: 9.5rem;
+    scroll-margin-top: 104px;
   }
 }
 
@@ -77,5 +127,6 @@
     background: #fff !important;
     border-color: #777 !important;
     box-shadow: none !important;
+    -webkit-text-fill-color: #000 !important;
   }
 }

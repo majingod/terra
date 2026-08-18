@@ -32,8 +32,8 @@ export interface FicheCreation {
   langChoix?: string[]
   /** Désavantages cochés, DANS L'ORDRE de cochage (A6). */
   desavOrdre?: string[]
-  /** Race refusée par le désavantage à variante (Raciste, sous-choix). */
-  racisteVar?: string
+  /** Sous-choix du désavantage à variante (Raciste) : 'autre' | 'faction'. */
+  racisteVar?: 'autre' | 'faction'
   /** XP permanent du joueur (GN auxquels il a participé). */
   xpPerm?: number
   /** Achats d'héritage : libellé du fichier -> nombre d'achats. */

@@ -1,6 +1,6 @@
 /**
- * Étape 8 — Nom : « Nom de ton personnage — jamais ton vrai nom » ;
- * histoire optionnelle. Aucun nom réel nulle part (D10).
+ * Étape 8 — Nom (maquette A v3) : nom du personnage — jamais le vrai nom —
+ * et histoire optionnelle. Aucun nom réel nulle part (D10).
  */
 import { Tutoriel } from './ui'
 import type { FicheCreation } from '../../wizard/types'
@@ -10,43 +10,47 @@ interface Props {
   onMaj: (fiche: FicheCreation) => void
 }
 
+const CHAMP =
+  'w-full rounded-[10px] border-[1.5px] border-ligne bg-[#0b101b] p-3 font-corps text-[16.5px] text-[#dee3ea] focus:border-cta focus:outline-none'
+
 export default function EtapeNom({ fiche, onMaj }: Props) {
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="titre-etape">Qui es-tu, aventurier·ère ?</h1>
+    <section>
+      <h2 className="titre-etape">Ton personnage</h2>
       <Tutoriel
         etapeId="nom"
         gestes={[
-          'Invente le nom de ton personnage.',
-          'Si tu veux, raconte son histoire en quelques lignes.',
+          'Donne un nom à ton personnage.',
+          'Ajoute son histoire si tu veux — c’est optionnel.',
         ]}
-        pourquoi="La fiche appartient au personnage : on n'y écrit jamais ton vrai nom."
+        pourquoi="le nom de ton personnage, jamais ton vrai nom : ta fiche reste anonyme."
       />
-      <label className="flex flex-col gap-2">
-        <span className="font-titre text-lg font-bold">
-          Nom de ton personnage — jamais ton vrai nom
-        </span>
-        <input
-          type="text"
-          value={fiche.nom ?? ''}
-          onChange={(e) => onMaj({ ...fiche, nom: e.target.value })}
-          className="min-h-touch rounded-xl border-2 border-ligne bg-panneau px-4 text-lg text-stone-100"
-          placeholder="Ex. Kaelen Sombrelame"
-          autoComplete="off"
-        />
+      <label className="my-2 block text-[17px] font-semibold" htmlFor="inom">
+        Nom de ton personnage
       </label>
-      <label className="flex flex-col gap-2">
-        <span className="font-titre text-lg font-bold">
-          Son histoire <span className="text-sm font-normal text-stone-400">(optionnel)</span>
-        </span>
-        <textarea
-          value={fiche.histoire ?? ''}
-          onChange={(e) => onMaj({ ...fiche, histoire: e.target.value })}
-          rows={6}
-          className="rounded-xl border-2 border-ligne bg-panneau p-4 text-lg text-stone-100"
-          placeholder="D'où vient ce personnage ? Que cherche-t-il ?"
-        />
+      <input
+        id="inom"
+        type="text"
+        value={fiche.nom ?? ''}
+        onChange={(e) => onMaj({ ...fiche, nom: e.target.value })}
+        className={CHAMP}
+        placeholder="Ex. Kaelen Sombrelame"
+        autoComplete="off"
+      />
+      <p className="mt-1 text-sm text-[#6b7688]">
+        Le nom de ton <b>personnage</b> — jamais ton vrai nom.
+      </p>
+      <label className="my-2 block text-[17px] font-semibold" htmlFor="ihist">
+        Histoire (optionnel)
       </label>
+      <textarea
+        id="ihist"
+        rows={4}
+        value={fiche.histoire ?? ''}
+        onChange={(e) => onMaj({ ...fiche, histoire: e.target.value })}
+        className={CHAMP}
+        placeholder="Son passé, ses motivations…"
+      />
     </section>
   )
 }

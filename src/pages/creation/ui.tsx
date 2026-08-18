@@ -1,6 +1,7 @@
 /**
- * Petits composants partagés du wizard : carte de choix (avec défilement
- * conforme à la maquette), compteur ×n, bandeau rouge, tutoriel repliable.
+ * Composants partagés du wizard, conformes à la maquette A v3 validée :
+ * carte avec coche ✓ (défilement sous les en-têtes collants), badges
+ * colorés, tutoriel repliable 💡, notes et bandeaux d'erreur.
  */
 import { useRef, useState, type ReactNode } from 'react'
 import { afficherVerbatim } from '../../wizard/fiche'
@@ -8,94 +9,127 @@ import { afficherVerbatim } from '../../wizard/fiche'
 /** Place un élément en haut de l'écran, sous les en-têtes collants. */
 export function placerEnHaut(el: HTMLElement | null) {
   if (!el) return
-  const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   requestAnimationFrame(() => {
-    el.scrollIntoView({ behavior: reduit ? 'auto' : 'smooth', block: 'start' })
+    el.scrollIntoView({ block: 'start' })
   })
 }
 
+type Peau = 'or' | 'sanctum' | 'legion'
+
 interface CarteChoixProps {
   choisi: boolean
-  /** Appelé au clic ; le défilement n'a lieu QUE sur une sélection. */
+  /** Appelé au clic sur la carte (pas sur ses contrôles internes). */
   onChoisir: () => void
-  accent?: 'or' | 'sanctum' | 'legion'
+  peau?: Peau
+  /** Carte éteinte et non cliquable (interdit / droit épuisé). */
+  eteinte?: boolean
+  petite?: boolean
   children: ReactNode
 }
 
+const BORDS: Record<Peau, string> = {
+  or: 'border-cta bg-[#161009]',
+  sanctum: 'border-sanctum bg-[#0b1526]',
+  legion: 'border-legion bg-[#1d0d0f]',
+}
+const COCHES: Record<Peau, string> = {
+  or: 'bg-cta border-cta',
+  sanctum: 'bg-sanctum border-sanctum',
+  legion: 'bg-legion border-legion',
+}
+
 /**
- * Carte sélectionnable : après un choix, la carte se place en haut de
- * l'écran (scroll-margin sous les en-têtes collants). Jamais de défilement
- * sur un simple re-rendu.
+ * Carte de choix (maquette) : div cliquable avec coche ✓ en haut à droite ;
+ * après un choix, la carte se place en haut de l'écran. Jamais de
+ * défilement sur un simple re-rendu.
  */
-export function CarteChoix({ choisi, onChoisir, accent = 'or', children }: CarteChoixProps) {
-  const ref = useRef<HTMLButtonElement>(null)
-  const bordure = choisi
-    ? accent === 'sanctum'
-      ? 'border-sanctum'
-      : accent === 'legion'
-        ? 'border-legion'
-        : 'border-or'
-    : 'border-ligne'
+export function CarteChoix({
+  choisi,
+  onChoisir,
+  peau = 'or',
+  eteinte = false,
+  petite = false,
+  children,
+}: CarteChoixProps) {
+  const ref = useRef<HTMLDivElement>(null)
   return (
-    <button
+    <div
       ref={ref}
-      type="button"
-      onClick={() => {
+      role="button"
+      tabIndex={eteinte ? -1 : 0}
+      aria-pressed={choisi}
+      aria-disabled={eteinte}
+      onClick={(e) => {
+        e.stopPropagation()
+        if (eteinte) return
         const deja = choisi
         onChoisir()
         if (!deja) placerEnHaut(ref.current)
       }}
-      className={`carte-choix block min-h-touch w-full rounded-2xl border-2 bg-panneau p-4 text-left transition-colors ${bordure}`}
-      aria-pressed={choisi}
+      onKeyDown={(e) => {
+        if (eteinte) return
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          const deja = choisi
+          onChoisir()
+          if (!deja) placerEnHaut(ref.current)
+        }
+      }}
+      className={`carte-choix relative my-2 rounded-[14px] border ${petite ? 'p-2.5 pr-11' : 'p-3.5 pr-12'} ${
+        choisi ? BORDS[peau] : 'border-ligne bg-panneau'
+      } ${eteinte ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'}`}
     >
       {children}
-    </button>
+      <div
+        aria-hidden
+        className={`absolute right-3 top-3.5 flex h-[26px] w-[26px] items-center justify-center rounded-lg border-2 text-base ${
+          choisi ? `${COCHES[peau]} text-white` : 'border-[#3a4a63] bg-[#0b101b] text-transparent'
+        }`}
+      >
+        ✓
+      </div>
+    </div>
   )
 }
 
-interface CompteurProps {
-  valeur: number
-  min?: number
-  max?: number
-  onChange: (valeur: number) => void
-  etiquette: string
-}
-
-/** Compteur ×n : cibles ≥ 44 px, ne déplace jamais l'écran. */
-export function Compteur({ valeur, min = 0, max, onChange, etiquette }: CompteurProps) {
+export function TitreCarte({
+  peau,
+  children,
+}: {
+  peau?: 'sanctum' | 'legion'
+  children: ReactNode
+}) {
+  const couleur =
+    peau === 'sanctum' ? 'text-sanctum' : peau === 'legion' ? 'text-legion' : 'text-or'
   return (
-    <span className="inline-flex items-center gap-1" aria-label={etiquette}>
-      <button
-        type="button"
-        className="flex h-11 w-11 items-center justify-center rounded-lg border border-ligne bg-fond text-xl font-bold disabled:opacity-30"
-        disabled={valeur <= min}
-        onClick={() => onChange(valeur - 1)}
-        aria-label={`${etiquette} : moins`}
-      >
-        −
-      </button>
-      <span className="min-w-11 text-center font-titre text-lg font-bold text-or">
-        ×{valeur}
-      </span>
-      <button
-        type="button"
-        className="flex h-11 w-11 items-center justify-center rounded-lg border border-ligne bg-fond text-xl font-bold disabled:opacity-30"
-        disabled={max !== undefined && valeur >= max}
-        onClick={() => onChange(valeur + 1)}
-        aria-label={`${etiquette} : plus`}
-      >
-        +
-      </button>
-    </span>
+    <h3 className={`m-0 mb-1 font-titre text-[21px] font-bold ${couleur}`}>{children}</h3>
   )
 }
 
-export function BandeauRouge({ children }: { children: ReactNode }) {
+export function Badge({
+  variante,
+  children,
+}: {
+  variante?: 'xp' | 'pv' | 'mana' | 'lutte' | 'gold'
+  children: ReactNode
+}) {
+  return <span className={`badge ${variante ? `badge-${variante}` : ''}`}>{children}</span>
+}
+
+/** Badge coloré automatiquement selon le libellé (+1 PV, +2 Mana, …). */
+export function BadgeBonus({ libelle }: { libelle: string }) {
+  const variante = /PV/i.test(libelle) ? 'pv' : /Mana/i.test(libelle) ? 'mana' : 'lutte'
+  return <Badge variante={variante}>{libelle}</Badge>
+}
+
+export function Note({ children }: { children: ReactNode }) {
+  return <div className="note">{children}</div>
+}
+
+export function ErreurNote({ children }: { children: ReactNode }) {
   return (
-    <div
-      role="alert"
-      className="rounded-xl border-2 border-legion bg-legion/15 p-3 font-semibold text-legion"
-    >
+    <div role="alert" className="err-note">
       {children}
     </div>
   )
@@ -103,22 +137,22 @@ export function BandeauRouge({ children }: { children: ReactNode }) {
 
 interface TutorielProps {
   etapeId: string
-  gestes: string[]
+  gestes: ReactNode[]
   pourquoi: ReactNode
 }
 
 /**
- * « Comment fonctionne cette étape » : cadre repliable, état replié mémorisé
- * pour la session (sessionStorage).
+ * « 💡 Comment fonctionne cette étape » : cadre repliable, état replié
+ * mémorisé pour la session (sessionStorage).
  */
 export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
   const cle = `tuto-${etapeId}`
   const [replie, setReplie] = useState(() => sessionStorage.getItem(cle) === 'replie')
   return (
-    <div className="pas-a-imprimer rounded-xl border border-ligne bg-panneau">
+    <div className="pas-a-imprimer my-2 overflow-hidden rounded-xl border border-[#2b3550] bg-gradient-to-b from-[#101a30] to-[#0d1424]">
       <button
         type="button"
-        className="flex min-h-touch w-full items-center justify-between px-4 py-2 text-left font-titre text-lg font-semibold text-or"
+        className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm text-[#a9b8d8]"
         onClick={() => {
           const suite = !replie
           setReplie(suite)
@@ -126,19 +160,21 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
         }}
         aria-expanded={!replie}
       >
-        <span>Comment fonctionne cette étape</span>
-        <span aria-hidden>{replie ? '▸' : '▾'}</span>
+        <span aria-hidden>💡</span>
+        <b className="text-[#cdd9f0]">Comment fonctionne cette étape</b>
+        <span aria-hidden className="ml-auto text-[#6b7688]">
+          {replie ? '▸' : '▾'}
+        </span>
       </button>
       {!replie && (
-        <div className="flex flex-col gap-2 px-4 pb-4">
-          <ol className="flex list-decimal flex-col gap-1 pl-5">
+        <div>
+          <ol className="m-0 flex list-decimal flex-col gap-1 px-3.5 pb-3 pl-8 text-[15px] text-[#96a0b1]">
             {gestes.map((geste, i) => (
               <li key={i}>{geste}</li>
             ))}
           </ol>
-          <p className="border-l-2 border-or pl-3 text-sm italic text-stone-300">
-            <span className="font-semibold not-italic text-or">Pourquoi : </span>
-            {pourquoi}
+          <p className="m-0 border-t border-dashed border-[#22304a] px-3.5 pb-3 pt-2 text-sm italic text-[#8b96ad]">
+            Pourquoi : {pourquoi}
           </p>
         </div>
       )}
@@ -148,6 +184,11 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
 
 /** Affiche un verbatim du Tome tel quel, fautes incluses (D5), via la seule
  * exception d'affichage arbitrée (A1 : « tavernier » → « marchand »). */
-export function Verbatim({ texte }: { texte: string }) {
-  return <p className="text-sm italic text-stone-300">{afficherVerbatim(texte)}</p>
+export function Verbatim({ texte, gras }: { texte: string; gras?: string }) {
+  return (
+    <p className="my-1 text-[15px] italic text-[#aab3c2]">
+      {gras && <b className="not-italic">{gras}. </b>}
+      {afficherVerbatim(texte)}
+    </p>
+  )
 }

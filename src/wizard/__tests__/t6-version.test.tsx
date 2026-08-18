@@ -40,10 +40,15 @@ afterEach(() => {
   vi.mocked(load.getVersion).mockClear()
 })
 
+function chercheTexte(attendu: string) {
+  return (_: string, element: Element | null) =>
+    element?.tagName === 'SPAN' && (element.textContent ?? '').includes(attendu)
+}
+
 describe('T6 — version des règles visible sur la fiche', () => {
   it('la fiche affiche meta.version lue du fichier', () => {
     render(<FicheAffichage fiche={FICHE} />)
-    expect(screen.getByText(`Règles v${rulesJson.meta.version}`)).toBeTruthy()
+    expect(screen.getByText(chercheTexte(`Règles v${rulesJson.meta.version}`))).toBeTruthy()
     expect(vi.mocked(load.getVersion)).toHaveBeenCalled()
   })
 
@@ -51,8 +56,8 @@ describe('T6 — version des règles visible sur la fiche', () => {
     vi.mocked(load.getVersion).mockReturnValue('999.0.0-temoin')
     try {
       render(<FicheAffichage fiche={FICHE} />)
-      expect(screen.getByText('Règles v999.0.0-temoin')).toBeTruthy()
-      expect(screen.queryByText(`Règles v${rulesJson.meta.version}`)).toBeNull()
+      expect(screen.getByText(chercheTexte('Règles v999.0.0-temoin'))).toBeTruthy()
+      expect(screen.queryByText(chercheTexte(`Règles v${rulesJson.meta.version}`))).toBeNull()
     } finally {
       vi.mocked(load.getVersion).mockImplementation(
         () => rulesJson.meta.version,

@@ -40,21 +40,22 @@ export function plafondDesavantagesXp(): number {
 }
 
 /**
+ * Sous-choix du désavantage à variante (Raciste) — maquette A v3 validée :
+ * « Race d'une autre faction » (+xp) ou « Race de ta faction »
+ * (+variante_xp). Arbitrage t004.
+ */
+export type VarianteRaciste = 'autre' | 'faction'
+
+/**
  * XP d'un désavantage donné. Le désavantage à variante (Raciste) rend son
- * `variante_xp` quand la race refusée appartient à la faction du personnage
- * (arbitrage t004 : +1 XP autre faction / +2 XP race de ta faction).
+ * `variante_xp` quand le sous-choix est « race de ta faction ».
  */
 export function xpDesavantage(
   desavantage: Desavantage,
-  contexte?: { faction?: string; racisteVar?: string },
+  contexte?: { racisteVar?: VarianteRaciste | string },
 ): number {
-  if (desavantage.variante_xp !== undefined && contexte?.racisteVar) {
-    const raceRefusee = getRules().races.liste.find((r) => r.id === contexte.racisteVar)
-    if (raceRefusee && contexte.faction) {
-      const memeFaction =
-        raceRefusee.faction === contexte.faction || raceRefusee.faction === 'toute'
-      return memeFaction ? desavantage.variante_xp : desavantage.xp
-    }
+  if (desavantage.variante_xp !== undefined && contexte?.racisteVar === 'faction') {
+    return desavantage.variante_xp
   }
   return desavantage.xp
 }
@@ -65,7 +66,7 @@ export function xpDesavantage(
  */
 export function xpDesavantages(
   desavOrdre: readonly string[],
-  contexte?: { faction?: string; racisteVar?: string },
+  contexte?: { racisteVar?: VarianteRaciste | string },
 ): number {
   const plafond = plafondDesavantagesXp()
   const liste = listeDesavantages()
@@ -168,7 +169,6 @@ export function depenseXp(achats: Readonly<Record<string, number>> | undefined):
 export interface ContexteBudget {
   xpPerm?: number
   desavOrdre?: string[]
-  faction?: string
   racisteVar?: string
   achats?: Record<string, number>
 }

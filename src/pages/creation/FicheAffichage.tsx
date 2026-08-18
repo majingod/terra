@@ -1,17 +1,16 @@
 /**
- * Affichage de la fiche (étape 9 du wizard et page /fiche/:id).
- *
- * D4 : la fiche ne montre QUE l'acquis — capacités de base, voie au
- * niveau 1 seulement, dons, compétences, achats d'héritage.
- * D8-bis : la version des règles (meta.version, lue du fichier) s'affiche.
+ * Fiche (maquette A v3) : Identité, Statistiques, « Ce que tu as acquis »
+ * (D4 : capacités de base, voie niveau 1 seulement, capacités d'héritage,
+ * dons, compétences), Désavantages, Héritage — et la version des règles
+ * (meta.version, lue du fichier — D8-bis).
  */
-import { capacitesDeBase, branchesDe } from '../../rules/branches'
+import { branchesDe, capacitesDeBase } from '../../rules/branches'
 import {
-  desavantagesRpSeulement,
-  budgetXp,
   depenseXp,
+  listeAchats,
   listeDesavantages,
-  xpDesavantage,
+  plafondDesavantagesXp,
+  xpDesavantages,
 } from '../../rules/heritage'
 import { languesAcquises, listeLangues } from '../../rules/langues'
 import { getRules } from '../../rules/load'
@@ -20,15 +19,41 @@ import { listeDons } from '../../rules/talents'
 import { capaciteParId } from '../../wizard/capacites'
 import { texteVersionRegles } from '../../wizard/fiche'
 import type { FicheCreation } from '../../wizard/types'
-import { Verbatim } from './ui'
+import { Badge, Verbatim } from './ui'
 
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+function Sheet({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-ligne bg-panneau p-3">
-      <h2 className="font-titre text-lg font-bold text-or">{titre}</h2>
-      <div className="mt-1 flex flex-col gap-2">{children}</div>
-    </section>
+    <div className="my-3 rounded-[14px] border border-ligne bg-panneau p-3.5">
+      <h3 className="m-0 mb-2 font-titre text-xl font-bold text-or">{titre}</h3>
+      {children}
+    </div>
   )
+}
+
+function Acquis({
+  nom,
+  badge,
+  badgeOr,
+  verbatim,
+}: {
+  nom: string
+  badge: string
+  badgeOr?: boolean
+  verbatim?: string
+}) {
+  return (
+    <div className="border-t border-[#182234] py-2 first:border-t-0">
+      <b>{nom}</b> <Badge variante={badgeOr ? 'gold' : undefined}>{badge}</Badge>
+      {verbatim && <Verbatim texte={verbatim} />}
+    </div>
+  )
+}
+
+/** Étiquette du Tome (ex. « V1.2 »), extraite de meta.source. */
+function etiquetteTome(): string {
+  const source = getRules().meta.source
+  const version = source.match(/V\d+(?:\.\d+)*/)
+  return version ? ` — Tome ${version[0]}` : ''
 }
 
 export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
@@ -41,227 +66,188 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const stats = statsDe(fiche)
   const dons = listeDons()
   const desavantages = listeDesavantages()
-  const rpSeulement = new Set(desavantagesRpSeulement(fiche.desavOrdre ?? []))
-  const acquises = languesAcquises(fiche.race, fiche.classe)
+  const plafond = plafondDesavantagesXp()
+  const langues = [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])].map(
+    (id) => listeLangues().find((l) => l.id === id)?.nom ?? id,
+  )
+  const capsHeritage = Object.entries(fiche.capChoix ?? {}).flatMap(([niveau, ids]) =>
+    ids
+      .map((id) => ({ capacite: capaciteParId(fiche.classe, id), nivAchat: niveau }))
+      .filter((x): x is { capacite: NonNullable<typeof x.capacite>; nivAchat: string } =>
+        Boolean(x.capacite),
+      ),
+  )
+  const depense = depenseXp(fiche.achats)
+  const comps = fiche.comps ?? []
   const simples = regles.competences.simples
   const artisanats = regles.competences.artisanats.liste
-  const capsHeritage = Object.values(fiche.capChoix ?? {})
-    .flat()
-    .map((id) => capaciteParId(fiche.classe, id))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c))
 
-  function nomLangue(id: string): string {
-    return listeLangues().find((l) => l.id === id)?.nom ?? id
+  function nomComp(id: string): string {
+    return (
+      simples.find((c) => c.id === id)?.nom ?? artisanats.find((a) => a.id === id)?.nom ?? id
+    )
   }
 
+  const tuiles: Array<[string, number, string]> = [
+    ['PV max', stats?.pv ?? 0, 'text-[#7fd39a]'],
+    ['Mana max', stats?.mana ?? 0, 'text-[#8db8f2]'],
+    ['Lutte', stats?.lutte ?? 0, 'text-[#ecb060]'],
+    ['Puissance', valeurCarac(fiche, 'p'), 'text-[#e06060]'],
+    ['Résistance', valeurCarac(fiche, 'r'), 'text-[#66c284]'],
+    ['Esprit', valeurCarac(fiche, 'e'), 'text-[#6fa8ef]'],
+  ]
+
   return (
-    <div className="fiche-imprimable flex flex-col gap-3">
-      <header className="rounded-xl border-2 border-or bg-panneau p-4 text-center">
-        <div className="font-wordmark text-sm uppercase tracking-widest text-stone-400">
-          Terra Mortis
+    <div className="fiche-imprimable">
+      <Sheet titre="Identité">
+        <div className="grid grid-cols-2 gap-x-3.5 gap-y-2">
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Nom</div>
+            <div className="text-[19px] font-semibold text-or">{fiche.nom || '—'}</div>
+          </div>
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Faction</div>
+            <div
+              className={`text-[19px] font-semibold ${
+                fiche.faction === 'legion' ? 'text-legion' : 'text-sanctum'
+              }`}
+            >
+              {faction?.nom ?? '—'}
+            </div>
+          </div>
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Race</div>
+            <div className="text-[19px] font-semibold">{race?.nom ?? '—'}</div>
+          </div>
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Classe</div>
+            <div className="text-[19px] font-semibold">
+              {classe?.nom ?? '—'}
+              {voie ? ` — ${voie.nom}` : ''}
+            </div>
+          </div>
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Niveau</div>
+            <div className="text-[19px] font-semibold">1</div>
+          </div>
+          <div>
+            <div className="font-sans text-[13.5px] text-[#6b7688]">Langues</div>
+            <div className="text-base font-semibold">{langues.join(', ') || '—'}</div>
+          </div>
         </div>
-        <h1 className="font-titre text-3xl font-bold text-or">{fiche.nom || 'Sans nom'}</h1>
-        <p className="mt-1">
-          {[race?.nom, classe?.nom, voie ? `voie ${voie.nom}` : undefined, faction?.nom]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-      </header>
+        {fiche.histoire && (
+          <p className="mb-0 mt-2 text-[15px] italic text-[#aab3c2]">{fiche.histoire}</p>
+        )}
+      </Sheet>
 
       {stats && (
-        <Section titre="Stats">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            {(stats.ressourceSpeciale
-              ? ([[stats.ressourceSpeciale.nom, stats.ressourceSpeciale.valeur]] as Array<
-                  [string, number]
-                >)
-              : ([
-                  ['PV', stats.pv],
-                  ['Mana', stats.mana],
-                ] as Array<[string, number]>)
-            )
-              .concat([['Lutte', stats.lutte]])
-              .map(([nom, valeur]) => (
-                <div key={nom} className="rounded-lg border border-ligne p-2">
-                  <div className="text-xs uppercase tracking-wide text-stone-400">{nom}</div>
-                  <div className="font-titre text-2xl font-bold text-or">{valeur}</div>
-                </div>
-              ))}
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            {(
-              [
-                ['Puissance', valeurCarac(fiche, 'p')],
-                ['Résistance', valeurCarac(fiche, 'r')],
-                ['Esprit', valeurCarac(fiche, 'e')],
-              ] as Array<[string, number]>
-            ).map(([nom, valeur]) => (
+        <Sheet titre="Statistiques">
+          <div className="grid grid-cols-3 gap-2.5 text-center">
+            {tuiles.map(([nom, valeur, couleur]) => (
               <div key={nom}>
-                <span className="text-stone-400">{nom} </span>
-                <span className="font-bold">{valeur}</span>
+                <div className={`font-wordmark text-[26px] font-extrabold ${couleur}`}>
+                  {valeur}
+                </div>
+                <div className="font-sans text-[12.5px] text-[#6b7688]">{nom}</div>
               </div>
             ))}
           </div>
-          {stats.degats > 0 && <p className="text-sm">+{stats.degats} Dégât</p>}
-          {stats.sauvegardes > 0 && <p className="text-sm">+{stats.sauvegardes} sauvegarde</p>}
-          {stats.illettre && <Verbatim texte={regles.caracteristiques.illettre.verbatim} />}
-        </Section>
+          <p className="mb-0 mt-2">
+            {stats.degats > 0 && <Badge variante="lutte">+{stats.degats} dégât</Badge>}
+            {stats.sauvegardes > 0 && <Badge>+{stats.sauvegardes} sauvegarde</Badge>}
+            {stats.illettre && <Badge variante="xp">Illettré</Badge>}
+            {stats.ressourceSpeciale && (
+              <Badge variante="gold">
+                {stats.ressourceSpeciale.nom} {stats.ressourceSpeciale.valeur}
+              </Badge>
+            )}
+          </p>
+        </Sheet>
       )}
 
-      {classe && capacitesDeBase(classe.id).length > 0 && (
-        <Section titre={`Capacités de base — ${classe.nom}`}>
+      {classe && (
+        <Sheet titre="Ce que tu as acquis">
           {capacitesDeBase(classe.id).map((capacite) => (
-            <div key={capacite.id}>
-              <span className="font-semibold">{capacite.nom}</span>
-              <Verbatim texte={capacite.verbatim} />
-            </div>
+            <Acquis key={capacite.id} nom={capacite.nom} badge="classe" verbatim={capacite.verbatim} />
           ))}
-          {classe.code && (
-            <div>
-              <span className="font-semibold">Code</span>
-              <Verbatim texte={classe.code} />
-            </div>
+          {voie && capNiveau1 && (
+            <Acquis
+              nom={capNiveau1.nom}
+              badge={`${voie.nom} · niv 1`}
+              verbatim={capNiveau1.verbatim}
+            />
           )}
-          {classe.ressource_speciale && (
-            <div>
-              <span className="font-semibold">{classe.ressource_speciale.nom}</span>
-              <Verbatim texte={classe.ressource_speciale.verbatim} />
-            </div>
-          )}
-        </Section>
-      )}
-
-      {voie && capNiveau1 && (
-        <Section titre={`Voie ${voie.nom} — niveau 1`}>
-          <div>
-            <span className="font-semibold">{capNiveau1.nom}</span>
-            <Verbatim texte={capNiveau1.verbatim} />
-          </div>
-        </Section>
-      )}
-
-      {capsHeritage.length > 0 && (
-        <Section titre="Capacités d'héritage">
-          {capsHeritage.map((capacite) => (
-            <div key={capacite.id}>
-              <span className="font-semibold">
-                {capacite.nom}{' '}
-                <span className="text-xs text-stone-400">(niveau {capacite.niveau})</span>
-              </span>
-              <Verbatim texte={capacite.verbatim} />
-            </div>
+          {capsHeritage.map(({ capacite }) => (
+            <Acquis
+              key={capacite.id}
+              nom={capacite.nom}
+              badge={`héritage · ${capacite.voieNom} niv ${capacite.niveau}`}
+              badgeOr
+              verbatim={capacite.verbatim}
+            />
           ))}
-        </Section>
-      )}
-
-      {Object.keys(fiche.dons ?? {}).length > 0 && (
-        <Section titre="Dons">
           {Object.entries(fiche.dons ?? {}).map(([id, n]) => {
             const don = dons.find((d) => d.id === id)
             if (!don) return null
             return (
-              <div key={id}>
-                <span className="font-semibold">
-                  {don.nom}
-                  {n > 1 ? ` ×${n}` : ''}
-                </span>
-                <Verbatim texte={don.verbatim} />
-              </div>
+              <Acquis
+                key={id}
+                nom={`${don.nom}${n > 1 ? ` ×${n}` : ''}`}
+                badge="don"
+                verbatim={don.verbatim}
+              />
             )
           })}
-        </Section>
+          {comps.map((id) => (
+            <Acquis key={id} nom={nomComp(id)} badge="compétence" />
+          ))}
+          <p className="mb-0 mt-2 rounded-[10px] border border-ligne border-l-[3px] border-l-[#e0a93a] bg-panneau px-3 py-2 text-[14px] text-[#96a0b1]">
+            Affichage progressif : les capacités de niveau 2+ apparaîtront quand tu les auras
+            réellement acquises.
+          </p>
+        </Sheet>
       )}
-
-      {(fiche.comps ?? []).length > 0 && (
-        <Section titre="Compétences">
-          {(fiche.comps ?? []).map((id) => {
-            const simple = simples.find((c) => c.id === id)
-            if (simple) {
-              return (
-                <div key={id}>
-                  <span className="font-semibold">{simple.nom}</span>
-                  {simple.materiel && (
-                    <p className="text-xs text-stone-400">Matériel : {simple.materiel}</p>
-                  )}
-                  <Verbatim texte={simple.base} />
-                </div>
-              )
-            }
-            const artisanat = artisanats.find((a) => a.id === id)
-            if (!artisanat) return null
-            return (
-              <div key={id}>
-                <span className="font-semibold">{artisanat.nom} (artisanat)</span>
-                {artisanat.restriction && <Verbatim texte={artisanat.restriction} />}
-                {artisanat.capacites.map((capacite) => (
-                  <div key={capacite.nom} className="mt-1 pl-3">
-                    <span className="text-sm font-semibold text-or">{capacite.nom}</span>
-                    <Verbatim texte={capacite.verbatim} />
-                  </div>
-                ))}
-              </div>
-            )
-          })}
-        </Section>
-      )}
-
-      <Section titre="Langues">
-        <p>
-          {[...acquises, ...(fiche.langChoix ?? [])].map(nomLangue).join(', ') || '—'}
-        </p>
-      </Section>
 
       {(fiche.desavOrdre ?? []).length > 0 && (
-        <Section titre="Désavantages">
-          {(fiche.desavOrdre ?? []).map((id) => {
-            const desavantage = desavantages.find((d) => d.id === id)
-            if (!desavantage) return null
-            const enRp = rpSeulement.has(id)
-            const raceRefusee =
-              desavantage.variante_xp !== undefined ? raceDe(fiche.racisteVar) : undefined
-            return (
-              <div key={id}>
-                <span className="font-semibold">
+        <Sheet titre={`Désavantages (+${xpDesavantages(fiche.desavOrdre ?? [], fiche)} XP)`}>
+          <p className="m-0">
+            {(fiche.desavOrdre ?? []).map((id, index) => {
+              const desavantage = desavantages.find((d) => d.id === id)
+              if (!desavantage) return null
+              return (
+                <Badge key={id} variante={index < plafond ? 'xp' : undefined}>
                   {desavantage.nom}
-                  {raceRefusee ? ` (${raceRefusee.nom})` : ''}
-                </span>{' '}
-                {enRp ? (
-                  <span className="text-xs uppercase tracking-wide text-stone-400">
-                    RP seulement
-                  </span>
-                ) : (
-                  <span className="font-semibold text-or">
-                    +{xpDesavantage(desavantage, fiche)} XP
-                  </span>
-                )}
-                <Verbatim texte={desavantage.verbatim} />
-              </div>
-            )
-          })}
-        </Section>
+                  {index >= plafond ? ' · RP' : ''}
+                </Badge>
+              )
+            })}
+          </p>
+        </Sheet>
       )}
 
-      <Section titre="Héritage">
-        <p>
-          XP permanents du joueur : <span className="font-bold">{fiche.xpPerm ?? 0}</span> ·
-          Budget total : <span className="font-bold">{budgetXp(fiche)}</span> · Dépensé :{' '}
-          <span className="font-bold">{depenseXp(fiche.achats)}</span>
-        </p>
-        {Object.entries(fiche.achats ?? {}).length > 0 && (
-          <ul className="flex list-disc flex-col gap-1 pl-5">
-            {Object.entries(fiche.achats ?? {}).map(([achat, n]) => (
-              <li key={achat}>
-                {achat}
-                {n > 1 ? ` ×${n}` : ''}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      {depense > 0 && (
+        <Sheet titre={`Héritage (${depense} XP dépensés)`}>
+          <p className="m-0">
+            {listeAchats().map((achat) => {
+              const n = fiche.achats?.[achat.achat] ?? 0
+              if (n === 0) return null
+              return (
+                <Badge key={achat.achat} variante="gold">
+                  {achat.achat}
+                  {n > 1 ? ` ×${n}` : ''}
+                </Badge>
+              )
+            })}
+          </p>
+        </Sheet>
+      )}
 
-      <footer className="pb-2 text-center text-sm text-stone-400">
-        {texteVersionRegles()}
-      </footer>
+      <p className="my-4 text-center">
+        <span className="inline-block rounded-full border border-ligne bg-[#0b101b] px-2.5 py-1 font-sans text-xs text-[#b8c2d4]">
+          {texteVersionRegles()}
+          {etiquetteTome()}
+        </span>
+      </p>
     </div>
   )
 }

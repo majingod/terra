@@ -1,163 +1,249 @@
 /**
- * Étape 5 — Forces : les 3 jetons de la répartition du fichier (3-2-1) à
- * poser sur Puissance / Résistance / Esprit. Les paliers de la table p.5
- * s'affichent sous chaque caractéristique et s'allument quand ils sont
- * atteints (lecture cumulative A4). Les points d'héritage s'ajoutent,
- * plafond lu du fichier.
+ * Étape 5 — Forces (maquette A v3) : trois jetons dorés (3-2-1, lus du
+ * fichier) à prendre en main puis poser sur une caractéristique ; retoucher
+ * une caractéristique remplie reprend son jeton. Paliers de la table p.5
+ * affichés sous chaque caractéristique, allumés quand atteints (lecture
+ * cumulative A4). Points d'héritage en plus, plafond lu du fichier.
  */
+import { useState } from 'react'
 import { repartitionAttendue } from '../../rules/caracs'
 import { totalAchats } from '../../rules/heritage'
 import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
-import type { Changement } from '../../wizard/validation'
+import { surplusDons, surplusLangues } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { Tutoriel } from './ui'
+import { ErreurNote, Note, Tutoriel } from './ui'
 
 type CleCarac = 'p' | 'r' | 'e'
 
-const CARACS: Array<{ cle: CleCarac; table: 'puissance' | 'resistance' | 'esprit'; nom: string }> = [
-  { cle: 'p', table: 'puissance', nom: 'Puissance' },
-  { cle: 'r', table: 'resistance', nom: 'Résistance' },
-  { cle: 'e', table: 'esprit', nom: 'Esprit' },
+const CARACS: Array<{
+  cle: CleCarac
+  table: 'puissance' | 'resistance' | 'esprit'
+  nom: string
+  sousTitre: string
+  couleur: string
+}> = [
+  {
+    cle: 'p',
+    table: 'puissance',
+    nom: 'Puissance',
+    sousTitre: 'Lutte et dégâts au corps à corps',
+    couleur: 'text-[#e06060]',
+  },
+  {
+    cle: 'r',
+    table: 'resistance',
+    nom: 'Résistance',
+    sousTitre: 'Points de vie et sauvegardes',
+    couleur: 'text-[#66c284]',
+  },
+  {
+    cle: 'e',
+    table: 'esprit',
+    nom: 'Esprit',
+    sousTitre: 'Mana, dons et langues',
+    couleur: 'text-[#6fa8ef]',
+  },
 ]
 
 interface Props {
   fiche: FicheCreation
-  onChangement: (changement: Changement, avant: FicheCreation) => void
   onMaj: (fiche: FicheCreation) => void
 }
 
-export default function EtapeForces({ fiche, onChangement, onMaj }: Props) {
+export default function EtapeForces({ fiche, onMaj }: Props) {
   const regles = getRules()
-  const jetons = repartitionAttendue()
+  const jetons = repartitionAttendue().sort((a, b) => b - a)
   const max = regles.caracteristiques.creation.max
   const pointsHeritage = totalAchats(fiche.achats, 'carac')
   const extras = fiche.extras ?? { p: 0, r: 0, e: 0 }
-  const extrasPoses = extras.p + extras.r + extras.e
+  const poses = extras.p + extras.r + extras.e
+  const [enMain, setEnMain] = useState<number | null>(null)
+  const utilises = Object.values(fiche.caracs ?? {}).filter((v) => v !== undefined)
+  const donsEnTrop = surplusDons(fiche)
+  const languesEnTrop = surplusLangues(fiche)
 
-  function poserJeton(carac: CleCarac, valeur: number) {
+  function toucherCarac(cle: CleCarac) {
     const caracs = { ...(fiche.caracs ?? {}) }
-    if (caracs[carac] === valeur) return
-    const detenteur = (['p', 'r', 'e'] as CleCarac[]).find((k) => caracs[k] === valeur)
-    const ancien = caracs[carac]
-    caracs[carac] = valeur
-    if (detenteur) caracs[detenteur] = ancien
-    // Passe par la fenêtre de répercussions si un surplus apparaît (Esprit
-    // qui baisse → dons/langues à retirer par le joueur).
-    onChangement({ fiche: { ...fiche, caracs }, retraits: [] }, fiche)
-  }
-
-  function majExtra(carac: CleCarac, delta: number) {
-    const suite = { ...extras, [carac]: extras[carac] + delta }
-    if (suite[carac] < 0) return
-    if (delta > 0 && extrasPoses >= pointsHeritage) return
-    if (delta > 0 && valeurCarac(fiche, carac) + 1 > max) return
-    if (delta < 0) {
-      onChangement({ fiche: { ...fiche, extras: suite }, retraits: [] }, fiche)
-    } else {
-      onMaj({ ...fiche, extras: suite })
+    if (enMain !== null) {
+      for (const autre of ['p', 'r', 'e'] as CleCarac[]) {
+        if (caracs[autre] === enMain) caracs[autre] = undefined
+      }
+      caracs[cle] = enMain
+      setEnMain(null)
+      onMaj({ ...fiche, caracs })
+    } else if (caracs[cle] !== undefined) {
+      setEnMain(caracs[cle])
+      caracs[cle] = undefined
+      onMaj({ ...fiche, caracs })
     }
   }
 
+  function majExtra(cle: CleCarac, delta: 1 | -1) {
+    const valeur = extras[cle] + delta
+    if (valeur < 0) return
+    if (delta > 0 && (poses >= pointsHeritage || valeurCarac(fiche, cle) >= max)) return
+    onMaj({ ...fiche, extras: { ...extras, [cle]: valeur } })
+  }
+
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="titre-etape">Pose tes forces</h1>
+    <section>
+      <h2 className="titre-etape">Tes forces</h2>
       <Tutoriel
         etapeId="forces"
         gestes={[
-          `Pose les jetons ${jetons.join(', ')} : un par caractéristique.`,
-          'Les paliers atteints s’allument sous chaque caractéristique.',
-          pointsHeritage > 0
-            ? 'Ajoute ensuite tes points d’héritage (+).'
-            : 'Des points d’héritage achetés à l’étape Destin s’ajouteraient ici.',
+          'Prends un jeton doré (3, 2 ou 1).',
+          'Pose-le sur une caractéristique en la touchant.',
+          'Répète pour les trois jetons — chacun ne sert qu’une fois.',
+          'Sous chaque caractéristique, la table montre le bonus de chaque palier : les paliers atteints s’allument et s’additionnent.',
+          ...(pointsHeritage > 0
+            ? [`Place ensuite ton point d’héritage avec les + à droite (max ${max}).`]
+            : []),
         ]}
-        pourquoi={`« ${regles.caracteristiques.creation.verbatim} » — lecture cumulative de la table (A4) : chaque palier atteint s'ajoute aux précédents.`}
+        pourquoi={`« ${regles.caracteristiques.creation.verbatim} »`}
       />
 
-      <div className="flex flex-col gap-3">
-        {CARACS.map(({ cle, table, nom }) => {
-          const valeurJeton = fiche.caracs?.[cle]
-          const valeur = valeurCarac(fiche, cle)
-          const paliers = regles.caracteristiques.table[table]
+      <div className="mb-2 text-center text-[14.5px] text-[#96a0b1]">
+        {enMain !== null ? (
+          <>
+            Jeton <b>{enMain}</b> en main — touche une caractéristique.
+          </>
+        ) : (
+          'Prends un jeton, puis pose-le.'
+        )}
+      </div>
+      <div className="my-3 flex justify-center gap-3">
+        {jetons.map((jeton) => {
+          const utilise = utilises.includes(jeton)
           return (
-            <div key={cle} className="panneau-w flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <h2 className="font-titre text-xl font-bold">{nom}</h2>
-                <span className="font-titre text-2xl font-bold text-or">{valeur}</span>
-              </div>
-              <div className="flex gap-2">
-                {jetons.map((jeton) => (
-                  <button
-                    key={jeton}
-                    type="button"
-                    aria-pressed={valeurJeton === jeton}
-                    onClick={() => poserJeton(cle, jeton)}
-                    className={`min-h-touch flex-1 rounded-xl border-2 font-titre text-xl font-bold ${
-                      valeurJeton === jeton
-                        ? 'border-or bg-or text-fond'
-                        : 'border-ligne bg-fond'
-                    }`}
-                  >
-                    {jeton}
-                  </button>
-                ))}
-              </div>
-
-              {pointsHeritage > 0 && (
-                <div className="flex items-center justify-between gap-2 border-t border-ligne pt-2">
-                  <span className="text-sm text-stone-300">
-                    Points d'héritage : +{extras[cle]}
-                  </span>
-                  <span className="flex gap-1">
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-ligne bg-fond text-xl font-bold disabled:opacity-30"
-                      disabled={extras[cle] <= 0}
-                      onClick={() => majExtra(cle, -1)}
-                      aria-label={`${nom} : retirer un point d'héritage`}
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-ligne bg-fond text-xl font-bold disabled:opacity-30"
-                      disabled={extrasPoses >= pointsHeritage || valeur + 1 > max}
-                      onClick={() => majExtra(cle, 1)}
-                      aria-label={`${nom} : ajouter un point d'héritage`}
-                    >
-                      +
-                    </button>
-                  </span>
-                </div>
-              )}
-
-              <ol className="flex flex-col gap-1 border-t border-ligne pt-2">
-                {Object.entries(paliers).map(([niveau, effet]) => {
-                  const atteint = valeur >= Number(niveau)
-                  return (
-                    <li
-                      key={niveau}
-                      className={`flex items-center gap-2 rounded-lg px-2 py-1 text-sm ${
-                        atteint ? 'bg-or/15 font-semibold text-or' : 'text-stone-400'
-                      }`}
-                    >
-                      <span className="font-titre">{niveau}</span>
-                      <span>{effet}</span>
-                      {atteint && <span aria-hidden>●</span>}
-                    </li>
-                  )
-                })}
-              </ol>
-            </div>
+            <button
+              key={jeton}
+              type="button"
+              disabled={utilise}
+              aria-pressed={enMain === jeton}
+              onClick={() => setEnMain(enMain === jeton ? null : jeton)}
+              className={`flex h-14 w-14 items-center justify-center rounded-full border-2 font-wordmark text-2xl font-extrabold text-or transition-transform ${
+                enMain === jeton
+                  ? 'scale-105 border-or shadow-[0_0_0_3px_#f2b13533]'
+                  : 'border-[#6b4d12]'
+              } ${utilise ? 'pointer-events-none opacity-20' : ''}`}
+              style={{ background: 'radial-gradient(circle at 35% 30%, #2a1f08, #161005)' }}
+            >
+              {jeton}
+            </button>
           )
         })}
       </div>
 
+      {CARACS.map(({ cle, table, nom, sousTitre, couleur }) => {
+        const jeton = fiche.caracs?.[cle]
+        const valeur = valeurCarac(fiche, cle)
+        const paliers = regles.caracteristiques.table[table]
+        return (
+          <div key={cle}>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => toucherCarac(cle)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  toucherCarac(cle)
+                }
+              }}
+              className="mt-2 flex cursor-pointer items-center gap-2.5 rounded-[14px] border border-ligne bg-panneau px-3.5 py-3"
+            >
+              <div className="flex-1">
+                <b className={`text-lg ${couleur}`}>{nom}</b>
+                <small className="block text-[#96a0b1]">{sousTitre}</small>
+              </div>
+              {pointsHeritage > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={extras[cle] === 0}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      majExtra(cle, -1)
+                    }}
+                    aria-label={`${nom} : retirer un point d'héritage`}
+                    className="h-11 w-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-[17px] disabled:opacity-30"
+                  >
+                    −
+                  </button>
+                  <span className="badge badge-gold">+{extras[cle]}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      majExtra(cle, 1)
+                    }}
+                    aria-label={`${nom} : ajouter un point d'héritage`}
+                    className="h-11 w-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-[17px]"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 font-wordmark text-xl font-extrabold ${
+                  jeton !== undefined
+                    ? 'border-solid border-or bg-[#1c1305] text-or'
+                    : 'border-dashed border-[#3a4a63] text-[#6b7688]'
+                }`}
+              >
+                {jeton !== undefined ? `${jeton}${extras[cle] ? `+${extras[cle]}` : ''}` : ''}
+              </div>
+            </div>
+            <div className="mb-3 mt-1 flex flex-wrap gap-1.5 pl-0.5">
+              {Object.entries(paliers).map(([niveau, effet]) => {
+                const atteint = valeur >= Number(niveau)
+                return (
+                  <span
+                    key={niveau}
+                    className={`rounded-lg border px-2 py-0.5 font-sans text-xs ${
+                      atteint
+                        ? 'border-[#6b4d12] bg-[#1c1305] text-or'
+                        : 'border-ligne bg-[#0b101b] text-[#6b7688]'
+                    }`}
+                  >
+                    <b className={`mr-1 ${atteint ? 'text-or' : 'text-[#96a0b1]'}`}>{niveau}</b>
+                    {effet}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+
       {pointsHeritage > 0 && (
-        <p className="text-sm text-stone-300">
-          Points d'héritage posés : {extrasPoses}/{pointsHeritage} — aucune caractéristique
-          au-delà de {max}.
-        </p>
+        <Note>
+          Héritage : <b>{pointsHeritage} point{pointsHeritage > 1 ? 's' : ''}</b> de
+          caractéristique à placer en plus ({poses}/{pointsHeritage}) — maximum {max} par
+          caractéristique.
+        </Note>
+      )}
+      {valeurCarac(fiche, 'e') === 1 && (
+        <Note>
+          Esprit 1 : ton personnage est <b>Illettré</b> (table p.5).
+        </Note>
+      )}
+      {valeurCarac(fiche, 'e') >= 3 && (
+        <Note>
+          Esprit 3 : <b>+1 don</b> et <b>+1 langue</b> — tu les choisiras aux étapes Talents et
+          Langues.
+        </Note>
+      )}
+      {(donsEnTrop > 0 || languesEnTrop > 0) && (
+        <ErreurNote>
+          Ton Esprit a baissé :{' '}
+          {donsEnTrop > 0 && `retire ${donsEnTrop} don${donsEnTrop > 1 ? 's' : ''} (étape Talents)`}
+          {donsEnTrop > 0 && languesEnTrop > 0 && ' et '}
+          {languesEnTrop > 0 &&
+            `retire ${languesEnTrop} langue${languesEnTrop > 1 ? 's' : ''} (étape Langues)`}
+          .
+        </ErreurNote>
       )}
     </section>
   )

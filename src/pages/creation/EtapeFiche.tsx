@@ -1,43 +1,27 @@
 /**
- * Étape 9 — Fiche : récapitulatif D4 (l'acquis seulement), version des
- * règles lue du fichier, bouton Imprimer/PDF (window.print() + feuille de
- * style print : fiche seule, noir sur blanc) et enregistrement.
+ * Étape 9 — Fiche (maquette A v3) : le récapitulatif, le bouton
+ * Imprimer/PDF (window.print() + feuille de style print : fiche seule,
+ * noir sur blanc). « Créer la fiche » vit dans la barre du bas.
  */
 import FicheAffichage from './FicheAffichage'
-import { Tutoriel } from './ui'
 import type { FicheCreation } from '../../wizard/types'
 
-interface Props {
-  fiche: FicheCreation
-  onEnregistrer: () => void
-}
-
-export default function EtapeFiche({ fiche, onEnregistrer }: Props) {
+export default function EtapeFiche({ fiche }: { fiche: FicheCreation }) {
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="titre-etape pas-a-imprimer">Ta fiche</h1>
-      <Tutoriel
-        etapeId="fiche"
-        gestes={[
-          'Relis ta fiche — tout ce qui est acquis y est.',
-          'Enregistre-la sur cet appareil.',
-          'Si tu veux, imprime-la ou garde-la en PDF.',
-        ]}
-        pourquoi="La fiche vit sur ton téléphone, sans réseau. L'enregistrer la garde dans « Mes fiches » ; l'imprimer donne la version papier pour la table de jeu."
-      />
+    <section>
+      <h2 className="titre-etape pas-a-imprimer">Ta fiche</h2>
       <FicheAffichage fiche={fiche} />
-      <div className="pas-a-imprimer flex flex-col gap-3">
-        <button type="button" className="btn-continuer" onClick={onEnregistrer}>
-          Enregistrer la fiche
-        </button>
-        <button
-          type="button"
-          className="btn-secondaire !border-2 !text-base"
-          onClick={() => window.print()}
-        >
-          Imprimer / PDF
-        </button>
-      </div>
+      <button
+        type="button"
+        className="btn-ghost pas-a-imprimer w-full"
+        onClick={() => window.print()}
+      >
+        🖨 Imprimer / Enregistrer en PDF
+      </button>
+      <p className="note pas-a-imprimer">
+        « Créer la fiche » l'enregistre sur ton appareil (elle reste dans « Mes fiches », export
+        JSON toujours disponible) ; ce bouton imprime la fiche seule, en clair sur fond blanc.
+      </p>
     </section>
   )
 }

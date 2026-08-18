@@ -8,6 +8,17 @@ const LIENS = [
 
 export default function Layout() {
   const { pathname } = useLocation()
+  // Le wizard (maquette A v3) porte son propre en-tête et sa propre barre
+  // basse (Continuer / bandeau vivant) : le chrome de l'app s'efface.
+  const wizard = pathname === '/creer'
+
+  if (wizard) {
+    return (
+      <div className="mx-auto min-h-dvh w-full max-w-[640px] px-4">
+        <Outlet />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-dvh flex-col">

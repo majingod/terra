@@ -1,6 +1,7 @@
 /**
- * Bandeau de stats vivant : PV · Mana · Lutte · XP restant, visible dès que
- * la classe est choisie (coupe interne ② si le temps manque — livré ici).
+ * Bandeau de stats vivant (maquette A v3) : PV · MANA · LUTTE · XP, fixé en
+ * bas de l'écran au-dessus de la navigation, dès que la classe est choisie.
+ * Caché sur l'étape Fiche (la fiche montre tout).
  */
 import { statsDe } from '../../rules/stats'
 import { xpRestant } from '../../rules/heritage'
@@ -10,28 +11,25 @@ export default function Bandeau({ fiche }: { fiche: FicheCreation }) {
   const stats = statsDe(fiche)
   if (!stats) return null
   const restant = xpRestant(fiche)
-  const cellules: Array<[string, string]> = stats.ressourceSpeciale
-    ? [
-        [stats.ressourceSpeciale.nom, String(stats.ressourceSpeciale.valeur)],
-        ['Lutte', String(stats.lutte)],
-        ['XP restant', String(restant)],
-      ]
-    : [
-        ['PV', String(stats.pv)],
-        ['Mana', String(stats.mana)],
-        ['Lutte', String(stats.lutte)],
-        ['XP restant', String(restant)],
-      ]
   return (
-    <div className="grid auto-cols-fr grid-flow-col gap-px overflow-hidden rounded-xl border border-ligne bg-ligne text-center">
-      {cellules.map(([nom, valeur]) => (
-        <div key={nom} className="bg-panneau px-1 py-1.5">
-          <div className="text-[11px] uppercase tracking-wide text-stone-400">{nom}</div>
-          <div className={`font-titre text-lg font-bold ${nom === 'XP restant' && restant < 0 ? 'text-legion' : 'text-or'}`}>
-            {valeur}
-          </div>
+    <div className="pas-a-imprimer pointer-events-none fixed inset-x-0 bottom-[76px] z-40">
+      <div className="mx-auto max-w-[640px] px-4">
+        <div className="flex justify-around rounded-xl border border-ligne bg-[#0d1320ee] px-1.5 py-1.5 backdrop-blur-sm">
+          {(
+            [
+              ['PV', String(stats.pv), 'text-[#7fd39a]'],
+              ['MANA', String(stats.mana), 'text-[#8db8f2]'],
+              ['LUTTE', String(stats.lutte), 'text-[#ecb060]'],
+              ['XP', String(restant), restant < 0 ? 'text-[#e05252]' : 'text-or'],
+            ] as Array<[string, string, string]>
+          ).map(([nom, valeur, couleur]) => (
+            <div key={nom} className="text-center font-sans">
+              <b className={`block font-wordmark text-base ${couleur}`}>{valeur}</b>
+              <small className="text-[10.5px] tracking-wide text-[#6b7688]">{nom}</small>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   )
 }

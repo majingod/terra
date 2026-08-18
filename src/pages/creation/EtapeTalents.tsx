@@ -1,32 +1,36 @@
 /**
- * Étape 6 — Talents : dons (droit = 1 + Esprit≥3 + achats « +1 Don »,
- * cumulables avec compteur ×n) et compétences (droit = 1 + achats,
- * max 1 artisanat). Artisanats masqués/bloqués ssi tranche ≤11 (D10).
- * Surplus (Esprit qui a baissé) : bandeau rouge « retire N », la
- * navigation avant reste verrouillée par les validateurs.
+ * Étape 6 — Talents (maquette A v3) : dons (cartes, cumulables avec
+ * « − Retirer / + Reprendre (×n) » dans la carte, estompées quand le droit
+ * est épuisé) puis compétences et artisanats (max lu du fichier, section
+ * présente ssi la tranche y a droit — D10). Décocher Érudit avec des
+ * langues déjà choisies passe par la fenêtre de répercussions.
  */
+import { droitLangues } from '../../rules/langues'
+import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
 import {
   artisanatsChoisis,
   artisanatsPour,
+  consommationDons,
   droitCompetences,
   droitDons,
-  consommationDons,
   listeCompetencesSimples,
   listeDons,
   maxArtisanats,
 } from '../../rules/talents'
-import { getRules } from '../../rules/load'
-import { surplusCompetences, surplusDons } from '../../wizard/validation'
+import { compteAchats } from '../../rules/heritage'
+import { surplusCompetences, surplusDons, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { BandeauRouge, Compteur, Tutoriel, Verbatim } from './ui'
+import { Badge, CarteChoix, ErreurNote, Note, Tutoriel, Verbatim } from './ui'
 
 interface Props {
   fiche: FicheCreation
   onMaj: (fiche: FicheCreation) => void
+  onChangement: (changement: Changement) => void
 }
 
-export default function EtapeTalents({ fiche, onMaj }: Props) {
+export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
+  const regles = getRules()
   const esprit = valeurCarac(fiche, 'e')
   const dons = fiche.dons ?? {}
   const droit = droitDons(esprit, fiche.achats)
@@ -35,8 +39,10 @@ export default function EtapeTalents({ fiche, onMaj }: Props) {
   const droitComps = droitCompetences(fiche.achats)
   const artisanats = fiche.trancheAge ? artisanatsPour(fiche.trancheAge) : []
   const nbArtisanats = artisanatsChoisis(comps).length
-  const enSurplusDons = surplusDons(fiche)
-  const enSurplusComps = surplusCompetences(fiche)
+  const donsEnTrop = surplusDons(fiche)
+  const compsEnTrop = surplusCompetences(fiche)
+  const achatsDon = compteAchats(fiche.achats, 'don')
+  const achatsComp = compteAchats(fiche.achats, 'competence')
 
   function majDon(id: string, n: number) {
     const suite = { ...dons }
@@ -46,171 +52,161 @@ export default function EtapeTalents({ fiche, onMaj }: Props) {
   }
 
   function basculerComp(id: string) {
-    const suite = comps.includes(id) ? comps.filter((c) => c !== id) : [...comps, id]
-    onMaj({ ...fiche, comps: suite })
+    const index = comps.indexOf(id)
+    if (index >= 0) {
+      const suite = comps.filter((c) => c !== id)
+      // Décocher Érudit peut mettre les langues choisies en surplus.
+      const droitApres = droitLangues(esprit, suite)
+      const impacts =
+        (fiche.langChoix ?? []).length > droitApres
+          ? [`Sans Érudit, tu perds des choix de langue : il faudra en retirer à l'étape Langues.`]
+          : []
+      onChangement({ fiche: { ...fiche, comps: suite }, retraits: impacts })
+    } else {
+      onMaj({ ...fiche, comps: [...comps, id] })
+    }
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="titre-etape">Tes talents</h1>
+    <section>
+      <h2 className="titre-etape">Tes talents</h2>
       <Tutoriel
         etapeId="talents"
         gestes={[
-          `Prends exactement ${droit} don${droit > 1 ? 's' : ''} — les cumulables se prennent ×n.`,
-          `Choisis ${droitComps} compétence${droitComps > 1 ? 's' : ''}, dont au plus ${maxArtisanats()} artisanat.`,
+          <>
+            Choisis tes <b>{droit} don{droit > 1 ? 's' : ''}</b> (compteur en haut de la liste).
+          </>,
+          <>
+            Choisis ensuite tes <b>{droitComps} compétence{droitComps > 1 ? 's' : ''}</b> — dont
+            au plus {maxArtisanats()} artisanat.
+          </>,
+          'Retirer un choix : retouche sa carte.',
         ]}
-        pourquoi={`« ${getRules().dons.intro} » — et « ${getRules().competences.artisanats.verbatim_interdiction} »`}
+        pourquoi="niveau 1 = 1 don et 1 compétence (table p.5) ; ton Esprit et ton héritage peuvent en ouvrir d'autres."
       />
 
-      {enSurplusDons > 0 && (
-        <BandeauRouge>
-          Ton Esprit a baissé : retire {enSurplusDons} don{enSurplusDons > 1 ? 's' : ''} pour
-          continuer.
-        </BandeauRouge>
+      <p className="my-2 text-base text-[#96a0b1]">
+        <b>Dons</b> — {pris}/{droit}
+        {esprit >= 3 ? ' (dont 1 d’Esprit 3)' : ''}
+        {achatsDon > 0 ? ` (+ ${achatsDon} d'héritage)` : ''}
+      </p>
+      {donsEnTrop > 0 && (
+        <ErreurNote>
+          Retire {donsEnTrop} don{donsEnTrop > 1 ? 's' : ''} : ton droit a baissé.
+        </ErreurNote>
       )}
-
-      <div className="flex items-center justify-between">
-        <h2 className="font-titre text-xl font-bold">Dons</h2>
-        <span className={`font-titre text-lg font-bold ${pris > droit ? 'text-legion' : 'text-or'}`}>
-          {pris}/{droit}
-        </span>
-      </div>
-      <div className="flex flex-col gap-2">
-        {listeDons().map((don) => {
-          const n = dons[don.id] ?? 0
-          const plein = pris >= droit
-          return (
-            <div
-              key={don.id}
-              className={`rounded-xl border-2 bg-panneau p-3 ${n > 0 ? 'border-or' : 'border-ligne'}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-titre text-lg font-bold">
-                  {don.nom}
-                  {don.cumulable && (
-                    <span className="ml-2 text-xs uppercase tracking-wide text-stone-400">
-                      cumulable
-                    </span>
-                  )}
-                </span>
-                {don.cumulable ? (
-                  <Compteur
-                    etiquette={don.nom}
-                    valeur={n}
-                    max={plein ? n : undefined}
-                    onChange={(suite) => majDon(don.id, suite)}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    aria-pressed={n > 0}
-                    disabled={n === 0 && plein}
-                    onClick={() => majDon(don.id, n > 0 ? 0 : 1)}
-                    className={`min-h-11 rounded-lg border-2 px-4 font-titre font-bold disabled:opacity-30 ${
-                      n > 0 ? 'border-or bg-or text-fond' : 'border-ligne'
-                    }`}
-                  >
-                    {n > 0 ? 'Pris' : 'Prendre'}
-                  </button>
-                )}
-              </div>
-              <Verbatim texte={don.verbatim} />
-            </div>
-          )
-        })}
-      </div>
-
-      {enSurplusComps > 0 && (
-        <BandeauRouge>
-          Retire {enSurplusComps} compétence{enSurplusComps > 1 ? 's' : ''} pour continuer.
-        </BandeauRouge>
-      )}
-
-      <div className="flex items-center justify-between">
-        <h2 className="font-titre text-xl font-bold">Compétences</h2>
-        <span
-          className={`font-titre text-lg font-bold ${comps.length > droitComps ? 'text-legion' : 'text-or'}`}
-        >
-          {comps.length}/{droitComps}
-        </span>
-      </div>
-      <div className="flex flex-col gap-2">
-        {listeCompetencesSimples().map((comp) => {
-          const prise = comps.includes(comp.id)
-          const plein = comps.length >= droitComps
-          return (
-            <div
-              key={comp.id}
-              className={`rounded-xl border-2 bg-panneau p-3 ${prise ? 'border-or' : 'border-ligne'}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-titre text-lg font-bold">{comp.nom}</span>
+      {listeDons().map((don) => {
+        const n = dons[don.id] ?? 0
+        const plein = pris >= droit
+        return (
+          <CarteChoix
+            key={don.id}
+            petite
+            choisi={n > 0}
+            eteinte={plein && n === 0}
+            onChoisir={() => {
+              if (n > 0) majDon(don.id, 0)
+              else if (!plein) majDon(don.id, 1)
+            }}
+          >
+            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">
+              {don.nom}
+              {don.cumulable && <Badge>cumulable</Badge>}
+              {n > 1 && <Badge variante="gold">×{n}</Badge>}
+            </h3>
+            <Verbatim texte={don.verbatim} />
+            {don.cumulable && n > 0 && (
+              <div className="mt-2 flex gap-2">
                 <button
                   type="button"
-                  aria-pressed={prise}
-                  disabled={!prise && plein}
-                  onClick={() => basculerComp(comp.id)}
-                  className={`min-h-11 rounded-lg border-2 px-4 font-titre font-bold disabled:opacity-30 ${
-                    prise ? 'border-or bg-or text-fond' : 'border-ligne'
-                  }`}
+                  className="subsel-btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    majDon(don.id, n - 1)
+                  }}
                 >
-                  {prise ? 'Prise' : 'Prendre'}
+                  − Retirer
+                </button>
+                <button
+                  type="button"
+                  className="subsel-btn"
+                  disabled={plein}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!plein) majDon(don.id, n + 1)
+                  }}
+                >
+                  + Reprendre (×{n + 1})
                 </button>
               </div>
-              {comp.materiel && (
-                <p className="text-xs text-stone-400">Matériel : {comp.materiel}</p>
-              )}
-              <Verbatim texte={comp.base} />
-            </div>
-          )
-        })}
-      </div>
+            )}
+          </CarteChoix>
+        )
+      })}
+
+      <h2 className="titre-mini">Tes compétences</h2>
+      <p className="my-2 text-base text-[#96a0b1]">
+        <b>Compétences</b> — {comps.length}/{droitComps}
+        {achatsComp > 0 ? ` (+ ${achatsComp} d'héritage)` : ''}
+      </p>
+      {compsEnTrop > 0 && (
+        <ErreurNote>
+          Retire {compsEnTrop} compétence{compsEnTrop > 1 ? 's' : ''} : ton droit a baissé.
+        </ErreurNote>
+      )}
+      {listeCompetencesSimples().map((comp) => {
+        const prise = comps.includes(comp.id)
+        const plein = comps.length >= droitComps
+        return (
+          <CarteChoix
+            key={comp.id}
+            petite
+            choisi={prise}
+            eteinte={plein && !prise}
+            onChoisir={() => basculerComp(comp.id)}
+          >
+            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">{comp.nom}</h3>
+            <Verbatim texte={comp.base} />
+            {comp.materiel && <Badge>Matériel : {comp.materiel}</Badge>}
+          </CarteChoix>
+        )
+      })}
 
       {artisanats.length > 0 && (
         <>
-          <h2 className="font-titre text-xl font-bold">
-            Artisanats <span className="text-sm text-stone-400">(au plus {maxArtisanats()})</span>
-          </h2>
-          <div className="flex flex-col gap-2">
-            {artisanats.map((artisanat) => {
-              const pris = comps.includes(artisanat.id)
-              const bloqueArtisanat = !pris && nbArtisanats >= maxArtisanats()
-              const plein = comps.length >= droitComps
-              return (
-                <div
-                  key={artisanat.id}
-                  className={`rounded-xl border-2 bg-panneau p-3 ${pris ? 'border-or' : 'border-ligne'}`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-titre text-lg font-bold">{artisanat.nom}</span>
-                    <button
-                      type="button"
-                      aria-pressed={pris}
-                      disabled={!pris && (plein || bloqueArtisanat)}
-                      onClick={() => basculerComp(artisanat.id)}
-                      className={`min-h-11 rounded-lg border-2 px-4 font-titre font-bold disabled:opacity-30 ${
-                        pris ? 'border-or bg-or text-fond' : 'border-ligne'
-                      }`}
-                    >
-                      {pris ? 'Pris' : 'Prendre'}
-                    </button>
-                  </div>
-                  {artisanat.materiel && (
-                    <p className="text-xs text-stone-400">Matériel : {artisanat.materiel}</p>
-                  )}
-                  {artisanat.restriction && <Verbatim texte={artisanat.restriction} />}
-                  <ul className="mt-1 flex flex-col gap-1">
-                    {artisanat.capacites.map((capacite) => (
-                      <li key={capacite.nom} className="text-sm">
-                        <span className="font-semibold text-or">{capacite.nom}</span>
-                        <Verbatim texte={capacite.verbatim} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )
-            })}
-          </div>
+          <h2 className="titre-mini !text-[19px]">Artisanats</h2>
+          <p className="my-1 text-[15px] italic text-[#aab3c2]">
+            {regles.competences.artisanats.verbatim_interdiction}
+          </p>
+          <Note>
+            Tu as {regles.age_et_gates.seuil.joueur_regulier} : les artisanats te sont ouverts.{' '}
+            <b>Maximum {maxArtisanats()} artisanat</b>, même avec plusieurs compétences.
+          </Note>
+          {artisanats.map((artisanat) => {
+            const pris2 = comps.includes(artisanat.id)
+            const bloque =
+              (comps.length >= droitComps || nbArtisanats >= maxArtisanats()) && !pris2
+            return (
+              <CarteChoix
+                key={artisanat.id}
+                petite
+                choisi={pris2}
+                eteinte={bloque}
+                onChoisir={() => {
+                  if (pris2) basculerComp(artisanat.id)
+                  else if (!bloque) basculerComp(artisanat.id)
+                }}
+              >
+                <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">
+                  {artisanat.nom}
+                </h3>
+                {artisanat.capacites.map((capacite) => (
+                  <Verbatim key={capacite.nom} gras={capacite.nom} texte={capacite.verbatim} />
+                ))}
+                {artisanat.materiel && <Badge>Matériel : {artisanat.materiel}</Badge>}
+              </CarteChoix>
+            )
+          })}
         </>
       )}
     </section>
