@@ -28,21 +28,21 @@ const CARACS: Array<{
     table: 'puissance',
     nom: 'Puissance',
     sousTitre: 'Lutte et dégâts au corps à corps',
-    couleur: 'text-[#e06060]',
+    couleur: 'text-legion-texte',
   },
   {
     cle: 'r',
     table: 'resistance',
     nom: 'Résistance',
     sousTitre: 'Points de vie et sauvegardes',
-    couleur: 'text-[#66c284]',
+    couleur: 'text-chart-4',
   },
   {
     cle: 'e',
     table: 'esprit',
     nom: 'Esprit',
     sousTitre: 'Mana, dons et langues',
-    couleur: 'text-[#6fa8ef]',
+    couleur: 'text-sanctum-texte',
   },
 ]
 
@@ -103,7 +103,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
         pourquoi={`« ${regles.caracteristiques.creation.verbatim} »`}
       />
 
-      <div className="mb-2 text-center text-[14.5px] text-[#96a0b1]">
+      <div className="mb-2 text-center text-[14.5px] text-muted-foreground">
         {enMain !== null ? (
           <>
             Jeton <b>{enMain}</b> en main — touche une caractéristique.
@@ -122,12 +122,15 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
               disabled={utilise}
               aria-pressed={enMain === jeton}
               onClick={() => setEnMain(enMain === jeton ? null : jeton)}
-              className={`flex h-14 w-14 items-center justify-center rounded-full border-2 font-wordmark text-2xl font-extrabold text-or transition-transform ${
+              className={`flex h-14 w-14 items-center justify-center rounded-full border-2 font-wordmark text-2xl font-extrabold text-gold transition-transform ${
                 enMain === jeton
-                  ? 'scale-105 border-or shadow-[0_0_0_3px_#f2b13533]'
-                  : 'border-[#6b4d12]'
+                  ? 'scale-105 border-gold shadow-[0_0_0_3px_#f2b13533]'
+                  : 'border-gold/40'
               } ${utilise ? 'pointer-events-none opacity-20' : ''}`}
-              style={{ background: 'radial-gradient(circle at 35% 30%, #2a1f08, #161005)' }}
+              style={{
+                background:
+                  'radial-gradient(circle at 35% 30%, oklch(var(--gold) / 0.15), oklch(var(--card)))',
+              }}
             >
               {jeton}
             </button>
@@ -151,11 +154,11 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                   toucherCarac(cle)
                 }
               }}
-              className="mt-2 flex cursor-pointer items-center gap-2.5 rounded-[14px] border border-ligne bg-panneau px-3.5 py-3"
+              className="mt-2 flex cursor-pointer items-center gap-2.5 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm px-3.5 py-3"
             >
               <div className="flex-1">
                 <b className={`text-lg ${couleur}`}>{nom}</b>
-                <small className="block text-[#96a0b1]">{sousTitre}</small>
+                <small className="block text-muted-foreground">{sousTitre}</small>
               </div>
               {pointsHeritage > 0 && (
                 <div className="flex items-center gap-1.5">
@@ -167,7 +170,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                       majExtra(cle, -1)
                     }}
                     aria-label={`${nom} : retirer un point d'héritage`}
-                    className="h-11 w-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-[17px] disabled:opacity-30"
+                    className="h-11 w-11 rounded-full border-[1.5px] border-border/50 bg-input text-[17px] disabled:opacity-30"
                   >
                     −
                   </button>
@@ -179,7 +182,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                       majExtra(cle, 1)
                     }}
                     aria-label={`${nom} : ajouter un point d'héritage`}
-                    className="h-11 w-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-[17px]"
+                    className="h-11 w-11 rounded-full border-[1.5px] border-border/50 bg-input text-[17px]"
                   >
                     +
                   </button>
@@ -188,8 +191,8 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
               <div
                 className={`flex h-11 w-11 items-center justify-center rounded-full border-2 font-wordmark text-xl font-extrabold ${
                   jeton !== undefined
-                    ? 'border-solid border-or bg-[#1c1305] text-or'
-                    : 'border-dashed border-[#3a4a63] text-[#6b7688]'
+                    ? 'border-solid border-gold bg-gold/10 text-gold'
+                    : 'border-dashed border-border text-muted-foreground'
                 }`}
               >
                 {jeton !== undefined ? `${jeton}${extras[cle] ? `+${extras[cle]}` : ''}` : ''}
@@ -203,11 +206,11 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                     key={niveau}
                     className={`rounded-lg border px-2 py-0.5 font-sans text-xs ${
                       atteint
-                        ? 'border-[#6b4d12] bg-[#1c1305] text-or'
-                        : 'border-ligne bg-[#0b101b] text-[#6b7688]'
+                        ? 'border-gold/40 bg-gold/10 text-gold'
+                        : 'border-border/50 bg-input text-muted-foreground'
                     }`}
                   >
-                    <b className={`mr-1 ${atteint ? 'text-or' : 'text-[#96a0b1]'}`}>{niveau}</b>
+                    <b className={`mr-1 ${atteint ? 'text-gold' : 'text-muted-foreground'}`}>{niveau}</b>
                     {effet}
                   </span>
                 )

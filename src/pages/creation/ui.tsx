@@ -28,12 +28,12 @@ interface CarteChoixProps {
 }
 
 const BORDS: Record<Peau, string> = {
-  or: 'border-cta bg-[#161009]',
-  sanctum: 'border-sanctum bg-[#0b1526]',
-  legion: 'border-legion bg-[#1d0d0f]',
+  or: 'border-primary bg-primary/10',
+  sanctum: 'border-sanctum/60 bg-sanctum/10 glow-sanctum',
+  legion: 'border-legion/60 bg-legion/10 glow-legion',
 }
 const COCHES: Record<Peau, string> = {
-  or: 'bg-cta border-cta',
+  or: 'bg-primary border-primary',
   sanctum: 'bg-sanctum border-sanctum',
   legion: 'bg-legion border-legion',
 }
@@ -76,15 +76,15 @@ export function CarteChoix({
           if (!deja) placerEnHaut(ref.current)
         }
       }}
-      className={`carte-choix relative my-2 rounded-[14px] border ${petite ? 'p-2.5 pr-11' : 'p-3.5 pr-12'} ${
-        choisi ? BORDS[peau] : 'border-ligne bg-panneau'
+      className={`carte-choix relative my-2 rounded-lg border ${petite ? 'p-2.5 pr-11' : 'p-3.5 pr-12'} ${
+        choisi ? BORDS[peau] : 'border-border/50 bg-card/50 backdrop-blur-sm'
       } ${eteinte ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'}`}
     >
       {children}
       <div
         aria-hidden
         className={`absolute right-3 top-3.5 flex h-[26px] w-[26px] items-center justify-center rounded-lg border-2 text-base ${
-          choisi ? `${COCHES[peau]} text-white` : 'border-[#3a4a63] bg-[#0b101b] text-transparent'
+          choisi ? `${COCHES[peau]} text-white` : 'border-border bg-input text-transparent'
         }`}
       >
         ✓
@@ -101,7 +101,7 @@ export function TitreCarte({
   children: ReactNode
 }) {
   const couleur =
-    peau === 'sanctum' ? 'text-sanctum' : peau === 'legion' ? 'text-legion' : 'text-or'
+    peau === 'sanctum' ? 'text-sanctum-texte' : peau === 'legion' ? 'text-legion-texte' : 'text-gold'
   return (
     <h3 className={`m-0 mb-1 font-titre text-[21px] font-bold ${couleur}`}>{children}</h3>
   )
@@ -149,10 +149,10 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
   const cle = `tuto-${etapeId}`
   const [replie, setReplie] = useState(() => sessionStorage.getItem(cle) === 'replie')
   return (
-    <div className="pas-a-imprimer my-2 overflow-hidden rounded-xl border border-[#2b3550] bg-gradient-to-b from-[#101a30] to-[#0d1424]">
+    <div className="pas-a-imprimer my-2 overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
       <button
         type="button"
-        className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm text-[#a9b8d8]"
+        className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm text-secondary-foreground"
         onClick={() => {
           const suite = !replie
           setReplie(suite)
@@ -161,19 +161,19 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
         aria-expanded={!replie}
       >
         <span aria-hidden>💡</span>
-        <b className="text-[#cdd9f0]">Comment fonctionne cette étape</b>
-        <span aria-hidden className="ml-auto text-[#6b7688]">
+        <b className="text-secondary-foreground">Comment fonctionne cette étape</b>
+        <span aria-hidden className="ml-auto text-muted-foreground">
           {replie ? '▸' : '▾'}
         </span>
       </button>
       {!replie && (
         <div>
-          <ol className="m-0 flex list-decimal flex-col gap-1 px-3.5 pb-3 pl-8 text-[15px] text-[#96a0b1]">
+          <ol className="m-0 flex list-decimal flex-col gap-1 px-3.5 pb-3 pl-8 text-[15px] text-muted-foreground">
             {gestes.map((geste, i) => (
               <li key={i}>{geste}</li>
             ))}
           </ol>
-          <p className="m-0 border-t border-dashed border-[#22304a] px-3.5 pb-3 pt-2 text-sm italic text-[#8b96ad]">
+          <p className="m-0 border-t border-dashed border-border/50 px-3.5 pb-3 pt-2 text-sm italic text-muted-foreground">
             Pourquoi : {pourquoi}
           </p>
         </div>
@@ -186,7 +186,7 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
  * exception d'affichage arbitrée (A1 : « tavernier » → « marchand »). */
 export function Verbatim({ texte, gras }: { texte: string; gras?: string }) {
   return (
-    <p className="my-1 text-[15px] italic text-[#aab3c2]">
+    <p className="my-1 text-[15px] italic text-secondary-foreground">
       {gras && <b className="not-italic">{gras}. </b>}
       {afficherVerbatim(texte)}
     </p>

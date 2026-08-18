@@ -166,7 +166,7 @@ export default function Creer() {
   }
 
   if (!charge) {
-    return <p className="text-stone-400">Chargement…</p>
+    return <p className="text-muted-foreground">Chargement…</p>
   }
 
   const etapeId = ETAPES[etape].id
@@ -180,11 +180,11 @@ export default function Creer() {
       <header className="pas-a-imprimer px-1 pb-0.5 pt-2 text-center">
         <Link
           to="/"
-          className="grad-or font-wordmark text-sm font-extrabold tracking-[0.24em]"
+          className="text-gradient-gold font-wordmark text-sm font-extrabold tracking-[0.24em]"
         >
           TERRA MORTIS
         </Link>
-        <h1 className="grad-or m-0 font-titre text-[27px] font-bold">Créer un personnage</h1>
+        <h1 className="text-gradient-gold terra-heading m-0 text-[26px]">Créer un personnage</h1>
       </header>
       <div className="pas-a-imprimer">
         <Pastilles fiche={fiche} etape={etape} onAller={allerEtape} />
@@ -208,7 +208,7 @@ export default function Creer() {
 
       {!derniere && <Bandeau fiche={fiche} />}
 
-      <div className="pas-a-imprimer fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-transparent via-fond/90 to-fond px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5">
+      <div className="pas-a-imprimer fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-transparent via-background/90 to-background px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5">
         <div className="mx-auto flex w-full max-w-[640px] gap-2.5">
           {etape > 0 && (
             <button

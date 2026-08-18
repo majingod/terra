@@ -22,8 +22,8 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-ligne bg-panneau px-4 py-4">
-        <Link to="/" className="block font-wordmark text-2xl font-bold tracking-wide text-or">
+      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm px-4 py-4">
+        <Link to="/" className="block font-wordmark text-2xl font-bold tracking-wide text-gold">
           Terra Mortis
         </Link>
       </header>
@@ -32,7 +32,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <nav className="sticky bottom-0 grid grid-cols-3 gap-2 border-t border-ligne bg-panneau p-2">
+      <nav className="sticky bottom-0 grid grid-cols-3 gap-2 border-t border-border/50 bg-card/50 backdrop-blur-sm p-2">
         {LIENS.map((lien) => {
           const actif = pathname === lien.to
           return (
@@ -40,7 +40,7 @@ export default function Layout() {
               key={lien.to}
               to={lien.to}
               className={`flex min-h-touch items-center justify-center rounded-xl text-center font-titre text-lg font-bold ${
-                actif ? 'bg-cta text-white' : 'text-stone-100'
+                actif ? 'bg-primary text-white' : 'text-foreground'
               }`}
             >
               {lien.label}

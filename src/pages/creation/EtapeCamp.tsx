@@ -82,7 +82,7 @@ export default function EtapeCamp({ fiche, onMaj, onChangement }: Props) {
                 onChoisir={() => choisirRace(race.id)}
               >
                 <TitreCarte>{race.nom}</TitreCarte>
-                <p className="my-1 text-[15.5px] text-[#96a0b1]">{race.description_physique}</p>
+                <p className="my-1 text-[15.5px] text-muted-foreground">{race.description_physique}</p>
                 <p className="my-1">
                   {race.bonus.map((bonus, i) => {
                     if (typeof bonus === 'string') return <BadgeBonus key={i} libelle={bonus} />

@@ -16,15 +16,15 @@ export default function Pastilles({ fiche, etape, onAller }: PastillesProps) {
   const valides = etapesValides(fiche)
   return (
     <nav aria-label="Étapes de création" className="pb-1">
-      <div className="flex justify-between px-1 font-sans text-sm text-[#96a0b1]">
+      <div className="flex justify-between px-1 font-sans text-sm text-muted-foreground">
         <span>
           Étape {etape + 1} sur {ETAPES.length}
         </span>
         <span>{ETAPES[etape].nom}</span>
       </div>
-      <div className="mx-1 my-1.5 h-[7px] overflow-hidden rounded-full bg-[#182234]">
+      <div className="mx-1 my-1.5 h-[7px] overflow-hidden rounded-full bg-muted">
         <i
-          className="block h-full rounded-full bg-gradient-to-r from-[#f2a03a] to-cta"
+          className="block h-full rounded-full bg-gradient-to-r from-gold to-primary"
           style={{ width: `${((etape + 1) / ETAPES.length) * 100}%` }}
         />
       </div>
@@ -42,20 +42,20 @@ export default function Pastilles({ fiche, etape, onAller }: PastillesProps) {
                 aria-current={courante ? 'step' : undefined}
                 className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] py-1 pl-1.5 pr-3 font-sans text-[13px] ${
                   courante
-                    ? 'border-cta bg-[#1a1008] text-white'
+                    ? 'border-primary bg-primary/10 text-white'
                     : faite
-                      ? 'border-[#2c3d29] bg-panneau text-[#dee3ea]'
-                      : 'border-ligne bg-panneau text-[#6b7688]'
+                      ? 'border-chart-4/50 bg-card/50 backdrop-blur-sm text-foreground'
+                      : 'border-border/50 bg-card/50 backdrop-blur-sm text-muted-foreground'
                 } ${!accessible ? 'opacity-45' : ''}`}
               >
                 <span
                   aria-hidden
                   className={`flex h-5 w-5 items-center justify-center rounded-full border-[1.5px] text-[11px] ${
                     courante
-                      ? 'border-cta bg-cta text-white'
+                      ? 'border-primary bg-primary text-white'
                       : faite
-                        ? 'border-ok bg-ok text-white'
-                        : 'border-ligne'
+                        ? 'border-chart-4/60 bg-chart-4 text-white'
+                        : 'border-border/50'
                   }`}
                 >
                   {faite ? '✓' : index + 1}

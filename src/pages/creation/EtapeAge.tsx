@@ -27,7 +27,7 @@ export default function EtapeAge({ fiche, onMaj }: Props) {
       />
       <CarteChoix choisi={renvoye} onChoisir={() => onMaj({ ...fiche, trancheAge: '≤11' })}>
         <TitreCarte>{seuil.enfant}</TitreCarte>
-        <p className="my-1 text-[15.5px] text-[#96a0b1]">
+        <p className="my-1 text-[15.5px] text-muted-foreground">
           Fiche papier simplifiée, pensée pour toi.
         </p>
       </CarteChoix>
@@ -36,7 +36,7 @@ export default function EtapeAge({ fiche, onMaj }: Props) {
         onChoisir={() => onMaj({ ...fiche, trancheAge: trancheQuiContinue() })}
       >
         <TitreCarte>{seuil.joueur_regulier}</TitreCarte>
-        <p className="my-1 text-[15.5px] text-[#96a0b1]">Création complète dans l'app.</p>
+        <p className="my-1 text-[15.5px] text-muted-foreground">Création complète dans l'app.</p>
       </CarteChoix>
 
       {renvoye && (
@@ -45,12 +45,12 @@ export default function EtapeAge({ fiche, onMaj }: Props) {
             💀
           </div>
           <h2 className="titre-etape">Ta fiche est sur papier !</h2>
-          <p className="text-[17px] text-[#96a0b1]">
+          <p className="text-[17px] text-muted-foreground">
             Les {seuil.enfant} jouent avec la <b>feuille enfant</b>, plus simple et plus le fun.
             <br />
             Demande-la à l'accueil du GN.
           </p>
-          <p className="text-[17px] text-[#96a0b1]">
+          <p className="text-[17px] text-muted-foreground">
             L'app reste ouverte pour toi : l'encyclopédie est pour tout le monde.
           </p>
           <Link to="/encyclopedie" className="btn-ghost my-1.5 w-full">

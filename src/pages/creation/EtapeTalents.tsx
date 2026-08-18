@@ -85,7 +85,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
         pourquoi="niveau 1 = 1 don et 1 compétence (table p.5) ; ton Esprit et ton héritage peuvent en ouvrir d'autres."
       />
 
-      <p className="my-2 text-base text-[#96a0b1]">
+      <p className="my-2 text-base text-muted-foreground">
         <b>Dons</b> — {pris}/{droit}
         {esprit >= 3 ? ' (dont 1 d’Esprit 3)' : ''}
         {achatsDon > 0 ? ` (+ ${achatsDon} d'héritage)` : ''}
@@ -109,7 +109,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
               else if (!plein) majDon(don.id, 1)
             }}
           >
-            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">
+            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
               {don.nom}
               {don.cumulable && <Badge>cumulable</Badge>}
               {n > 1 && <Badge variante="gold">×{n}</Badge>}
@@ -145,7 +145,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
       })}
 
       <h2 className="titre-mini">Tes compétences</h2>
-      <p className="my-2 text-base text-[#96a0b1]">
+      <p className="my-2 text-base text-muted-foreground">
         <b>Compétences</b> — {comps.length}/{droitComps}
         {achatsComp > 0 ? ` (+ ${achatsComp} d'héritage)` : ''}
       </p>
@@ -165,7 +165,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
             eteinte={plein && !prise}
             onChoisir={() => basculerComp(comp.id)}
           >
-            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">{comp.nom}</h3>
+            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">{comp.nom}</h3>
             <Verbatim texte={comp.base} />
             {comp.materiel && <Badge>Matériel : {comp.materiel}</Badge>}
           </CarteChoix>
@@ -175,7 +175,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
       {artisanats.length > 0 && (
         <>
           <h2 className="titre-mini !text-[19px]">Artisanats</h2>
-          <p className="my-1 text-[15px] italic text-[#aab3c2]">
+          <p className="my-1 text-[15px] italic text-secondary-foreground">
             {regles.competences.artisanats.verbatim_interdiction}
           </p>
           <Note>
@@ -197,7 +197,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
                   else if (!bloque) basculerComp(artisanat.id)
                 }}
               >
-                <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">
+                <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
                   {artisanat.nom}
                 </h3>
                 {artisanat.capacites.map((capacite) => (

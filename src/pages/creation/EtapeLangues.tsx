@@ -48,7 +48,7 @@ export default function EtapeLangues({ fiche, onMaj }: Props) {
         pourquoi={`« ${getRules().langues.regle} »`}
       />
 
-      <p className="my-2 text-base text-[#96a0b1]">
+      <p className="my-2 text-base text-muted-foreground">
         <b>Langues acquises</b>
       </p>
       <div className="flex flex-wrap gap-2">
@@ -60,7 +60,7 @@ export default function EtapeLangues({ fiche, onMaj }: Props) {
       </div>
 
       {droit > 0 && (
-        <p className="mb-1 mt-4 text-base text-[#96a0b1]">
+        <p className="mb-1 mt-4 text-base text-muted-foreground">
           <b>À choisir</b> — {choix.length}/{droit}
           {esprit >= 3 ? ' · +1 d’Esprit 3' : ''}
           {erudit ? ` · +${esprit > 1 ? 2 : 1} d’Érudit` : ''}

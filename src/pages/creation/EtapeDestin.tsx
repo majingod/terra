@@ -143,13 +143,13 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
 
       <div className="sticky top-2 z-40">
         <div
-          className={`my-2 flex items-center justify-between rounded-[10px] border border-ligne bg-[#111a2b] px-3.5 py-2.5 font-sans text-[14.5px] text-[#96a0b1]`}
+          className={`my-2 flex items-center justify-between rounded-lg border border-border/50 bg-popover px-3.5 py-2.5 font-sans text-[14.5px] text-muted-foreground`}
         >
           <span>
             XP : +{xpDesavantages(ordre, fiche)} désavantages · +{fiche.xpPerm ?? 0} joueur · −
             {depense} dépensés
           </span>
-          <b className={`text-base ${reste < 0 ? 'text-[#e05252]' : 'text-or'}`}>{reste} XP</b>
+          <b className={`text-base ${reste < 0 ? 'text-destructive' : 'text-gold'}`}>{reste} XP</b>
         </div>
       </div>
       <Note>
@@ -227,9 +227,9 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
         onChange={(e) =>
           onMaj({ ...fiche, xpPerm: Math.max(0, parseInt(e.target.value || '0', 10)) })
         }
-        className="w-full rounded-[10px] border-[1.5px] border-ligne bg-[#0b101b] p-3 font-corps text-[16.5px] text-[#dee3ea] focus:border-cta focus:outline-none"
+        className="w-full rounded-lg border-[1.5px] border-border/50 bg-input p-3 font-corps text-[16.5px] text-foreground focus:border-primary focus:outline-none"
       />
-      <p className="mt-1 text-sm text-[#6b7688]">
+      <p className="mt-1 text-sm text-muted-foreground">
         {regles.heritage.xp_permanent} À confirmer avec un MJ à l'accueil.
       </p>
 
@@ -240,18 +240,18 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
         return (
           <div
             key={achat.achat}
-            className="my-2 flex items-start gap-2.5 rounded-[14px] border border-ligne bg-panneau p-3"
+            className="my-2 flex items-start gap-2.5 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm p-3"
           >
             <div className="flex-1">
-              <b className="text-[16.5px] text-or">{achat.achat}</b>{' '}
+              <b className="text-[16.5px] text-gold">{achat.achat}</b>{' '}
               <Badge variante="xp">{achat.cout_xp} XP</Badge>
               {achat.max_achats !== undefined && <Badge>max {achat.max_achats}</Badge>}
               {achat.restriction && (
-                <p className="my-0.5 text-sm text-[#96a0b1]">{achat.restriction}</p>
+                <p className="my-0.5 text-sm text-muted-foreground">{achat.restriction}</p>
               )}
               {effet.type === 'capacite' && n > 0 && (
                 <div className="mt-1.5">
-                  <p className="my-1 text-sm text-[#96a0b1]">
+                  <p className="my-1 text-sm text-muted-foreground">
                     Choisis {n > 1 ? `${n} capacités` : 'la capacité'} de niveau {effet.niveau} (
                     {(fiche.capChoix?.[String(effet.niveau)] ?? []).length}/{n}) :
                   </p>
@@ -276,13 +276,13 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                 </div>
               )}
               {effet.type === 'carac' && n > 0 && (
-                <p className="my-0.5 text-sm text-[#96a0b1]">
+                <p className="my-0.5 text-sm text-muted-foreground">
                   S'ouvre à l'étape « Forces » (max {regles.caracteristiques.creation.max} par
                   caractéristique).
                 </p>
               )}
               {(effet.type === 'don' || effet.type === 'competence') && n > 0 && (
-                <p className="my-0.5 text-sm text-[#96a0b1]">S'ouvre à l'étape « Talents ».</p>
+                <p className="my-0.5 text-sm text-muted-foreground">S'ouvre à l'étape « Talents ».</p>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                 disabled={n === 0}
                 onClick={() => majAchat(achat, -1)}
                 aria-label={`${achat.achat} : moins`}
-                className="h-[34px] w-[34px] rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-lg disabled:opacity-30"
+                className="h-[34px] w-[34px] rounded-full border-[1.5px] border-border/50 bg-input text-lg disabled:opacity-30"
               >
                 −
               </button>
@@ -301,7 +301,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                 disabled={n >= max}
                 onClick={() => majAchat(achat, 1)}
                 aria-label={`${achat.achat} : plus`}
-                className="h-[34px] w-[34px] rounded-full border-[1.5px] border-ligne bg-[#0b101b] text-lg disabled:opacity-30"
+                className="h-[34px] w-[34px] rounded-full border-[1.5px] border-border/50 bg-input text-lg disabled:opacity-30"
               >
                 +
               </button>

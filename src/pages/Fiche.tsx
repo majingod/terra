@@ -24,13 +24,13 @@ export default function Fiche() {
   }
 
   if (personnage === undefined) {
-    return <p className="text-stone-400">Chargement…</p>
+    return <p className="text-muted-foreground">Chargement…</p>
   }
 
   if (personnage === null || !personnage) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="carte text-stone-300">Cette fiche n'existe pas.</p>
+        <p className="carte text-secondary-foreground">Cette fiche n'existe pas.</p>
         <Link to="/" className="btn-secondaire">
           Retour à l'accueil
         </Link>
@@ -44,7 +44,7 @@ export default function Fiche() {
         <FicheAffichage fiche={personnage.creation} />
       ) : (
         <>
-          <h1 className="text-2xl font-extrabold text-ambre-500">
+          <h1 className="text-2xl font-extrabold text-gold">
             {personnage.nomPerso || 'Sans nom'}
           </h1>
 

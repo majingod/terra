@@ -11,7 +11,7 @@ interface Props {
 }
 
 const CHAMP =
-  'w-full rounded-[10px] border-[1.5px] border-ligne bg-[#0b101b] p-3 font-corps text-[16.5px] text-[#dee3ea] focus:border-cta focus:outline-none'
+  'w-full rounded-lg border-[1.5px] border-border/50 bg-input p-3 font-corps text-[16.5px] text-foreground focus:border-primary focus:outline-none'
 
 export default function EtapeNom({ fiche, onMaj }: Props) {
   return (
@@ -37,7 +37,7 @@ export default function EtapeNom({ fiche, onMaj }: Props) {
         placeholder="Ex. Kaelen Sombrelame"
         autoComplete="off"
       />
-      <p className="mt-1 text-sm text-[#6b7688]">
+      <p className="mt-1 text-sm text-muted-foreground">
         Le nom de ton <b>personnage</b> — jamais ton vrai nom.
       </p>
       <label className="my-2 block text-[17px] font-semibold" htmlFor="ihist">

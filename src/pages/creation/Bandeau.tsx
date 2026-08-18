@@ -14,18 +14,18 @@ export default function Bandeau({ fiche }: { fiche: FicheCreation }) {
   return (
     <div className="pas-a-imprimer pointer-events-none fixed inset-x-0 bottom-[76px] z-40">
       <div className="mx-auto max-w-[640px] px-4">
-        <div className="flex justify-around rounded-xl border border-ligne bg-[#0d1320ee] px-1.5 py-1.5 backdrop-blur-sm">
+        <div className="flex justify-around rounded-xl border border-border/50 bg-popover/90 px-1.5 py-1.5 backdrop-blur-sm">
           {(
             [
-              ['PV', String(stats.pv), 'text-[#7fd39a]'],
-              ['MANA', String(stats.mana), 'text-[#8db8f2]'],
-              ['LUTTE', String(stats.lutte), 'text-[#ecb060]'],
-              ['XP', String(restant), restant < 0 ? 'text-[#e05252]' : 'text-or'],
+              ['PV', String(stats.pv), 'text-chart-4'],
+              ['MANA', String(stats.mana), 'text-sanctum-texte'],
+              ['LUTTE', String(stats.lutte), 'text-gold'],
+              ['XP', String(restant), restant < 0 ? 'text-destructive' : 'text-gold'],
             ] as Array<[string, string, string]>
           ).map(([nom, valeur, couleur]) => (
             <div key={nom} className="text-center font-sans">
               <b className={`block font-wordmark text-base ${couleur}`}>{valeur}</b>
-              <small className="text-[10.5px] tracking-wide text-[#6b7688]">{nom}</small>
+              <small className="text-[10.5px] tracking-wide text-muted-foreground">{nom}</small>
             </div>
           ))}
         </div>

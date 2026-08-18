@@ -23,8 +23,8 @@ import { Badge, Verbatim } from './ui'
 
 function Sheet({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
-    <div className="my-3 rounded-[14px] border border-ligne bg-panneau p-3.5">
-      <h3 className="m-0 mb-2 font-titre text-xl font-bold text-or">{titre}</h3>
+    <div className="my-3 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm p-3.5">
+      <h3 className="m-0 mb-2 font-titre text-xl font-bold text-gold">{titre}</h3>
       {children}
     </div>
   )
@@ -42,7 +42,7 @@ function Acquis({
   verbatim?: string
 }) {
   return (
-    <div className="border-t border-[#182234] py-2 first:border-t-0">
+    <div className="border-t border-border/30 py-2 first:border-t-0">
       <b>{nom}</b> <Badge variante={badgeOr ? 'gold' : undefined}>{badge}</Badge>
       {verbatim && <Verbatim texte={verbatim} />}
     </div>
@@ -89,12 +89,12 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   }
 
   const tuiles: Array<[string, number, string]> = [
-    ['PV max', stats?.pv ?? 0, 'text-[#7fd39a]'],
-    ['Mana max', stats?.mana ?? 0, 'text-[#8db8f2]'],
-    ['Lutte', stats?.lutte ?? 0, 'text-[#ecb060]'],
-    ['Puissance', valeurCarac(fiche, 'p'), 'text-[#e06060]'],
-    ['Résistance', valeurCarac(fiche, 'r'), 'text-[#66c284]'],
-    ['Esprit', valeurCarac(fiche, 'e'), 'text-[#6fa8ef]'],
+    ['PV max', stats?.pv ?? 0, 'text-chart-4'],
+    ['Mana max', stats?.mana ?? 0, 'text-sanctum-texte'],
+    ['Lutte', stats?.lutte ?? 0, 'text-gold'],
+    ['Puissance', valeurCarac(fiche, 'p'), 'text-legion-texte'],
+    ['Résistance', valeurCarac(fiche, 'r'), 'text-chart-4'],
+    ['Esprit', valeurCarac(fiche, 'e'), 'text-sanctum-texte'],
   ]
 
   return (
@@ -102,41 +102,41 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
       <Sheet titre="Identité">
         <div className="grid grid-cols-2 gap-x-3.5 gap-y-2">
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Nom</div>
-            <div className="text-[19px] font-semibold text-or">{fiche.nom || '—'}</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Nom</div>
+            <div className="text-[19px] font-semibold text-gold">{fiche.nom || '—'}</div>
           </div>
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Faction</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Faction</div>
             <div
               className={`text-[19px] font-semibold ${
-                fiche.faction === 'legion' ? 'text-legion' : 'text-sanctum'
+                fiche.faction === 'legion' ? 'text-legion-texte' : 'text-sanctum-texte'
               }`}
             >
               {faction?.nom ?? '—'}
             </div>
           </div>
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Race</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Race</div>
             <div className="text-[19px] font-semibold">{race?.nom ?? '—'}</div>
           </div>
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Classe</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Classe</div>
             <div className="text-[19px] font-semibold">
               {classe?.nom ?? '—'}
               {voie ? ` — ${voie.nom}` : ''}
             </div>
           </div>
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Niveau</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Niveau</div>
             <div className="text-[19px] font-semibold">1</div>
           </div>
           <div>
-            <div className="font-sans text-[13.5px] text-[#6b7688]">Langues</div>
+            <div className="font-sans text-[13.5px] text-muted-foreground">Langues</div>
             <div className="text-base font-semibold">{langues.join(', ') || '—'}</div>
           </div>
         </div>
         {fiche.histoire && (
-          <p className="mb-0 mt-2 text-[15px] italic text-[#aab3c2]">{fiche.histoire}</p>
+          <p className="mb-0 mt-2 text-[15px] italic text-secondary-foreground">{fiche.histoire}</p>
         )}
       </Sheet>
 
@@ -148,7 +148,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
                 <div className={`font-wordmark text-[26px] font-extrabold ${couleur}`}>
                   {valeur}
                 </div>
-                <div className="font-sans text-[12.5px] text-[#6b7688]">{nom}</div>
+                <div className="font-sans text-[12.5px] text-muted-foreground">{nom}</div>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
           {comps.map((id) => (
             <Acquis key={id} nom={nomComp(id)} badge="compétence" />
           ))}
-          <p className="mb-0 mt-2 rounded-[10px] border border-ligne border-l-[3px] border-l-[#e0a93a] bg-panneau px-3 py-2 text-[14px] text-[#96a0b1]">
+          <p className="mb-0 mt-2 rounded-lg border border-border/50 border-l-[3px] border-l-primary/60 bg-card/50 backdrop-blur-sm px-3 py-2 text-[14px] text-muted-foreground">
             Affichage progressif : les capacités de niveau 2+ apparaîtront quand tu les auras
             réellement acquises.
           </p>
@@ -243,7 +243,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
       )}
 
       <p className="my-4 text-center">
-        <span className="inline-block rounded-full border border-ligne bg-[#0b101b] px-2.5 py-1 font-sans text-xs text-[#b8c2d4]">
+        <span className="inline-block rounded-full border border-border/50 bg-input px-2.5 py-1 font-sans text-xs text-secondary-foreground">
           {texteVersionRegles()}
           {etiquetteTome()}
         </span>

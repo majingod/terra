@@ -63,7 +63,7 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
             )}
 
             {ouverte && (
-              <div className="mt-2 border-t border-[#182234] pt-1.5">
+              <div className="mt-2 border-t border-border/30 pt-1.5">
                 {branchesDe(classe.id).map((voie) => {
                   const capNiveau1 = voie.capacites.find((c) => c.niveau === 1)
                   return (
@@ -76,7 +76,7 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
                         onChangement(changerVoie(fiche, voie.id))
                       }}
                     >
-                      <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-or">
+                      <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
                         {voie.nom}
                       </h3>
                       {capNiveau1 && (

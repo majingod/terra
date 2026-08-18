@@ -1,97 +1,190 @@
+@import './theme/terra-mortis-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * D11-ter : apparence conforme au design system Terra Mortis extrait
+ * (DESIGN_SYSTEM_Terra_Mortis.md). Les classes composants ci-dessous
+ * reprennent les règles RELEVÉES du design system ; toutes les couleurs
+ * passent par les tokens (src/theme/terra-mortis-tokens.css).
+ */
 
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-fond font-corps text-[#dee3ea] antialiased;
+    @apply bg-background font-corps text-foreground antialiased;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    /* Deux halos radiaux fixes — la profondeur « nuit », pas un noir plat. */
+    background-image:
+      radial-gradient(ellipse at 20% 50%, oklch(0.18 0.04 270 / 0.3) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, oklch(0.18 0.04 30 / 0.2) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: Cinzel, serif;
+    letter-spacing: 0.03em;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(var(--popover));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.04 260);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(var(--primary));
   }
 }
 
 @layer components {
-  .btn-grand {
-    @apply flex min-h-touch w-full items-center justify-center rounded-2xl border-4 border-ambre-500
-      bg-ambre-500 px-6 py-4 text-xl font-bold text-terre-950 shadow-lg transition-transform
-      active:scale-95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-ambre-400;
+  /* --- Classes composants du design system (relevées telles quelles) --- */
+  .terra-card {
+    @apply rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300;
   }
-  .btn-secondaire {
-    @apply flex min-h-touch w-full items-center justify-center rounded-2xl border-4 border-stone-100
-      bg-transparent px-6 py-4 text-xl font-bold text-stone-100 shadow-lg transition-transform
-      active:scale-95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-stone-100;
+  .terra-card:hover {
+    @apply border-primary/50 shadow-lg;
   }
-  .carte {
-    @apply rounded-2xl border-2 border-sang-700 bg-terre-900 p-5 shadow-md;
+  .terra-button {
+    @apply rounded-lg px-6 py-2 font-semibold transition-all duration-300;
+    font-family: Cinzel, serif;
+    background: linear-gradient(135deg, oklch(var(--primary)), oklch(var(--gold-dark)));
+    color: oklch(var(--primary-foreground));
+  }
+  .terra-button:hover {
+    @apply scale-105 shadow-lg;
+    box-shadow: 0 0 20px oklch(var(--gold) / 0.4);
+  }
+  .terra-heading {
+    font-family: Cinzel, serif;
+    @apply font-bold;
+    letter-spacing: 0.05em;
+  }
+  .terra-divider {
+    @apply h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent;
+  }
+  .faction-badge {
+    @apply rounded-full px-3 py-1 text-xs font-semibold transition-all duration-300;
+    font-family: Cinzel, serif;
+  }
+  .faction-badge-sanctum {
+    @apply border border-sanctum/30 bg-sanctum/20 text-sanctum-texte;
+  }
+  .faction-badge-sanctum:hover {
+    @apply bg-sanctum/30 glow-sanctum;
+  }
+  .faction-badge-legion {
+    @apply border border-legion/30 bg-legion/20 text-legion-texte;
+  }
+  .faction-badge-legion:hover {
+    @apply bg-legion/30 glow-legion;
   }
 
-  /* --- Wizard t004, maquette A v3 --- */
-  .grad-or {
-    background: linear-gradient(180deg, #f6c452, #ef8a1f);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+  /* --- Composants de l'app, posés sur les tokens --- */
   .titre-etape {
-    @apply grad-or font-titre text-[26px] font-bold;
+    @apply terra-heading text-gradient-gold text-2xl;
   }
   .titre-mini {
-    @apply grad-or mt-3 font-titre text-[21px] font-bold;
+    @apply terra-heading text-gradient-gold mt-3 text-xl;
   }
   .btn-cta {
-    @apply flex min-h-touch flex-1 items-center justify-center rounded-xl border-0 bg-cta px-4
-      py-3 font-corps text-[17.5px] font-semibold text-white active:bg-[#c65f08]
-      disabled:cursor-not-allowed disabled:opacity-40;
+    @apply terra-button flex min-h-touch flex-1 items-center justify-center px-4 py-3 text-lg
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100
+      disabled:hover:shadow-none;
   }
   .btn-ghost {
-    @apply flex min-h-touch items-center justify-center rounded-xl border-[1.5px] border-ligne
-      bg-panneau px-4 py-3 font-corps text-[16.5px] text-[#dee3ea];
+    @apply flex min-h-touch items-center justify-center rounded-lg border border-border/50
+      bg-card/50 px-4 py-3 font-corps text-foreground backdrop-blur-sm transition-all
+      duration-300;
   }
   .badge {
-    @apply mr-1 inline-block rounded-[7px] border border-ligne bg-[#1a2334] px-2 py-0.5
-      font-sans text-[12.5px] text-[#b8c2d4];
+    @apply mr-1 inline-block rounded-md border border-border/50 bg-muted px-2 py-0.5
+      font-sans text-[12.5px] text-secondary-foreground;
   }
   .badge-xp {
-    @apply border-[#4a1c22] bg-[#2a1216] text-[#f08a8a];
+    @apply border-destructive/30 bg-destructive/15 text-destructive-foreground;
   }
   .badge-pv {
-    @apply border-[#1e3d28] bg-[#122418] text-[#7fd39a];
+    @apply border-chart-4/40 bg-chart-4/15 text-foreground;
   }
   .badge-mana {
-    @apply border-[#1e3560] bg-[#12203a] text-[#8db8f2];
+    @apply border-sanctum/30 bg-sanctum/15 text-foreground;
   }
   .badge-lutte {
-    @apply border-[#4a3410] bg-[#2a1c08] text-[#ecb060];
+    @apply border-primary/30 bg-primary/15 text-foreground;
   }
   .badge-gold {
-    @apply border-[#443008] bg-[#251b06] text-or;
+    @apply border-gold/30 bg-gold/15 text-gold;
   }
+  /* Encadrés d'aide sur tokens SOMBRES (⛔ aucun amber-50 clair — défaut
+     Manus nommé). */
   .note {
-    @apply my-2 rounded-[10px] border border-ligne border-l-[3px] border-l-[#e0a93a] bg-panneau
-      px-3 py-2.5 text-[15px] text-[#96a0b1];
+    @apply my-2 rounded-lg border border-border/50 border-l-2 border-l-primary/60 bg-card/50
+      px-3 py-2.5 text-[15px] text-muted-foreground backdrop-blur-sm;
   }
   .err-note {
-    @apply my-2 rounded-[10px] border border-[#5a2323] bg-[#1c0f10] px-3 py-2.5 text-[15px]
-      text-[#f0a5a5];
+    @apply my-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5
+      text-[15px] text-destructive-foreground;
   }
   .chip {
-    @apply min-h-11 rounded-full border-[1.5px] border-ligne bg-[#0b101b] px-4 py-2
-      font-corps text-[15.5px] text-[#dee3ea];
+    @apply min-h-11 rounded-full border border-border bg-input px-4 py-2 font-corps
+      text-[15.5px] text-foreground transition-all duration-300;
   }
   .chip-on {
-    @apply border-or bg-[#1c1305] text-or;
+    @apply border-gold/60 bg-gold/10 text-gold;
   }
   .subsel-btn {
-    @apply min-h-11 flex-1 rounded-[9px] border-[1.5px] border-ligne bg-[#0b101b] px-2 py-2
-      font-corps text-[15px] text-[#dee3ea];
+    @apply min-h-11 flex-1 rounded-md border border-border bg-input px-2 py-2 font-corps
+      text-[15px] text-foreground transition-all duration-300;
   }
   .subsel-btn-on {
-    @apply border-cta bg-[#161009] text-or;
+    @apply border-primary bg-primary/15 text-gold;
   }
   /* Une carte choisie se place en haut, SOUS les en-têtes collants. */
   .carte-choix {
     scroll-margin-top: 104px;
+  }
+
+  /* --- Écrans hors wizard (accueil, fiches, encyclopédie) --- */
+  .btn-grand {
+    @apply terra-button flex min-h-touch w-full items-center justify-center px-6 py-4 text-xl;
+  }
+  .btn-secondaire {
+    @apply btn-ghost w-full text-lg;
+  }
+  .carte {
+    @apply terra-card p-5;
+  }
+}
+
+@layer utilities {
+  .glow-sanctum {
+    box-shadow: 0 0 20px oklch(var(--sanctum) / 0.3);
+  }
+  .glow-legion {
+    box-shadow: 0 0 20px oklch(var(--legion) / 0.3);
+  }
+  .glow-gold {
+    box-shadow: 0 0 15px oklch(var(--gold) / 0.4);
+  }
+  .text-gradient-gold {
+    background: linear-gradient(135deg, oklch(var(--gold)), oklch(0.65 0.15 75));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
