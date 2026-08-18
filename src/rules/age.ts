@@ -2,8 +2,8 @@
  * Gate d'âge (D10).
  *
  * La seule donnée d'âge qui existe dans l'app est une TRANCHE ('≤11' | '12+').
- * Aucune date de naissance, aucun âge exact. Aucun paramètre ni marqueur
- * « mineur » : la tranche interdite est lue dans rules.json
+ * Aucune date de naissance, aucun âge exact, aucun marqueur de statut du
+ * joueur : la tranche interdite est lue dans rules.json
  * (competences.artisanats.interdit_tranche), pas recopiée ici.
  */
 import { getRules, type Artisanat } from './load'
