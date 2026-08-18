@@ -5,7 +5,7 @@
  * et pastilles nommées, bandeau vivant fixé au-dessus de la navigation.
  */
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { db, nouvellePersonnageVierge } from '../db'
 import { branchesDe, capacitesDeBase } from '../rules/branches'
 import { getRules, getVersion } from '../rules/load'
@@ -31,6 +31,7 @@ import EtapeForces from './creation/EtapeForces'
 import EtapeLangues from './creation/EtapeLangues'
 import EtapeNom from './creation/EtapeNom'
 import EtapeTalents from './creation/EtapeTalents'
+import EtapeTerminee from './creation/EtapeTerminee'
 import Fenetre from './creation/Fenetre'
 import Pastilles from './creation/Pastilles'
 
@@ -42,11 +43,11 @@ interface EtatFenetre {
 }
 
 export default function Creer() {
-  const navigate = useNavigate()
   const [fiche, setFiche] = useState<FicheCreation>({})
   const [etape, setEtape] = useState(0)
   const [charge, setCharge] = useState(false)
   const [fenetre, setFenetre] = useState<EtatFenetre | null>(null)
+  const [enregistree, setEnregistree] = useState(false)
 
   useEffect(() => {
     let annule = false
@@ -135,7 +136,7 @@ export default function Creer() {
     const capNiveau1 = voie?.capacites.find((c) => c.niveau === 1)
     const now = Date.now()
     const complet: FicheCreation = { ...fiche, reglesVersion: getVersion() }
-    const id = await db.personnages.add({
+    await db.personnages.add({
       ...nouvellePersonnageVierge(),
       nomPerso: fiche.nom ?? '',
       faction: regles.factions.liste.find((f) => f.id === fiche.faction)?.nom ?? '',
@@ -162,11 +163,28 @@ export default function Creer() {
       creation: complet,
     })
     await db.brouillons.delete(ID_BROUILLON)
-    navigate(`/fiche/${id}`)
+    setEnregistree(true)
   }
 
   if (!charge) {
     return <p className="text-muted-foreground">Chargement…</p>
+  }
+
+  if (enregistree) {
+    return (
+      <div>
+        <header className="px-1 pb-0.5 pt-2 text-center">
+          <Link
+            to="/"
+            className="text-gradient-gold font-wordmark text-sm font-extrabold tracking-[0.24em]"
+          >
+            TERRA MORTIS
+          </Link>
+          <h1 className="text-gradient-gold terra-heading m-0 text-[26px]">Créer un personnage</h1>
+        </header>
+        <EtapeTerminee />
+      </div>
+    )
   }
 
   const etapeId = ETAPES[etape].id
