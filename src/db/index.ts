@@ -1,4 +1,23 @@
+/**
+ * Base locale de l'app (TerraMortisDB) — Dexie / IndexedDB.
+ *
+ * v2 (lot t004) : migration ADDITIVE seulement (D7), sous harnais
+ * `migrationD7` : un export JSON complet est écrit et PROUVÉ écrit avant
+ * toute mutation, à CHAQUE montée de version. Les fiches v1 restent
+ * lisibles telles quelles ; le champ d'époque du scaffold sur le statut du
+ * joueur reste stocké sur les vieux enregistrements mais le code n'y fait
+ * plus référence — la seule donnée d'âge que le code manipule est la
+ * tranche ('≤11' | '12+', D10).
+ *
+ * Les champs du wizard t004 (trancheAge, humainChoix, voie, caracs {p,r,e},
+ * extras, dons ×n, capChoix, …) vivent sous `creation` : les clés `dons` et
+ * `caracs` de la v1 portent d'autres types, les fusionner à plat serait un
+ * renommage — interdit par D7.
+ */
 import Dexie, { type EntityTable } from 'dexie'
+import type { TrancheAge } from '../rules/age'
+import type { FicheCreation } from '../wizard/types'
+import { migrationD7, type ExportEnregistre } from './db'
 
 export interface Caracteristiques {
   puissance: number
@@ -9,7 +28,6 @@ export interface Caracteristiques {
 export interface Personnage {
   id?: number
   nomPerso: string
-  joueurMineur: boolean
   faction: string
   race: string
   classe: string
@@ -23,30 +41,61 @@ export interface Personnage {
   ressources: Record<string, number>
   createdAt: number
   updatedAt: number
+  // --- Champs v2 (additifs, lot t004) ---
+  /** Tranche d'âge — jamais une date de naissance, jamais un âge exact. */
+  trancheAge?: TrancheAge
+  /** Version des règles (meta.version) lue du fichier à la création. */
+  reglesVersion?: string
+  /** Fiche complète produite par le wizard t004. */
+  creation?: FicheCreation
 }
 
 export interface Brouillon {
   id?: number
   etape: number
-  donnees: Partial<Personnage>
+  donnees: Partial<Personnage> & { fiche?: FicheCreation }
   updatedAt: number
 }
 
-export const db = new Dexie('TerraMortisDB') as Dexie & {
+export type BaseApp = Dexie & {
   personnages: EntityTable<Personnage, 'id'>
   brouillons: EntityTable<Brouillon, 'id'>
+  exports: EntityTable<ExportEnregistre, 'id'>
 }
 
-db.version(1).stores({
+/** Schéma v1 — conservé pour l'historique Dexie et les tests de migration. */
+export const STORES_V1 = {
   personnages: '++id, nomPerso, faction, race, classe, niveau, updatedAt',
   brouillons: '++id, updatedAt',
-})
+} as const
+
+/** Schéma v2 — additif : mêmes tables + `exports` + index `trancheAge`. */
+export const STORES_V2 = {
+  personnages: '++id, nomPerso, faction, race, classe, niveau, updatedAt, trancheAge',
+  brouillons: '++id, updatedAt',
+  exports: '++id, date',
+} as const
+
+export function creerBase(nom = 'TerraMortisDB'): BaseApp {
+  const base = new Dexie(nom) as BaseApp
+  base.version(1).stores(STORES_V1)
+  base
+    .version(2)
+    .stores(STORES_V2)
+    .upgrade((tx) =>
+      // D7 : export JSON prouvé écrit AVANT toute mutation ; la montée v2
+      // n'altère aucun enregistrement (les nouveaux champs sont optionnels).
+      migrationD7(tx, async () => {}),
+    )
+  return base
+}
+
+export const db: BaseApp = creerBase()
 
 export function nouvellePersonnageVierge(): Omit<Personnage, 'id'> {
   const now = Date.now()
   return {
     nomPerso: '',
-    joueurMineur: false,
     faction: '',
     race: '',
     classe: '',

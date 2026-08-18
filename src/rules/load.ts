@@ -33,11 +33,16 @@ export interface Langue {
   restriction?: string
 }
 
+export type BonusRace =
+  | string
+  | { nom: string; verbatim: string }
+  | { choix: string[] }
+
 export interface Race {
   id: string
   nom: string
   faction: string
-  bonus: unknown[]
+  bonus: BonusRace[]
   malus?: unknown[]
   description_physique: string
   langues_depart: string[]
@@ -79,7 +84,7 @@ export interface Desavantage {
   xp: number
   verbatim: string
   note?: string
-  variante_xp?: unknown
+  variante_xp?: number
   interdit_classes?: string[]
 }
 
@@ -116,6 +121,49 @@ export interface ClasseBranches {
   branches: Branche[]
 }
 
+export interface PalierPuissance {
+  lutte: number
+  degats: number
+}
+
+export interface PalierResistance {
+  pv: number
+  sauvegardes: number
+}
+
+export interface PalierEsprit {
+  mana: number
+  dons: number
+  langues: number
+  illettre: boolean
+}
+
+export interface LigneEvolution {
+  niv: number
+  dons: number
+  carac?: string
+  competence?: number
+}
+
+export interface Faction {
+  id: string
+  nom: string
+  verbatim: string
+}
+
+export interface ClasseSquelette {
+  id: string
+  nom: string
+  faction: string
+  pv_base: number
+  mana_base: number
+  branches: string[]
+  code?: string
+  echange?: string
+  focus_requis?: string
+  ressource_speciale?: { nom: string; verbatim: string; max?: number }
+}
+
 export interface Rules {
   meta: Meta
   caracteristiques: {
@@ -124,21 +172,54 @@ export interface Rules {
       verbatim: string
       max: number
     }
+    table: {
+      puissance: Record<string, string>
+      resistance: Record<string, string>
+      esprit: Record<string, string>
+    }
+    table_cumulative: {
+      regle: string
+      puissance: Record<string, PalierPuissance>
+      resistance: Record<string, PalierResistance>
+      esprit: Record<string, PalierEsprit>
+    }
+    illettre: { verbatim: string }
+  }
+  evolution: { table: LigneEvolution[] }
+  factions: {
+    liste: Faction[]
+    avantage_de_depart: { regle: string; critere: string; consequence_ui: string }
   }
   races: { liste: Race[] }
-  langues: { liste: Langue[] }
-  dons: { liste: Don[] }
+  langues: { regle: string; liste: Langue[] }
+  dons: { intro: string; liste: Don[] }
   competences: {
+    regle_niv1: string
     simples: CompetenceSimple[]
     artisanats: {
+      verbatim_interdiction: string
       max_par_personnage: number
       interdit_tranche: string
       liste: Artisanat[]
     }
   }
   heritage: {
-    desavantages: { liste: Desavantage[] }
+    regle_generale: string
+    xp_permanent: string
+    xp_temporaire: string
+    desavantages: {
+      regle_plafond: { verbatim: string; application_wizard: string }
+      liste: Desavantage[]
+    }
     avantages: { liste: AvantageHeritage[] }
+  }
+  classes_squelette: { liste: ClasseSquelette[] }
+  plafonds: {
+    pv_max: { valeur: number; verbatim: string; exception: string }
+  }
+  age_et_gates: {
+    seuil: { enfant: string; joueur_regulier: string }
+    regles_simplifiees_11_et_moins: { ligne_de_coupe: string }
   }
   branches_de_classes: { classes: ClasseBranches[] }
 }

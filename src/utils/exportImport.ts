@@ -26,7 +26,6 @@ export async function importerPersonnageJSON(fichier: File): Promise<void> {
   const { id: _ignoreId, ...reste } = donnees
   const personnage: Omit<Personnage, 'id'> = {
     nomPerso: reste.nomPerso ?? '',
-    joueurMineur: reste.joueurMineur ?? false,
     faction: reste.faction ?? '',
     race: reste.race ?? '',
     classe: reste.classe ?? '',
@@ -40,6 +39,9 @@ export async function importerPersonnageJSON(fichier: File): Promise<void> {
     ressources: reste.ressources ?? {},
     createdAt: reste.createdAt ?? Date.now(),
     updatedAt: Date.now(),
+    trancheAge: reste.trancheAge,
+    reglesVersion: reste.reglesVersion,
+    creation: reste.creation,
   }
 
   await db.personnages.add(personnage)

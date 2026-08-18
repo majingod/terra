@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportImport'
+import FicheAffichage from './creation/FicheAffichage'
 
 export default function Fiche() {
   const { id } = useParams()
@@ -23,13 +24,13 @@ export default function Fiche() {
   }
 
   if (personnage === undefined) {
-    return <p className="text-stone-400">Chargement…</p>
+    return <p className="text-muted-foreground">Chargement…</p>
   }
 
   if (personnage === null || !personnage) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="carte text-stone-300">Cette fiche n'existe pas.</p>
+        <p className="carte text-secondary-foreground">Cette fiche n'existe pas.</p>
         <Link to="/" className="btn-secondaire">
           Retour à l'accueil
         </Link>
@@ -39,22 +40,35 @@ export default function Fiche() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-extrabold text-ambre-500">{personnage.nomPerso || 'Sans nom'}</h1>
+      {personnage.creation ? (
+        <FicheAffichage fiche={personnage.creation} />
+      ) : (
+        <>
+          <h1 className="text-2xl font-extrabold text-gold">
+            {personnage.nomPerso || 'Sans nom'}
+          </h1>
 
-      <div className="carte flex flex-col gap-2">
-        <p><span className="font-bold">Faction :</span> {personnage.faction || '—'}</p>
-        <p><span className="font-bold">Race :</span> {personnage.race || '—'}</p>
-        <p><span className="font-bold">Classe :</span> {personnage.classe || '—'}</p>
-        <p><span className="font-bold">Sous-branche :</span> {personnage.sousBranche || '—'}</p>
-        <p><span className="font-bold">Niveau :</span> {personnage.niveau}</p>
-        <p>
-          <span className="font-bold">Caractéristiques :</span> Puissance{' '}
-          {personnage.caracs.puissance} · Résistance {personnage.caracs.resistance} · Esprit{' '}
-          {personnage.caracs.esprit}
-        </p>
-      </div>
+          <div className="carte flex flex-col gap-2">
+            <p><span className="font-bold">Faction :</span> {personnage.faction || '—'}</p>
+            <p><span className="font-bold">Race :</span> {personnage.race || '—'}</p>
+            <p><span className="font-bold">Classe :</span> {personnage.classe || '—'}</p>
+            <p><span className="font-bold">Sous-branche :</span> {personnage.sousBranche || '—'}</p>
+            <p><span className="font-bold">Niveau :</span> {personnage.niveau}</p>
+            <p>
+              <span className="font-bold">Caractéristiques :</span> Puissance{' '}
+              {personnage.caracs.puissance} · Résistance {personnage.caracs.resistance} · Esprit{' '}
+              {personnage.caracs.esprit}
+            </p>
+          </div>
+        </>
+      )}
 
-      <div className="flex flex-col gap-3">
+      <div className="pas-a-imprimer flex flex-col gap-3">
+        {personnage.creation && (
+          <button onClick={() => window.print()} className="btn-secondaire">
+            Imprimer / PDF
+          </button>
+        )}
         <button onClick={() => exporterPersonnageJSON(personnage)} className="btn-secondaire">
           Exporter en JSON
         </button>
