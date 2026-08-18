@@ -18,6 +18,20 @@ export default {
           500: '#f59e0b',
           600: '#d97706',
         },
+        // Tokens de la maquette validée (t004, D11-bis)
+        fond: '#0a0e17',
+        panneau: '#0e1421',
+        ligne: '#223046',
+        or: '#f2b135',
+        cta: '#e8720f',
+        sanctum: '#4d9cf6',
+        legion: '#e23b3b',
+        ok: '#37a35a',
+      },
+      fontFamily: {
+        titre: ['"Cormorant Garamond"', 'serif'],
+        wordmark: ['Cinzel', 'serif'],
+        corps: ['"Crimson Text"', 'serif'],
       },
       fontSize: {
         base: ['1.125rem', '1.6'],

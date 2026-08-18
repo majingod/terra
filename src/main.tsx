@@ -1,6 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+// Polices AUTO-HÉBERGÉES (@fontsource) : aucun appel réseau, woff2 précachés
+// par le service worker (globPatterns inclut *.woff2).
+import '@fontsource/cormorant-garamond/latin-600.css'
+import '@fontsource/cormorant-garamond/latin-700.css'
+import '@fontsource/cinzel/latin-700.css'
+import '@fontsource/crimson-text/latin-400.css'
+import '@fontsource/crimson-text/latin-600.css'
+import '@fontsource/crimson-text/latin-400-italic.css'
 import App from './App'
 import './index.css'
 

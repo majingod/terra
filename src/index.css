@@ -7,7 +7,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-terre-950 text-stone-100 antialiased;
+    @apply bg-fond font-corps text-stone-100 antialiased;
   }
 }
 
@@ -24,5 +24,58 @@
   }
   .carte {
     @apply rounded-2xl border-2 border-sang-700 bg-terre-900 p-5 shadow-md;
+  }
+
+  /* --- Wizard t004 (maquette validée) --- */
+  .panneau-w {
+    @apply rounded-2xl border border-ligne bg-panneau p-4;
+  }
+  .btn-continuer {
+    @apply flex min-h-touch w-full items-center justify-center rounded-xl bg-cta px-6 py-3
+      font-titre text-xl font-bold text-white shadow-lg transition-transform active:scale-95
+      disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100
+      focus-visible:outline focus-visible:outline-4 focus-visible:outline-or;
+  }
+  .titre-etape {
+    @apply font-titre text-2xl font-bold text-or;
+  }
+  /* Une carte choisie se place en haut, SOUS les en-têtes collants. */
+  .carte-choix {
+    scroll-margin-top: 9.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Impression (D9) : la fiche seule, noir sur blanc. */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 12pt;
+  }
+  header,
+  nav,
+  .pas-a-imprimer {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .fiche-imprimable,
+  .fiche-imprimable * {
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #777 !important;
+    box-shadow: none !important;
   }
 }
