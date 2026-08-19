@@ -6,8 +6,10 @@
  * `evolution.table` de rules.json ; les capacités acquises viennent du champ
  * `niveau` porté par chaque capacité de branche.
  *
- * Lecture de la table (mesurée v1.0.2) : chaque ligne donne ce que l'échelon
- * AJOUTE. Le niveau N cumule donc les lignes 1..N — d'où `donsCumules`.
+ * Lecture de la table : chaque ligne donne ce que l'échelon AJOUTE (dons,
+ * points de caractéristique, compétences). Le niveau N cumule donc les
+ * lignes 1..N — d'où les fonctions `…Cumule(e)s`. Le rythme des dons et des
+ * points de caractéristique n'est PAS écrit ici : il vit dans la table.
  */
 import { branchesDe } from './branches'
 import { getRules, type Capacite, type LigneEvolution } from './load'
@@ -53,9 +55,18 @@ function cumul(niveau: number, champ: (ligne: LigneEvolution) => number): number
     .reduce((somme, ligne) => somme + champ(ligne), 0)
 }
 
-/** Dons cumulés du niveau 1 au niveau demandé (niveau N ⇒ N dons en v1.0.2). */
+/** Dons cumulés du niveau 1 au niveau demandé. */
 export function donsCumules(niveau?: number): number {
   return cumul(normaliserNiveau(niveau), (ligne) => ligne.dons)
+}
+
+/**
+ * Points de caractéristique cumulés que les échelons 1..N ajoutent, en plus
+ * de la répartition de création. Ils se placent librement (étape Forces),
+ * sous le plafond de `caracteristiques.creation.max`.
+ */
+export function pointsCaracCumules(niveau?: number): number {
+  return cumul(normaliserNiveau(niveau), (ligne) => ligne.carac_points ?? 0)
 }
 
 /** Compétences cumulées du niveau 1 au niveau demandé. */

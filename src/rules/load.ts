@@ -142,6 +142,8 @@ export interface LigneEvolution {
   niv: number
   dons: number
   carac?: string
+  /** Points de caractéristique que l'échelon ajoute (placés librement). */
+  carac_points?: number
   competence?: number
 }
 
