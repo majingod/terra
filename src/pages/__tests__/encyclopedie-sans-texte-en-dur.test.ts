@@ -225,11 +225,13 @@ export function textesRendusHorsComposant(code: string): string[] {
 }
 
 describe('D13 — zéro texte de règle en dur', () => {
-  it('dénominateur : 832 textes dans rules.json, 253 assez longs pour être balayés', () => {
+  it('dénominateur : 849 textes dans rules.json, 270 assez longs pour être balayés', () => {
     // Les 579 autres font moins de 40 caractères normalisés (ids, noms,
     // libellés courts) : aucune fenêtre ne s'y forme, ils ne sont PAS balayés.
-    expect(TOUS).toHaveLength(832)
-    expect(BALAYES).toHaveLength(253)
+    // 1.1.0 a ajouté 17 champs « affichage » : tous assez longs pour être
+    // balayés, d'où 832 → 849 et 253 → 270, à trop-courts constants.
+    expect(TOUS).toHaveLength(849)
+    expect(BALAYES).toHaveLength(270)
     expect(TROP_COURTS).toBe(579)
     expect(Object.keys(SOURCES).length).toBeGreaterThan(30)
   })

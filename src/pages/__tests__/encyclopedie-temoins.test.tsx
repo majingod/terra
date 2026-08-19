@@ -8,7 +8,9 @@
  * trivialement vert sur une page vide.
  *
  * Chaque témoin est TIRÉ DES DONNÉES au moment du test : aucune phrase du
- * Tome n'est écrite ici non plus.
+ * Tome n'est écrite ici non plus. Le témoin est le texte que les données
+ * disent d'AFFICHER (`affichage ?? verbatim`, D14), pas le verbatim brut :
+ * depuis 1.1.0, les deux diffèrent là où le Tome porte une coquille.
  */
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
@@ -19,6 +21,7 @@ import { getRules } from '../../rules/load'
 import { classesSquelette } from '../../rules/stats'
 import { listeCompetencesSimples, listeDons } from '../../rules/talents'
 import Encyclopedie, { SECTIONS, type SectionId } from '../Encyclopedie'
+import { texteAffiche } from '../creation/ui'
 
 afterEach(cleanup)
 
@@ -26,11 +29,11 @@ afterEach(cleanup)
 const TEMOINS: Array<{ section: SectionId; temoin: string }> = [
   {
     section: 'classes',
-    temoin: branchesDe(classesSquelette()[0].id)[0].capacites[0].verbatim,
+    temoin: texteAffiche(branchesDe(classesSquelette()[0].id)[0].capacites[0]),
   },
-  { section: 'dons', temoin: listeDons()[0].verbatim },
+  { section: 'dons', temoin: texteAffiche(listeDons()[0]) },
   { section: 'competences', temoin: listeCompetencesSimples()[0].base },
-  { section: 'desavantages', temoin: listeDesavantages()[0].verbatim },
+  { section: 'desavantages', temoin: texteAffiche(listeDesavantages()[0]) },
 ]
 
 function ouvrir(section: SectionId) {

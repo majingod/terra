@@ -1,7 +1,8 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.0.3",
+  "version": "1.1.0",
+  "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
   "date": "2026-08-19",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
   "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
@@ -497,6 +498,7 @@
       {
        "nom": "Diplomate",
        "verbatim": "Le tavernier peut dire ‘’pour-parler’’ pour forcer des adversaires à l’écouter plutôt que de l’attaquer pendant 2 minutes. Si le tavernier ou un de ses alliés tente d’en profiter pour utiliser une capacité ou attaquer par surprise, l’effet du ‘’pour-parler’’ est rompu.",
+       "affichage": "Le marchand peut dire ‘’pour-parler’’ pour forcer des adversaires à l’écouter plutôt que de l’attaquer pendant 2 minutes. Si le marchand ou un de ses alliés tente d’en profiter pour utiliser une capacité ou attaquer par surprise, l’effet du ‘’pour-parler’’ est rompu.",
        "note": "A1 tranché : le Tome écrit « tavernier », erreur de texte confirmée par Fred. Lire « marchand ». Le verbatim reste intact pour la gate ; l'app affiche « marchand »."
       },
       {
@@ -899,8 +901,8 @@
    "justification": "C'est le minimum qui fait fonctionner une règle de jeu (Loi 25 : minimisation)."
   },
   "regles_simplifiees_11_et_moins": {
-   "statut": "BLOQUÉ #30 — jeu de règles simplifié confirmé par Fred, détails à venir. ⛔ N'inventer aucune règle provisoire.",
-   "ligne_de_coupe": "Si le contenu n'arrive pas à temps : le wizard demande la tranche d'âge ; à « 11 ans et moins » il affiche que la fiche est fournie par l'organisation et renvoie au papier, sans jamais bloquer l'app. Les admins impriment les fiches vierges."
+   "statut": "LIVRÉ t006 — corpus dans rules_kids.json (autre maison, autre autorité : la planche)",
+   "ligne_de_coupe": "fiches papier pré-faites à l'accueil (filet D1)"
   }
  },
  "branches_de_classes": {
@@ -944,13 +946,15 @@
         "id": "druide.chaman.1",
         "niveau": 1,
         "nom": "Liane",
-        "verbatim": "Signe : Vitis, empêche de se déplacer 1 min ou jusqu’à ce qu’elle subît des dégâts."
+        "verbatim": "Signe : Vitis, empêche de se déplacer 1 min ou jusqu’à ce qu’elle subît des dégâts.",
+        "affichage": "Signe : Vitis, empêche de se déplacer 1 min ou jusqu’à ce qu’elle subisse des dégâts."
        },
        {
         "id": "druide.chaman.2",
         "niveau": 2,
         "nom": "Sanctuaire",
-        "verbatim": "1 Mana, Incantation, rend le druide invulnérable (main liée), mais ne peux rien faire à par parler. Durée maximum 2 minutes."
+        "verbatim": "1 Mana, Incantation, rend le druide invulnérable (main liée), mais ne peux rien faire à par parler. Durée maximum 2 minutes.",
+        "affichage": "1 Mana, Incantation, rend le druide invulnérable (main liée), mais ne peut rien faire à part parler. Durée maximum 2 minutes."
        },
        {
         "id": "druide.chaman.3",
@@ -1004,7 +1008,8 @@
         "id": "druide.elementaliste.5",
         "niveau": 5,
         "nom": "Vol",
-        "verbatim": "2 Mana, Incantation, permet au druide de voler (poing en l’air), ne peux être attaqué que par ceux qui vol ou à distance. Ceci est un Buff. Durée 1heure."
+        "verbatim": "2 Mana, Incantation, permet au druide de voler (poing en l’air), ne peux être attaqué que par ceux qui vol ou à distance. Ceci est un Buff. Durée 1heure.",
+        "affichage": "2 Mana, Incantation, permet au druide de voler (poing en l’air), ne peut être attaqué que par ceux qui volent ou à distance. Ceci est un Buff. Durée 1 heure."
        }
       ]
      },
@@ -1122,7 +1127,8 @@
         "id": "guerrier.ravageur.4",
         "niveau": 4,
         "nom": "Brute",
-        "verbatim": "+1 dégât avec les armes tenues à 2 mains (pas armes d’haste)."
+        "verbatim": "+1 dégât avec les armes tenues à 2 mains (pas armes d’haste).",
+        "affichage": "+1 dégât avec les armes tenues à 2 mains (pas armes d’hast)."
        },
        {
         "id": "guerrier.ravageur.5",
@@ -1197,7 +1203,8 @@
         "id": "magicien.ensorceleur.1",
         "niveau": 1,
         "nom": "Flamme",
-        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible."
+        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible.",
+        "affichage": "Signe : Ignis, Inflige 1 dégât de feu. Ne peut pas être fait 2 fois de suite sur la même cible."
        },
        {
         "id": "magicien.ensorceleur.2",
@@ -1233,13 +1240,15 @@
         "id": "magicien.archimage.1",
         "niveau": 1,
         "nom": "Boule de feu",
-        "verbatim": "1 Mana, Incantation, inflige 3 dégâts à une cible à environ 10m ou moins. Ne peux pas être fait 2 fois de suite sur la même cible."
+        "verbatim": "1 Mana, Incantation, inflige 3 dégâts à une cible à environ 10m ou moins. Ne peux pas être fait 2 fois de suite sur la même cible.",
+        "affichage": "1 Mana, Incantation, inflige 3 dégâts à une cible à environ 10m ou moins. Ne peut pas être fait 2 fois de suite sur la même cible."
        },
        {
         "id": "magicien.archimage.2",
         "niveau": 2,
         "nom": "Invisibilité",
-        "verbatim": "1 Mana, Incantation, la cible est invisible 1 minute, mais ne peux pas attaquer ou se déplacer directement vers quelqu’un."
+        "verbatim": "1 Mana, Incantation, la cible est invisible 1 minute, mais ne peux pas attaquer ou se déplacer directement vers quelqu’un.",
+        "affichage": "1 Mana, Incantation, la cible est invisible 1 minute, mais ne peut pas attaquer ou se déplacer directement vers quelqu’un."
        },
        {
         "id": "magicien.archimage.3",
@@ -1404,7 +1413,8 @@
         "id": "roublard.barde.2",
         "niveau": 2,
         "nom": "Charme",
-        "verbatim": "1 Mana, après avoir dit 2 compliments différents à une cible, celle-ci considère le roublard comme un ami pour 5 minutes. Si résisté, ne peux être retenter avant 1 heure."
+        "verbatim": "1 Mana, après avoir dit 2 compliments différents à une cible, celle-ci considère le roublard comme un ami pour 5 minutes. Si résisté, ne peux être retenter avant 1 heure.",
+        "affichage": "1 Mana, après avoir dit 2 compliments différents à une cible, celle-ci considère le roublard comme un ami pour 5 minutes. Si résisté, ne peut être retentée avant 1 heure."
        },
        {
         "id": "roublard.barde.3",
@@ -1416,7 +1426,8 @@
         "id": "roublard.barde.4",
         "niveau": 4,
         "nom": "Confusion",
-        "verbatim": "1 Mana et incantation, La cible à vue inverse alliée et ennemi pour 1 minute, 10 minutes si hors combat. Ne peux pas être lancé 2 fois sur la même cible dans la même heure"
+        "verbatim": "1 Mana et incantation, La cible à vue inverse alliée et ennemi pour 1 minute, 10 minutes si hors combat. Ne peux pas être lancé 2 fois sur la même cible dans la même heure",
+        "affichage": "1 Mana et incantation, La cible à vue inverse alliés et ennemis pour 1 minute, 10 minutes si hors combat. Ne peut pas être lancé 2 fois sur la même cible dans la même heure"
        },
        {
         "id": "roublard.barde.5",
@@ -1538,7 +1549,8 @@
         "id": "chevalier_de_la_mort.faucheur.2",
         "niveau": 2,
         "nom": "Armée des morts",
-        "verbatim": "1 Mana, Incantation, Relève 3 morts en zombie, 5 PV, frape de 1, ne peuvent pas courir."
+        "verbatim": "1 Mana, Incantation, Relève 3 morts en zombie, 5 PV, frape de 1, ne peuvent pas courir.",
+        "affichage": "1 Mana, Incantation, Relève 3 morts en zombie, 5 PV, frappe de 1, ne peuvent pas courir."
        },
        {
         "id": "chevalier_de_la_mort.faucheur.3",
@@ -1550,7 +1562,8 @@
         "id": "chevalier_de_la_mort.faucheur.4",
         "niveau": 4,
         "nom": "Gargantua",
-        "verbatim": "2 Mana, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois."
+        "verbatim": "2 Mana, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois.",
+        "affichage": "2 Mana, Incantation, Relève 1 mort en Zombie 15 PV, frappe de 3, ne peut pas courir. Un seul gargantua à la fois."
        },
        {
         "id": "chevalier_de_la_mort.faucheur.5",
@@ -1638,7 +1651,8 @@
         "id": "sorcier.cultiste.5",
         "niveau": 5,
         "nom": "Malédiction",
-        "verbatim": "2 Énergies, Incantation, afflige une malédiction à vue que la cible ne peut plus courir OU ses dégâts sont de 1 maximum OU ne peux plus être soigné. Durée. 2 heures."
+        "verbatim": "2 Énergies, Incantation, afflige une malédiction à vue que la cible ne peut plus courir OU ses dégâts sont de 1 maximum OU ne peux plus être soigné. Durée. 2 heures.",
+        "affichage": "2 Énergies, Incantation, afflige une malédiction à vue que la cible ne peut plus courir OU ses dégâts sont de 1 maximum OU ne peut plus être soigné. Durée : 2 heures."
        }
       ]
      },
@@ -1650,7 +1664,8 @@
         "id": "sorcier.necromancien.1",
         "niveau": 1,
         "nom": "Réanimation",
-        "verbatim": "Incantation, 1 fois par cible par heure. Relève 3 morts en zombie, 3 PV, frape de 1, ne peuvent pas courir."
+        "verbatim": "Incantation, 1 fois par cible par heure. Relève 3 morts en zombie, 3 PV, frape de 1, ne peuvent pas courir.",
+        "affichage": "Incantation, 1 fois par cible par heure. Relève 3 morts en zombie, 3 PV, frappe de 1, ne peuvent pas courir."
        },
        {
         "id": "sorcier.necromancien.2",
@@ -1668,7 +1683,8 @@
         "id": "sorcier.necromancien.4",
         "niveau": 4,
         "nom": "Gargantua",
-        "verbatim": "2 Énergies, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois."
+        "verbatim": "2 Énergies, Incantation, Relève 1 mort en Zombie 15 PV, frape de 3, ne peux pas courir. Un seul gargantua à la fois.",
+        "affichage": "2 Énergies, Incantation, Relève 1 mort en Zombie 15 PV, frappe de 3, ne peut pas courir. Un seul gargantua à la fois."
        },
        {
         "id": "sorcier.necromancien.5",
@@ -1707,7 +1723,8 @@
         "id": "medjai.occultiste.1",
         "niveau": 1,
         "nom": "Flamme",
-        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible."
+        "verbatim": "Signe : Ignis, Inflige1 dégât de feu. Ne peux pas être fait 2 fois de suite sur la même cible.",
+        "affichage": "Signe : Ignis, Inflige 1 dégât de feu. Ne peut pas être fait 2 fois de suite sur la même cible."
        },
        {
         "id": "medjai.occultiste.2",
@@ -1749,7 +1766,8 @@
         "id": "medjai.mutant.2",
         "niveau": 2,
         "nom": "Costaud",
-        "verbatim": "-1 Mana permanent, Le Medjai obtient +1 dégât s’il tiens son arme à 2 mains (pas armes d’haste)."
+        "verbatim": "-1 Mana permanent, Le Medjai obtient +1 dégât s’il tiens son arme à 2 mains (pas armes d’haste).",
+        "affichage": "-1 Mana permanent, Le Medjai obtient +1 dégât s’il tient son arme à 2 mains (pas armes d’hast)."
        },
        {
         "id": "medjai.mutant.3",

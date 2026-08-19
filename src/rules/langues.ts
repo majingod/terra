@@ -1,19 +1,18 @@
 /**
  * Langues (Tome p.7).
  *
- * Les langues acquises viennent de la race (langues_depart) ; le Druidique
- * est acquis d'office par le druide (restriction de la langue dans
- * rules.json : « seuls les druides y ont accès et le possèdent dès le
- * début »). La Langue des morts n'est jamais proposée à la création
- * (restriction : « ne commence pas avec »).
+ * Les langues acquises viennent de la race (races.liste[].langues_depart) ;
+ * le Druidique est acquis d'office par le druide, et la Langue des morts
+ * n'est jamais proposée à la création. Les deux règles vivent dans
+ * langues.liste[].restriction de rules.json — pas recopiées ici.
  */
 import { getRules, type Langue } from './load'
 
-/** Id de la langue réservée aux druides (restriction lue dans rules.json). */
+/** Id de la langue réservée aux druides — voir langues.liste[].restriction. */
 const LANGUE_DRUIDES = 'druidique'
 /** Id de la classe qui la possède dès le début. */
 const CLASSE_DRUIDE = 'druide'
-/** Id de la langue qu'on « ne commence pas avec » (restriction rules.json). */
+/** Id de la langue jamais offerte à la création — même champ restriction. */
 const LANGUE_JAMAIS_A_LA_CREATION = 'des_morts'
 
 export function listeLangues(): Langue[] {
@@ -37,9 +36,9 @@ function palierEsprit(esprit: number) {
 /**
  * T8 : droit de langues au choix =
  *   langues de la table cumulative d'Esprit (A4)
- * + bonus Érudit : 1 langue si illettré (Esprit 1), sinon 2 — chiffres du
- *   verbatim d'Érudit (« choisit 1 langue supplémentaire… il obtient 2
- *   langues supplémentaires »), l'illettrisme étant lu de la table.
+ * + bonus Érudit : 1 langue si illettré, sinon 2 — chiffres du verbatim
+ *   d'Érudit (competences.simples[id=erudit].base), l'illettrisme étant lu
+ *   de la table cumulative.
  */
 export function droitLangues(esprit: number, comps: readonly string[] = []): number {
   const palier = palierEsprit(esprit)
