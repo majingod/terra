@@ -3,14 +3,22 @@
  * fichier) à prendre en main puis poser sur une caractéristique ; retoucher
  * une caractéristique remplie reprend son jeton. Paliers de la table p.5
  * affichés sous chaque caractéristique, allumés quand atteints (lecture
- * cumulative A4). Points d'héritage en plus, plafond lu du fichier.
+ * cumulative A4). Points de caractéristique en plus — ceux des échelons de
+ * niveau (table d'évolution) et ceux achetés à l'héritage — placés librement
+ * sur le même composant, plafond lu du fichier.
  */
 import { useState } from 'react'
 import { repartitionAttendue } from '../../rules/caracs'
 import { totalAchats } from '../../rules/heritage'
 import { getRules } from '../../rules/load'
+import { normaliserNiveau, pointsCaracCumules } from '../../rules/niveau'
 import { valeurCarac } from '../../rules/stats'
-import { surplusDons, surplusLangues } from '../../wizard/validation'
+import {
+  pointsCaracAPlacer,
+  surplusDons,
+  surplusLangues,
+  surplusPointsCarac,
+} from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
 import { ErreurNote, Note, Tutoriel } from './ui'
 
@@ -55,9 +63,15 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
   const regles = getRules()
   const jetons = repartitionAttendue().sort((a, b) => b - a)
   const max = regles.caracteristiques.creation.max
+  const niveau = normaliserNiveau(fiche.niveau)
   const pointsHeritage = totalAchats(fiche.achats, 'carac')
+  const pointsNiveau = pointsCaracCumules(niveau)
+  const pointsEnPlus = pointsCaracAPlacer(fiche)
   const extras = fiche.extras ?? { p: 0, r: 0, e: 0 }
   const poses = extras.p + extras.r + extras.e
+  const caracsEnTrop = surplusPointsCarac(fiche)
+  /** Les + / − restent là tant qu'il y a un point à poser OU un à reprendre. */
+  const montrerPoints = pointsEnPlus > 0 || poses > 0
   const [enMain, setEnMain] = useState<number | null>(null)
   const utilises = Object.values(fiche.caracs ?? {}).filter((v) => v !== undefined)
   const donsEnTrop = surplusDons(fiche)
@@ -82,7 +96,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
   function majExtra(cle: CleCarac, delta: 1 | -1) {
     const valeur = extras[cle] + delta
     if (valeur < 0) return
-    if (delta > 0 && (poses >= pointsHeritage || valeurCarac(fiche, cle) >= max)) return
+    if (delta > 0 && (poses >= pointsEnPlus || valeurCarac(fiche, cle) >= max)) return
     onMaj({ ...fiche, extras: { ...extras, [cle]: valeur } })
   }
 
@@ -96,8 +110,10 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
           'Pose-le sur une caractéristique en la touchant.',
           'Répète pour les trois jetons — chacun ne sert qu’une fois.',
           'Sous chaque caractéristique, la table montre le bonus de chaque palier : les paliers atteints s’allument et s’additionnent.',
-          ...(pointsHeritage > 0
-            ? [`Place ensuite ton point d’héritage avec les + à droite (max ${max}).`]
+          ...(pointsEnPlus > 0
+            ? [
+                `Place ensuite tes ${pointsEnPlus} point${pointsEnPlus > 1 ? 's' : ''} de caractéristique en plus avec les + à droite — aucune caractéristique ne va au-delà de ${max}.`,
+              ]
             : []),
         ]}
         pourquoi={`« ${regles.caracteristiques.creation.verbatim} »`}
@@ -160,7 +176,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                 <b className={`text-lg ${couleur}`}>{nom}</b>
                 <small className="block text-muted-foreground">{sousTitre}</small>
               </div>
-              {pointsHeritage > 0 && (
+              {montrerPoints && (
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -169,7 +185,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                       e.stopPropagation()
                       majExtra(cle, -1)
                     }}
-                    aria-label={`${nom} : retirer un point d'héritage`}
+                    aria-label={`${nom} : retirer un point de caractéristique`}
                     className="h-11 w-11 rounded-full border-[1.5px] border-border/50 bg-input text-[17px] disabled:opacity-30"
                   >
                     −
@@ -181,7 +197,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
                       e.stopPropagation()
                       majExtra(cle, 1)
                     }}
-                    aria-label={`${nom} : ajouter un point d'héritage`}
+                    aria-label={`${nom} : ajouter un point de caractéristique`}
                     className="h-11 w-11 rounded-full border-[1.5px] border-border/50 bg-input text-[17px]"
                   >
                     +
@@ -220,12 +236,22 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
         )
       })}
 
-      {pointsHeritage > 0 && (
+      {montrerPoints && (
         <Note>
-          Héritage : <b>{pointsHeritage} point{pointsHeritage > 1 ? 's' : ''}</b> de
-          caractéristique à placer en plus ({poses}/{pointsHeritage}) — maximum {max} par
+          <b>
+            {pointsEnPlus} point{pointsEnPlus > 1 ? 's' : ''}
+          </b>{' '}
+          de caractéristique à placer en plus ({poses}/{pointsEnPlus})
+          {pointsNiveau > 0 && ` — dont ${pointsNiveau} de ton niveau ${niveau}`}
+          {pointsHeritage > 0 && ` — dont ${pointsHeritage} d’héritage`} — maximum {max} par
           caractéristique.
         </Note>
+      )}
+      {caracsEnTrop > 0 && (
+        <ErreurNote>
+          Retire {caracsEnTrop} point{caracsEnTrop > 1 ? 's' : ''} de caractéristique : ton droit
+          a baissé.
+        </ErreurNote>
       )}
       {valeurCarac(fiche, 'e') === 1 && (
         <Note>

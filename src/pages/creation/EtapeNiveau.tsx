@@ -12,6 +12,7 @@ import {
   niveauMax,
   niveauxPossibles,
   normaliserNiveau,
+  pointsCaracCumules,
   regleAuDelaDuPlafond,
 } from '../../rules/niveau'
 import { changerNiveau, type Changement } from '../../wizard/validation'
@@ -37,11 +38,12 @@ export default function EtapeNiveau({ fiche, onChangement }: Props) {
           'Niveau 1 si tu commences aujourd’hui — c’est le défaut.',
           'Baisser ton niveau après coup te dira ce qu’il faudra retirer.',
         ]}
-        pourquoi="ton niveau décide combien de dons tu choisis et quelles capacités de ta voie tu tiens déjà."
+        pourquoi="ton niveau décide combien de dons tu choisis, combien de points de caractéristique tu places en plus, et quelles capacités de ta voie tu tiens déjà."
       />
 
       {niveauxPossibles().map((valeur) => {
         const dons = donsCumules(valeur)
+        const points = pointsCaracCumules(valeur)
         return (
           <CarteChoix
             key={valeur}
@@ -56,6 +58,11 @@ export default function EtapeNiveau({ fiche, onChangement }: Props) {
               <Badge variante="gold">
                 {dons} don{dons > 1 ? 's' : ''}
               </Badge>
+              {points > 0 && (
+                <Badge variante="gold">
+                  {points} point{points > 1 ? 's' : ''} de caractéristique
+                </Badge>
+              )}
               <Badge>capacités de ta voie jusqu’à l’échelon {valeur}</Badge>
             </p>
           </CarteChoix>

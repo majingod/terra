@@ -24,7 +24,12 @@ import {
 } from '../rules/heritage'
 import { droitLangues, refusLangues } from '../rules/langues'
 import { getRules } from '../rules/load'
-import { capacitesAcquises, niveauxPossibles, normaliserNiveau } from '../rules/niveau'
+import {
+  capacitesAcquises,
+  niveauxPossibles,
+  normaliserNiveau,
+  pointsCaracCumules,
+} from '../rules/niveau'
 import {
   classesPourFaction,
   racesPourFaction,
@@ -155,6 +160,21 @@ export function problemesDestin(fiche: FicheCreation): string[] {
   return problemes
 }
 
+/**
+ * Points de caractéristique à placer librement en plus de la répartition de
+ * création : ceux que les échelons de niveau ajoutent (table d'évolution) et
+ * ceux achetés à l'héritage. Aucun rythme n'est écrit ici.
+ */
+export function pointsCaracAPlacer(fiche: FicheCreation): number {
+  return pointsCaracCumules(fiche.niveau) + totalAchats(fiche.achats, 'carac')
+}
+
+/** Points de caractéristique posés au-delà du droit (le joueur les retire). */
+export function surplusPointsCarac(fiche: FicheCreation): number {
+  const extras = fiche.extras ?? { p: 0, r: 0, e: 0 }
+  return Math.max(0, extras.p + extras.r + extras.e - pointsCaracAPlacer(fiche))
+}
+
 export function problemesForces(fiche: FicheCreation): string[] {
   const problemes: string[] = []
   const { p, r, e } = fiche.caracs ?? {}
@@ -165,11 +185,13 @@ export function problemesForces(fiche: FicheCreation): string[] {
     problemes.push('répartition refusée : il faut exactement les jetons du fichier')
   }
   const extras = fiche.extras ?? { p: 0, r: 0, e: 0 }
-  const pointsAchetes = totalAchats(fiche.achats, 'carac')
+  const aPlacer = pointsCaracAPlacer(fiche)
   const distribues = extras.p + extras.r + extras.e
-  if (extras.p < 0 || extras.r < 0 || extras.e < 0) problemes.push('point d’héritage négatif')
-  if (distribues !== pointsAchetes) {
-    problemes.push(`points d'héritage : ${distribues}/${pointsAchetes} posés`)
+  if (extras.p < 0 || extras.r < 0 || extras.e < 0) {
+    problemes.push('point de caractéristique négatif')
+  }
+  if (distribues !== aPlacer) {
+    problemes.push(`points de caractéristique : ${distribues}/${aPlacer} posés`)
   }
   const max = getRules().caracteristiques.creation.max
   for (const carac of ['p', 'r', 'e'] as const) {
@@ -336,7 +358,8 @@ export function changerVoie(fiche: FicheCreation, nouvelleVoie: string): Changem
  *   la voie donnera désormais d'office (cas d'une MONTÉE de niveau) ;
  * - le surplus se retire par le joueur : une BAISSE de niveau réduit le
  *   droit de dons (et de compétences) — la fenêtre nomme ce qu'il faudra
- *   retirer aux étapes concernées, le joueur le retire lui-même.
+ *   retirer aux étapes concernées, le joueur le retire lui-même — dons,
+ *   compétences, et les points de caractéristique des échelons pairs.
  */
 export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Changement {
   const niveau = normaliserNiveau(nouveauNiveau)
@@ -361,6 +384,12 @@ export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Chan
   if (compsEnTrop > 0) {
     retraits.push(
       `Ton niveau baisse : retire ${compsEnTrop} compétence${compsEnTrop > 1 ? 's' : ''} à l'étape Talents.`,
+    )
+  }
+  const caracsEnTrop = surplusPointsCarac(suite)
+  if (caracsEnTrop > 0) {
+    retraits.push(
+      `Ton niveau baisse : retire ${caracsEnTrop} point${caracsEnTrop > 1 ? 's' : ''} de caractéristique à l'étape Forces (tu choisis lesquels).`,
     )
   }
   return { fiche: suite, retraits }

@@ -20,7 +20,7 @@ import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
 import { consommationDons, droitCompetences, droitDons } from '../../rules/talents'
 import { bassinCapacites } from '../../wizard/capacites'
-import type { Changement } from '../../wizard/validation'
+import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
@@ -95,8 +95,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
       }
     }
     if (effet.type === 'carac') {
-      const extras = fiche.extras ?? { p: 0, r: 0, e: 0 }
-      if (extras.p + extras.r + extras.e > compteAchats(achats, 'carac')) {
+      if (surplusPointsCarac({ ...fiche, achats }) > 0) {
         impacts.push(`Un point déjà placé à l'étape Forces sera à retirer.`)
       }
     }

@@ -60,9 +60,8 @@ export function refusDons(dons: Readonly<Record<string, number>>): string[] {
 
 /**
  * Droit de compétences = compétences CUMULÉES jusqu'au niveau du personnage
- * + achats « +1 Compétence ». (En v1.0.2 seule la ligne 1 porte une
- * compétence : le droit est donc le même à tous les niveaux — c'est la table
- * qui le dit, pas ce module.)
+ * + achats « +1 Compétence ». Quelles lignes portent une compétence, c'est la
+ * table qui le dit, pas ce module.
  */
 export function droitCompetences(
   achats?: Readonly<Record<string, number>>,
