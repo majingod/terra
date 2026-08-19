@@ -8,7 +8,7 @@ import { languesAcquises } from '../../rules/langues'
 import { racesPourFaction } from '../../rules/stats'
 import { changerFaction, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { Badge, BadgeBonus, CarteChoix, TitreCarte, Tutoriel, Verbatim } from './ui'
+import { Badge, BadgeBonus, CarteChoix, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
   fiche: FicheCreation
@@ -65,7 +65,7 @@ export default function EtapeCamp({ fiche, onMaj, onChangement }: Props) {
             }}
           >
             <TitreCarte peau={peau}>{faction.nom}</TitreCarte>
-            <Verbatim texte={faction.verbatim} />
+            <TexteRegle source={faction} />
           </CarteChoix>
         )
       })}
@@ -101,7 +101,7 @@ export default function EtapeCamp({ fiche, onMaj, onChangement }: Props) {
                 </p>
                 {race.bonus.map((bonus, i) =>
                   typeof bonus === 'object' && 'nom' in bonus ? (
-                    <Verbatim key={i} gras={bonus.nom} texte={bonus.verbatim} />
+                    <TexteRegle key={i} gras={bonus.nom} source={bonus} />
                   ) : null,
                 )}
                 <p className="my-1">

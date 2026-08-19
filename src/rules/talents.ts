@@ -8,14 +8,7 @@
 import { getRules, type Artisanat, type CompetenceSimple, type Don } from './load'
 import { artisanatsDisponibles, type TrancheAge } from './age'
 import { compteAchats } from './heritage'
-
-function ligneNiveau1() {
-  const ligne = getRules().evolution.table.find((l) => l.niv === 1)
-  if (!ligne) {
-    throw new Error("rules.json : ligne de niveau 1 introuvable dans la table d'évolution.")
-  }
-  return ligne
-}
+import { competencesCumulees, donsCumules } from './niveau'
 
 function palierEsprit(esprit: number) {
   return getRules().caracteristiques.table_cumulative.esprit[String(esprit)]
@@ -27,15 +20,17 @@ export function listeDons(): Don[] {
 }
 
 /**
- * Droit de dons = dons du niveau 1 (table d'évolution) + dons de la table
- * cumulative d'Esprit + achats « +1 Don ».
+ * Droit de dons = dons CUMULÉS jusqu'au niveau du personnage (table
+ * d'évolution) + dons de la table cumulative d'Esprit + achats « +1 Don ».
+ * Sans niveau donné, c'est le niveau minimum de la table (D12 : défaut 1).
  */
 export function droitDons(
   esprit: number,
   achats?: Readonly<Record<string, number>>,
+  niveau?: number,
 ): number {
   const palier = palierEsprit(esprit)
-  return ligneNiveau1().dons + (palier ? palier.dons : 0) + compteAchats(achats, 'don')
+  return donsCumules(niveau) + (palier ? palier.dons : 0) + compteAchats(achats, 'don')
 }
 
 /**
@@ -63,9 +58,17 @@ export function refusDons(dons: Readonly<Record<string, number>>): string[] {
   return refus
 }
 
-/** Droit de compétences = compétences du niveau 1 + achats « +1 Compétence ». */
-export function droitCompetences(achats?: Readonly<Record<string, number>>): number {
-  return (ligneNiveau1().competence ?? 0) + compteAchats(achats, 'competence')
+/**
+ * Droit de compétences = compétences CUMULÉES jusqu'au niveau du personnage
+ * + achats « +1 Compétence ». (En v1.0.2 seule la ligne 1 porte une
+ * compétence : le droit est donc le même à tous les niveaux — c'est la table
+ * qui le dit, pas ce module.)
+ */
+export function droitCompetences(
+  achats?: Readonly<Record<string, number>>,
+  niveau?: number,
+): number {
+  return competencesCumulees(niveau) + compteAchats(achats, 'competence')
 }
 
 export function listeCompetencesSimples(): CompetenceSimple[] {

@@ -185,7 +185,10 @@ export interface Rules {
     }
     illettre: { verbatim: string }
   }
-  evolution: { table: LigneEvolution[] }
+  evolution: {
+    regles: { montee: string; au_dela_niv5: string }
+    table: LigneEvolution[]
+  }
   factions: {
     liste: Faction[]
     avantage_de_depart: { regle: string; critere: string; consequence_ui: string }
