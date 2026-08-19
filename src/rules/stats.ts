@@ -95,7 +95,7 @@ export interface ContexteStats {
   achats?: Record<string, number>
 }
 
-/** Valeur finale d'une caractéristique (jeton posé + points d'héritage). */
+/** Valeur finale d'une caractéristique (jeton posé + points en plus). */
 export function valeurCarac(fiche: ContexteStats, carac: 'p' | 'r' | 'e'): number {
   return (fiche.caracs?.[carac] ?? 0) + (fiche.extras?.[carac] ?? 0)
 }

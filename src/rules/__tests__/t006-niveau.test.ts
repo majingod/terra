@@ -32,25 +32,24 @@ describe('t006 — dons cumulés par niveau', () => {
     expect(tableEvolution()).toHaveLength(5)
   })
 
-  it('niveau_5_donne_5_dons_cumules', () => {
-    expect(donsCumules(5)).toBe(5)
-  })
+  // Les dons par niveau vivent désormais dans t007-table-evolution.test.ts :
+  // la spec « niveau N ⇒ N dons » du brief t006 était fausse (correctif
+  // PR-B, table p.5 relue le 2026-08-19).
 
-  it('jumelle : au niveau N, les dons cumulés valent N — pour les 5 échelons', () => {
-    // Le « N dons au niveau N » n'est pas posé ici : il se recalcule ligne à
-    // ligne depuis la table, et vaut N tant que chaque ligne donne 1 don.
+  it('les dons cumulés se relisent ligne à ligne depuis la table', () => {
     const attendus = NIVEAUX.map((niveau) =>
       tableEvolution()
         .filter((ligne) => ligne.niv <= niveau)
         .reduce((somme, ligne) => somme + ligne.dons, 0),
     )
     expect(NIVEAUX.map(donsCumules)).toEqual(attendus)
-    expect(NIVEAUX.map(donsCumules)).toEqual(NIVEAUX)
   })
 
-  it('le droit de dons suit le niveau (Esprit et héritage neutres)', () => {
+  it('le droit de dons suit la table (Esprit et héritage neutres)', () => {
     // Esprit 2 : la table cumulative n'ajoute aucun don — le niveau seul parle.
-    expect(NIVEAUX.map((niveau) => droitDons(2, undefined, niveau))).toEqual([1, 2, 3, 4, 5])
+    expect(NIVEAUX.map((niveau) => droitDons(2, undefined, niveau))).toEqual(
+      NIVEAUX.map((niveau) => donsCumules(niveau)),
+    )
   })
 
   it('sans niveau donné, le droit est celui du niveau minimum (défaut 1)', () => {

@@ -1,8 +1,8 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.0.2",
-  "date": "2026-08-17",
+  "version": "1.0.3",
+  "date": "2026-08-19",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
   "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
   "source": "Tome des règles V1.2 (PDF projet) + Aide-mémoire (vérification croisée)",
@@ -11,6 +11,7 @@
   "version_affichee": "C'est CETTE version (meta.version) que la fiche affiche (compensation D8-bis, item VERSION-VISIBLE).",
   "corrections_v101": "v1.0.1 : 28 verbatims du lot 1, apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé.",
   "corrections_v102": "v1.0.2 : 29e écart, competences.artisanats.verbatim_interdiction (Tome p.17), même cause, même remède. Manqué en v1.0.1 parce que mon critère cherchait la clé « verbatim » exacte au lieu de toute clé de verbatim — le critère est élargi.",
+  "corrections_v103": "v1.0.3 : evolution.table corrigée. La v1.0.2 portait « 1 don par échelon » (dons cumulés = N au niveau N) — erreur de transcription de t003, relevée le 2026-08-19 par lecture zoomée de l’image p.5 du Tome. La table réelle donne +1 don aux niveaux 1, 3 et 5 et +1 point de caractéristique aux niveaux 2 et 4. Lecture de la table, inchangée : chaque ligne donne ce que l’échelon AJOUTE — `dons` = dons neufs, `carac_points` = points de caractéristique à placer librement, `competence` = compétences neuves. Aucun autre champ du fichier n’est touché.",
   "champs_sous_gate": "Toute clé dont le nom CONTIENT « verbatim », sauf deux exceptions nommées : meta.normalisation_verbatim (méta-texte) et age_et_gates.seuil.verbatim_fred (citation d'arbitrage hors Tome)."
  },
  "caracteristiques": {
@@ -158,7 +159,8 @@
    },
    {
     "niv": 2,
-    "dons": 1
+    "dons": 0,
+    "carac_points": 1
    },
    {
     "niv": 3,
@@ -166,7 +168,8 @@
    },
    {
     "niv": 4,
-    "dons": 1
+    "dons": 0,
+    "carac_points": 1
    },
    {
     "niv": 5,
