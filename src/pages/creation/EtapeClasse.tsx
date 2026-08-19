@@ -13,6 +13,7 @@ import { capacitesAcquises, normaliserNiveau } from '../../rules/niveau'
 import { classesPourFaction } from '../../rules/stats'
 import { changerClasse, changerVoie, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
+import ArbreVoie from '../../components/ArbreVoie'
 import { Badge, CarteChoix, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
@@ -93,27 +94,7 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
                       <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
                         {voie.nom}
                       </h3>
-                      <ol className="m-0 list-none p-0">
-                        {[...voie.capacites]
-                          .sort((a, b) => a.niveau - b.niveau)
-                          .map((capacite) => {
-                            const acquise = acquises.has(capacite.id)
-                            return (
-                              <li
-                                key={capacite.id}
-                                className={`border-t border-border/30 py-1.5 first:border-t-0 ${
-                                  acquise ? '' : 'opacity-70'
-                                }`}
-                              >
-                                <Badge variante={acquise ? 'gold' : undefined}>
-                                  Niv {capacite.niveau}
-                                  {acquise ? ' · acquis' : ''}
-                                </Badge>
-                                <TexteRegle gras={capacite.nom} source={capacite} />
-                              </li>
-                            )
-                          })}
-                      </ol>
+                      <ArbreVoie capacites={voie.capacites} acquises={acquises} />
                     </CarteChoix>
                   )
                 })}
