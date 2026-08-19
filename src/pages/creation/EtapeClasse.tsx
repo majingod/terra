@@ -1,14 +1,19 @@
 /**
- * Étape 3 — Classe (maquette A v3) : toucher une classe la CHOISIT (avec
- * fenêtre de répercussions au besoin) et ouvre ses trois voies dedans.
- * D4 : seul le niveau 1 des voies est détaillé ; les niveaux 2-5 sont
- * seulement nommés (validé maquette).
+ * Étape — Classe : toucher une classe la CHOISIT (avec fenêtre de
+ * répercussions au besoin) et ouvre ses trois voies dedans.
+ *
+ * D4-bis (t006) : au MOMENT DU CHOIX, le wizard montre l'ARBRE COMPLET de la
+ * voie — les cinq échelons, verbatim complet, aucun réduit à un badge. Les
+ * échelons que ton niveau te donne sont marqués « acquis » ; les suivants
+ * sont montrés pour que tu saches où mène la voie. La fiche, elle, ne montre
+ * que l'acquis.
  */
 import { branchesDe, capacitesDeBase } from '../../rules/branches'
+import { capacitesAcquises, normaliserNiveau } from '../../rules/niveau'
 import { classesPourFaction } from '../../rules/stats'
 import { changerClasse, changerVoie, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { Badge, CarteChoix, Note, TitreCarte, Tutoriel, Verbatim } from './ui'
+import { Badge, CarteChoix, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
   fiche: FicheCreation
@@ -17,6 +22,7 @@ interface Props {
 
 export default function EtapeClasse({ fiche, onChangement }: Props) {
   const classes = fiche.faction ? classesPourFaction(fiche.faction) : []
+  const niveau = normaliserNiveau(fiche.niveau)
 
   return (
     <section>
@@ -26,9 +32,12 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
         gestes={[
           'Touche une classe : ses trois voies s’ouvrent dedans.',
           'Touche la voie qui te parle — elle se choisit à la création, sans panachage.',
-          'Seul le niveau 1 est détaillé : c’est ce que tu joueras samedi.',
+          <>
+            Chaque voie montre son arbre complet ; au niveau {niveau}, tu tiens les échelons
+            marqués « acquis ».
+          </>,
         ]}
-        pourquoi="la classe donne tes PV, ton Mana et tes capacités de base ; la voie donne ta capacité de niveau 1."
+        pourquoi="la classe donne tes PV, ton Mana et tes capacités de base ; la voie donne les capacités de ton niveau — et tu vois d'avance où elle mène."
       />
       {classes.map((classe) => {
         const ouverte = fiche.classe === classe.id
@@ -51,26 +60,31 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
               )}
             </p>
             {capacitesDeBase(classe.id).map((capacite) => (
-              <Verbatim key={capacite.id} gras={capacite.nom} texte={capacite.verbatim} />
+              <TexteRegle key={capacite.id} gras={capacite.nom} source={capacite} />
             ))}
-            {classe.echange && <Verbatim texte={classe.echange} />}
-            {classe.code && <Verbatim gras="Code" texte={classe.code} />}
+            {classe.echange && <TexteRegle source={{ verbatim: classe.echange }} />}
+            {classe.code && <TexteRegle gras="Code" source={{ verbatim: classe.code }} />}
             {classe.ressource_speciale && (
-              <Verbatim
+              <TexteRegle
                 gras={classe.ressource_speciale.nom}
-                texte={classe.ressource_speciale.verbatim}
+                source={classe.ressource_speciale}
               />
             )}
 
             {ouverte && (
               <div className="mt-2 border-t border-border/30 pt-1.5">
                 {branchesDe(classe.id).map((voie) => {
-                  const capNiveau1 = voie.capacites.find((c) => c.niveau === 1)
+                  // « Acquis » ne se dit que de TA voie : tant qu'elle n'est
+                  // pas choisie, l'arbre est montré sans rien te promettre.
+                  const choisie = fiche.voie === voie.id
+                  const acquises = new Set(
+                    choisie ? capacitesAcquises(classe.id, voie.id, niveau).map((c) => c.id) : [],
+                  )
                   return (
                     <CarteChoix
                       key={voie.id}
                       petite
-                      choisi={fiche.voie === voie.id}
+                      choisi={choisie}
                       onChoisir={() => {
                         if (fiche.voie === voie.id) return
                         onChangement(changerVoie(fiche, voie.id))
@@ -79,19 +93,27 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
                       <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
                         {voie.nom}
                       </h3>
-                      {capNiveau1 && (
-                        <Verbatim gras={`Niv 1 — ${capNiveau1.nom}`} texte={capNiveau1.verbatim} />
-                      )}
-                      <p className="my-1">
-                        {voie.capacites
-                          .filter((c) => c.niveau > 1)
+                      <ol className="m-0 list-none p-0">
+                        {[...voie.capacites]
                           .sort((a, b) => a.niveau - b.niveau)
-                          .map((c) => (
-                            <Badge key={c.id}>
-                              Niv {c.niveau} · {c.nom}
-                            </Badge>
-                          ))}
-                      </p>
+                          .map((capacite) => {
+                            const acquise = acquises.has(capacite.id)
+                            return (
+                              <li
+                                key={capacite.id}
+                                className={`border-t border-border/30 py-1.5 first:border-t-0 ${
+                                  acquise ? '' : 'opacity-70'
+                                }`}
+                              >
+                                <Badge variante={acquise ? 'gold' : undefined}>
+                                  Niv {capacite.niveau}
+                                  {acquise ? ' · acquis' : ''}
+                                </Badge>
+                                <TexteRegle gras={capacite.nom} source={capacite} />
+                              </li>
+                            )
+                          })}
+                      </ol>
                     </CarteChoix>
                   )
                 })}
@@ -101,8 +123,8 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
         )
       })}
       <Note>
-        Affichage progressif : la suite se dévoile en montant de niveau — et tout vit dans
-        l'encyclopédie.
+        L'arbre entier est montré ici, au moment du choix. Ta fiche, elle, ne portera que ce que
+        tu as acquis — et tout vit dans l'encyclopédie.
       </Note>
     </section>
   )

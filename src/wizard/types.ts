@@ -24,6 +24,8 @@ export interface FicheCreation {
   humainChoix?: string
   classe?: string
   voie?: string
+  /** Niveau de départ du personnage (D12) — défaut : niveau min de la table. */
+  niveau?: number
   caracs?: CaracsChoisies
   extras?: ExtrasCaracs
   /** Dons pris : id -> nombre de prises (cumulables ×n). */

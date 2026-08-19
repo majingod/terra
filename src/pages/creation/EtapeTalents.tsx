@@ -19,9 +19,10 @@ import {
   maxArtisanats,
 } from '../../rules/talents'
 import { compteAchats } from '../../rules/heritage'
+import { donsCumules, normaliserNiveau } from '../../rules/niveau'
 import { surplusCompetences, surplusDons, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { Badge, CarteChoix, ErreurNote, Note, Tutoriel, Verbatim } from './ui'
+import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, Tutoriel } from './ui'
 
 interface Props {
   fiche: FicheCreation
@@ -33,10 +34,11 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
   const regles = getRules()
   const esprit = valeurCarac(fiche, 'e')
   const dons = fiche.dons ?? {}
-  const droit = droitDons(esprit, fiche.achats)
+  const niveau = normaliserNiveau(fiche.niveau)
+  const droit = droitDons(esprit, fiche.achats, niveau)
   const pris = consommationDons(dons)
   const comps = fiche.comps ?? []
-  const droitComps = droitCompetences(fiche.achats)
+  const droitComps = droitCompetences(fiche.achats, niveau)
   const artisanats = fiche.trancheAge ? artisanatsPour(fiche.trancheAge) : []
   const nbArtisanats = artisanatsChoisis(comps).length
   const donsEnTrop = surplusDons(fiche)
@@ -82,11 +84,12 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
           </>,
           'Retirer un choix : retouche sa carte.',
         ]}
-        pourquoi="niveau 1 = 1 don et 1 compétence (table p.5) ; ton Esprit et ton héritage peuvent en ouvrir d'autres."
+        pourquoi={`ton niveau ${niveau} donne ${donsCumules(niveau)} don${donsCumules(niveau) > 1 ? 's' : ''} cumulé${donsCumules(niveau) > 1 ? 's' : ''} (table d'évolution) ; ton Esprit et ton héritage peuvent en ouvrir d'autres.`}
       />
 
       <p className="my-2 text-base text-muted-foreground">
         <b>Dons</b> — {pris}/{droit}
+        {niveau > 1 ? ` (dont ${donsCumules(niveau)} de niveau ${niveau})` : ''}
         {esprit >= 3 ? ' (dont 1 d’Esprit 3)' : ''}
         {achatsDon > 0 ? ` (+ ${achatsDon} d'héritage)` : ''}
       </p>
@@ -114,7 +117,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
               {don.cumulable && <Badge>cumulable</Badge>}
               {n > 1 && <Badge variante="gold">×{n}</Badge>}
             </h3>
-            <Verbatim texte={don.verbatim} />
+            <TexteRegle source={don} />
             {don.cumulable && n > 0 && (
               <div className="mt-2 flex gap-2">
                 <button
@@ -166,7 +169,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
             onChoisir={() => basculerComp(comp.id)}
           >
             <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">{comp.nom}</h3>
-            <Verbatim texte={comp.base} />
+            <TexteRegle source={{ verbatim: comp.base }} />
             {comp.materiel && <Badge>Matériel : {comp.materiel}</Badge>}
           </CarteChoix>
         )
@@ -201,7 +204,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
                   {artisanat.nom}
                 </h3>
                 {artisanat.capacites.map((capacite) => (
-                  <Verbatim key={capacite.nom} gras={capacite.nom} texte={capacite.verbatim} />
+                  <TexteRegle key={capacite.nom} gras={capacite.nom} source={capacite} />
                 ))}
                 {artisanat.materiel && <Badge>Matériel : {artisanat.materiel}</Badge>}
               </CarteChoix>
