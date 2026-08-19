@@ -38,7 +38,7 @@ function ficheGeneree(): Record<string, unknown> {
 describe('version.json — fiche d’identité du site déployé', () => {
   it('le build produit dist/version.json', () => {
     if (!existsSync(DIST)) return // se vérifie après `npm run build`
-    expect(existsSync(join(DIST, 'version.json'))).toBe(false) // TEMP: contre-preuve CI — cassé volontairement
+    expect(existsSync(join(DIST, 'version.json'))).toBe(true)
   })
 
   it('sa version de règles est celle lue dans rules.json', () => {
