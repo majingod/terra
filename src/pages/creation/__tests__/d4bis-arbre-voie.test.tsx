@@ -13,6 +13,7 @@ import { branchesDe, classesAvecBranches } from '../../../rules/branches'
 import { getRules } from '../../../rules/load'
 import { normaliserNiveau } from '../../../rules/niveau'
 import EtapeClasse from '../EtapeClasse'
+import { texteAffiche } from '../ui'
 import FicheAffichage from '../FicheAffichage'
 import type { FicheCreation } from '../../../wizard/types'
 
@@ -28,13 +29,13 @@ function ficheAuNiveau(niveau: number): FicheCreation {
 }
 
 describe('D4-bis — arbre complet au choix de voie', () => {
-  it('les 5 échelons de la voie sont à l’écran, verbatim complet', () => {
+  it('les 5 échelons de la voie sont à l’écran, texte complet', () => {
     render(<EtapeClasse fiche={ficheAuNiveau(1)} onChangement={() => {}} />)
     expect(VOIE.capacites).toHaveLength(5)
     for (const capacite of VOIE.capacites) {
       expect(screen.getAllByText(new RegExp(escapeRegExp(capacite.nom))).length).toBeGreaterThan(0)
       expect(
-        screen.getAllByText((_, el) => el?.textContent?.includes(capacite.verbatim) === true)
+        screen.getAllByText((_, el) => el?.textContent?.includes(texteAffiche(capacite)) === true)
           .length,
       ).toBeGreaterThan(0)
     }

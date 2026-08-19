@@ -4,7 +4,6 @@
  * colorés, tutoriel repliable 💡, notes et bandeaux d'erreur.
  */
 import { useRef, useState, type ReactNode } from 'react'
-import { afficherVerbatim } from '../../wizard/fiche'
 
 /** Place un élément en haut de l'écran, sous les en-têtes collants. */
 export function placerEnHaut(el: HTMLElement | null) {
@@ -187,12 +186,11 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
  * portent une, sa correction d'affichage.
  *
  * D14 : les coquilles se corrigent À L'AFFICHAGE, le verbatim sous gate reste
- * intact. Ce lot livre le MÉCANISME ; aucun champ `affichage` n'existe encore
- * dans rules.json, donc tout retombe aujourd'hui sur `verbatim`.
- */
-/**
- * Un texte de règle porte au moins l'un des deux. Le corpus enfant a des
- * textes arbitrés (règle maison, présentation des factions) qui n'ont pas de
+ * intact à l'octet près. Les corrections vivent dans les données
+ * (rules.json 1.1.0, champs `affichage`), jamais dans le code.
+ *
+ * Un texte porte au moins l'un des deux. Le corpus enfant a des textes
+ * arbitrés (règle maison, présentation des factions) qui n'ont pas de
  * verbatim de planche : leur seule forme est `affichage`, et rien n'est
  * inventé pour combler la case manquante.
  */
@@ -202,14 +200,14 @@ export type SourceDeTexte =
 
 /** Le texte à montrer : `affichage` s'il existe, sinon le verbatim (D14). */
 export function texteAffiche(source: SourceDeTexte): string {
-  return afficherVerbatim(source.affichage ?? source.verbatim ?? '')
+  return source.affichage ?? source.verbatim ?? ''
 }
 
 /**
  * Le SEUL composant qui rend un texte de règle. Il prend la donnée elle-même
  * (une capacité, un don, un désavantage…), jamais une chaîne recopiée, et en
- * affiche `affichage ?? verbatim` — A1 (« tavernier » → « marchand »), seule
- * exception d'affichage déjà arbitrée, reste appliquée.
+ * affiche `affichage ?? verbatim`. Aucune correction n'est codée ici : elles
+ * vivent toutes dans les champs `affichage` des données (rules.json 1.1.0).
  */
 export function TexteRegle({ source, gras }: { source: SourceDeTexte; gras?: string }) {
   return (

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
+import BandeauInstallation from '../components/BandeauInstallation'
 
 export default function Accueil() {
   const personnages = useLiveQuery(() => db.personnages.orderBy('updatedAt').reverse().toArray(), [])
@@ -11,6 +12,8 @@ export default function Accueil() {
         Bienvenue, aventurier·ère. Crée ta fiche de personnage, consulte l'encyclopédie, et
         prépare-toi pour le prochain GN — même sans réseau.
       </p>
+
+      <BandeauInstallation />
 
       <Link to="/creer" className="btn-grand">
         Créer un personnage
