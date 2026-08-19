@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportImport'
 import FicheAffichage from './creation/FicheAffichage'
+import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
 
 export default function Fiche() {
   const { id } = useParams()
@@ -40,7 +41,10 @@ export default function Fiche() {
 
   return (
     <div className="flex flex-col gap-6">
-      {personnage.creation ? (
+      {personnage.creation?.enfant ? (
+        // Fiche du flux ≤11 : elle se lit du corpus de la planche, jamais du Tome.
+        <FicheEnfantAffichage fiche={personnage.creation} />
+      ) : personnage.creation ? (
         <FicheAffichage fiche={personnage.creation} />
       ) : (
         <>

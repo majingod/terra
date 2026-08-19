@@ -1,35 +1,50 @@
 /**
- * Progression (maquette A v3) : « Étape X sur 9 », barre, puis pastilles
- * NOMMÉES et numérotées — ✓ vert quand complétée et passée, orange pour la
- * courante, verrou (estompée) quand une étape précédente est invalide.
+ * Progression (maquette A v3) : « Étape X sur N », puis pastilles NOMMÉES —
+ * ✓ vert quand complétée et passée, orange pour la courante, verrou
+ * (estompée) quand une étape précédente est invalide. Taper une pastille
+ * ramène à son étape.
+ *
+ * Deux habillages, un seul composant (les deux flux réutilisent le même) :
+ * - flux du Tome : barre de progression + pastilles numérotées ;
+ * - flux enfant : pas de barre, chaque pastille porte l'icône de son étape
+ *   (exigences ① et ③ validées par Fred).
  */
-import { ETAPES, etapesValides } from '../../wizard/validation'
-import type { FicheCreation } from '../../wizard/types'
-
-interface PastillesProps {
-  fiche: FicheCreation
-  etape: number
-  onAller: (index: number) => void
+export interface EtapeDeStepper {
+  id: string
+  nom: string
+  /** Icône de l'étape ; à défaut, la pastille affiche son numéro. */
+  icone?: string
 }
 
-export default function Pastilles({ fiche, etape, onAller }: PastillesProps) {
-  const valides = etapesValides(fiche)
+interface PastillesProps {
+  etapes: readonly EtapeDeStepper[]
+  /** Validité de chaque étape, dans l'ordre — calculée par le flux appelant. */
+  valides: boolean[]
+  etape: number
+  onAller: (index: number) => void
+  /** Barre de progression au-dessus des pastilles (flux du Tome). */
+  barre?: boolean
+}
+
+export default function Pastilles({ etapes, valides, etape, onAller, barre }: PastillesProps) {
   return (
     <nav aria-label="Étapes de création" className="pb-1">
       <div className="flex justify-between px-1 font-sans text-sm text-muted-foreground">
         <span>
-          Étape {etape + 1} sur {ETAPES.length}
+          Étape {etape + 1} sur {etapes.length}
         </span>
-        <span>{ETAPES[etape].nom}</span>
+        <span>{etapes[etape].nom}</span>
       </div>
-      <div className="mx-1 my-1.5 h-[7px] overflow-hidden rounded-full bg-muted">
-        <i
-          className="block h-full rounded-full bg-gradient-to-r from-gold to-primary"
-          style={{ width: `${((etape + 1) / ETAPES.length) * 100}%` }}
-        />
-      </div>
+      {barre && (
+        <div className="mx-1 my-1.5 h-[7px] overflow-hidden rounded-full bg-muted">
+          <i
+            className="block h-full rounded-full bg-gradient-to-r from-gold to-primary"
+            style={{ width: `${((etape + 1) / etapes.length) * 100}%` }}
+          />
+        </div>
+      )}
       <ol className="flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none]">
-        {ETAPES.map((definition, index) => {
+        {etapes.map((definition, index) => {
           const accessible = valides.slice(0, index).every(Boolean)
           const courante = index === etape
           const faite = valides[index] && index < etape
@@ -58,7 +73,7 @@ export default function Pastilles({ fiche, etape, onAller }: PastillesProps) {
                         : 'border-border/50'
                   }`}
                 >
-                  {faite ? '✓' : index + 1}
+                  {faite ? '✓' : (definition.icone ?? index + 1)}
                 </span>
                 {!accessible && (
                   <span role="img" aria-label="verrouillée" className="text-[10px]">
