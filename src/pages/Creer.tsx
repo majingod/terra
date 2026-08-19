@@ -1,28 +1,41 @@
 /**
- * Wizard de création (maquette A v3 validée) : les étapes de `ETAPES`, hors
+ * Wizard de création (maquette A v3 validée) : les étapes du flux actif, hors
  * ligne, persistance Dexie à CHAQUE geste (D8-bis), fenêtre de répercussions
- * (rien ne s'applique avant Continuer), barre de progression et pastilles
- * nommées, bandeau vivant fixé au-dessus de la navigation.
+ * (rien ne s'applique avant Continuer), stepper d'étapes nommées, bandeau
+ * vivant fixé au-dessus de la navigation.
  *
  * D12 (t006) : l'étape « Ton niveau » s'insère après le camp, avant tout ce
  * qui consomme dons ou capacités.
+ *
+ * Lot C : l'étape tranche d'âge EMBRANCHE. La tranche enfant suit le flux de
+ * la planche (camp → niveau → classe → nom → fiche, corpus rules_kids.json) ;
+ * l'autre poursuit le wizard du Tome. Une seule maison pour la persistance,
+ * la fenêtre de répercussions et la barre du bas — les deux flux la partagent.
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db, nouvellePersonnageVierge } from '../db'
 import { branchesDe, capacitesDeBase } from '../rules/branches'
+import {
+  capacitesEnfantAcquises,
+  classeEnfant,
+  factionEnfant,
+  getVersionKids,
+  normaliserNiveauEnfant,
+  raceEnfant,
+} from '../rules/kids'
 import { getRules, getVersion } from '../rules/load'
 import { capacitesAcquises, normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
+import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
 import type { FicheCreation } from '../wizard/types'
 import {
   ETAPES,
-  etapeValide,
   etapesValides,
   surplusDons,
   surplusLangues,
-  trancheQuiContinue,
+  trancheEnfant,
   type Changement,
 } from '../wizard/validation'
 import Bandeau from './creation/Bandeau'
@@ -37,6 +50,11 @@ import EtapeNiveau from './creation/EtapeNiveau'
 import EtapeNom from './creation/EtapeNom'
 import EtapeTalents from './creation/EtapeTalents'
 import EtapeTerminee from './creation/EtapeTerminee'
+import EtapeCampEnfant from './creation/enfant/EtapeCampEnfant'
+import EtapeClasseEnfant from './creation/enfant/EtapeClasseEnfant'
+import EtapeFicheEnfant from './creation/enfant/EtapeFicheEnfant'
+import EtapeNiveauEnfant from './creation/enfant/EtapeNiveauEnfant'
+import EtapeNomEnfant from './creation/enfant/EtapeNomEnfant'
 import Fenetre from './creation/Fenetre'
 import Pastilles from './creation/Pastilles'
 
@@ -49,7 +67,7 @@ interface EtatFenetre {
 
 export default function Creer() {
   const [fiche, setFiche] = useState<FicheCreation>({})
-  const [etape, setEtape] = useState(0)
+  const [etapeBrute, setEtape] = useState(0)
   const [charge, setCharge] = useState(false)
   const [fenetre, setFenetre] = useState<EtatFenetre | null>(null)
   const [enregistree, setEnregistree] = useState(false)
@@ -62,7 +80,7 @@ export default function Creer() {
         if (annule) return
         if (brouillon?.donnees.fiche) {
           setFiche(brouillon.donnees.fiche)
-          setEtape(Math.min(Math.max(brouillon.etape - 1, 0), ETAPES.length - 1))
+          setEtape(Math.max(brouillon.etape - 1, 0))
         }
         setCharge(true)
       })
@@ -71,6 +89,14 @@ export default function Creer() {
       annule = true
     }
   }, [])
+
+  // Le flux actif se lit de la seule donnée d'âge existante : la tranche.
+  const enfant = fiche.trancheAge === trancheEnfant()
+  const etapes: readonly { id: string; nom: string; icone?: string }[] = enfant
+    ? ETAPES_ENFANT
+    : ETAPES
+  const valides = enfant ? etapesValidesEnfant(fiche) : etapesValides(fiche)
+  const etape = Math.min(Math.max(etapeBrute, 0), etapes.length - 1)
 
   /** D8-bis : chaque modification est persistée immédiatement dans Dexie. */
   function persister(suite: FicheCreation, index: number) {
@@ -112,7 +138,7 @@ export default function Creer() {
     const suivante = etape + 1
     // Quitter Forces avec un surplus (Esprit qui a baissé) : la fenêtre
     // nomme ce que le joueur devra retirer, puis on avance.
-    if (ETAPES[etape].id === 'forces') {
+    if (!enfant && ETAPES[etape].id === 'forces') {
       const impacts: string[] = []
       const donsEnTrop = surplusDons(fiche)
       const languesEnTrop = surplusLangues(fiche)
@@ -172,6 +198,34 @@ export default function Creer() {
     setEnregistree(true)
   }
 
+  /**
+   * Enregistrement du flux enfant : la fiche vit dans les MÊMES tables, avec
+   * la version du corpus enfant. Aucun champ nouveau n'est indexé, donc
+   * aucune migration Dexie (`creation` porte déjà la fiche du wizard).
+   */
+  async function enregistrerEnfant() {
+    const choix = choixEnfant(fiche)
+    const niveau = normaliserNiveauEnfant(choix.niveau)
+    const now = Date.now()
+    const complet: FicheCreation = { ...fiche, reglesVersion: getVersionKids() }
+    await db.personnages.add({
+      ...nouvellePersonnageVierge(),
+      nomPerso: choix.nom ?? '',
+      faction: factionEnfant(choix.faction)?.nom ?? '',
+      race: raceEnfant().nom,
+      classe: classeEnfant(choix.classe)?.nom ?? '',
+      capacites: capacitesEnfantAcquises(choix.classe, niveau).map((c) => c.id),
+      niveau,
+      createdAt: now,
+      updatedAt: now,
+      trancheAge: fiche.trancheAge,
+      reglesVersion: getVersionKids(),
+      creation: complet,
+    })
+    await db.brouillons.delete(ID_BROUILLON)
+    setEnregistree(true)
+  }
+
   if (!charge) {
     return <p className="text-muted-foreground">Chargement…</p>
   }
@@ -193,11 +247,10 @@ export default function Creer() {
     )
   }
 
-  const etapeId = ETAPES[etape].id
-  const derniere = etape === ETAPES.length - 1
-  const valide = etapeValide(fiche, etapeId)
-  const fichePrete = etapesValides(fiche)[ETAPES.length - 1]
-  const renvoye = fiche.trancheAge !== undefined && fiche.trancheAge !== trancheQuiContinue()
+  const etapeId = etapes[etape].id
+  const derniere = etape === etapes.length - 1
+  const valide = valides[etape]
+  const fichePrete = valides[etapes.length - 1]
 
   return (
     <div className="pb-[168px]">
@@ -211,27 +264,48 @@ export default function Creer() {
         <h1 className="text-gradient-gold terra-heading m-0 text-[26px]">Créer un personnage</h1>
       </header>
       <div className="pas-a-imprimer">
-        <Pastilles fiche={fiche} etape={etape} onAller={allerEtape} />
+        <Pastilles
+          etapes={etapes}
+          valides={valides}
+          etape={etape}
+          onAller={allerEtape}
+          barre={!enfant}
+        />
       </div>
 
       {etapeId === 'age' && <EtapeAge fiche={fiche} onMaj={maj} />}
-      {etapeId === 'camp' && (
-        <EtapeCamp fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
-      )}
-      {etapeId === 'niveau' && <EtapeNiveau fiche={fiche} onChangement={appliquerChangement} />}
-      {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
-      {etapeId === 'destin' && (
-        <EtapeDestin fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
-      )}
-      {etapeId === 'forces' && <EtapeForces fiche={fiche} onMaj={maj} />}
-      {etapeId === 'talents' && (
-        <EtapeTalents fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
-      )}
-      {etapeId === 'langues' && <EtapeLangues fiche={fiche} onMaj={maj} />}
-      {etapeId === 'nom' && <EtapeNom fiche={fiche} onMaj={maj} />}
-      {etapeId === 'fiche' && <EtapeFiche fiche={fiche} />}
 
-      {!derniere && <Bandeau fiche={fiche} />}
+      {enfant ? (
+        <>
+          {etapeId === 'camp' && <EtapeCampEnfant fiche={fiche} onMaj={maj} />}
+          {etapeId === 'niveau' && (
+            <EtapeNiveauEnfant fiche={fiche} onChangement={appliquerChangement} />
+          )}
+          {etapeId === 'classe' && <EtapeClasseEnfant fiche={fiche} onMaj={maj} />}
+          {etapeId === 'nom' && <EtapeNomEnfant fiche={fiche} onMaj={maj} />}
+          {etapeId === 'fiche' && <EtapeFicheEnfant fiche={fiche} />}
+        </>
+      ) : (
+        <>
+          {etapeId === 'camp' && (
+            <EtapeCamp fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
+          )}
+          {etapeId === 'niveau' && <EtapeNiveau fiche={fiche} onChangement={appliquerChangement} />}
+          {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
+          {etapeId === 'destin' && (
+            <EtapeDestin fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
+          )}
+          {etapeId === 'forces' && <EtapeForces fiche={fiche} onMaj={maj} />}
+          {etapeId === 'talents' && (
+            <EtapeTalents fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
+          )}
+          {etapeId === 'langues' && <EtapeLangues fiche={fiche} onMaj={maj} />}
+          {etapeId === 'nom' && <EtapeNom fiche={fiche} onMaj={maj} />}
+          {etapeId === 'fiche' && <EtapeFiche fiche={fiche} />}
+        </>
+      )}
+
+      {!derniere && !enfant && <Bandeau fiche={fiche} />}
 
       <div className="pas-a-imprimer fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-transparent via-background/90 to-background px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5">
         <div className="mx-auto flex w-full max-w-[640px] gap-2.5">
@@ -250,17 +324,12 @@ export default function Creer() {
               type="button"
               className="btn-cta"
               disabled={!fichePrete}
-              onClick={() => void enregistrer()}
+              onClick={() => void (enfant ? enregistrerEnfant() : enregistrer())}
             >
               Créer la fiche
             </button>
           ) : (
-            <button
-              type="button"
-              className="btn-cta"
-              disabled={!valide || renvoye}
-              onClick={continuer}
-            >
+            <button type="button" className="btn-cta" disabled={!valide} onClick={continuer}>
               Continuer
             </button>
           )}

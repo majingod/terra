@@ -190,14 +190,19 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
  * intact. Ce lot livre le MÉCANISME ; aucun champ `affichage` n'existe encore
  * dans rules.json, donc tout retombe aujourd'hui sur `verbatim`.
  */
-export interface SourceDeTexte {
-  verbatim: string
-  affichage?: string
-}
+/**
+ * Un texte de règle porte au moins l'un des deux. Le corpus enfant a des
+ * textes arbitrés (règle maison, présentation des factions) qui n'ont pas de
+ * verbatim de planche : leur seule forme est `affichage`, et rien n'est
+ * inventé pour combler la case manquante.
+ */
+export type SourceDeTexte =
+  | { verbatim: string; affichage?: string }
+  | { verbatim?: string; affichage: string }
 
 /** Le texte à montrer : `affichage` s'il existe, sinon le verbatim (D14). */
 export function texteAffiche(source: SourceDeTexte): string {
-  return afficherVerbatim(source.affichage ?? source.verbatim)
+  return afficherVerbatim(source.affichage ?? source.verbatim ?? '')
 }
 
 /**

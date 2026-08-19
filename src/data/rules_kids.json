@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "fichier": "rules_kids.json",
+    "version": "1.0.0",
+    "date": "2026-08-19",
+    "tranche": "≤11",
+    "autorite": "La planche de cartes des règles simplifiées. Corpus DISTINCT du Tome : jamais mélangé à rules.json, jamais lu par le flux 12+.",
+    "transcription": "Transcrit de l'image de la planche par Claude-projet ; corrections d'affichage arbitrées par Fred (t006).",
+    "structure": "verbatim = texte de la planche, intact · affichage = correction validée. Quand affichage est absent, le verbatim est déjà le texte à montrer.",
+    "regle_maison_source": "Arbitrage Fred, 2026-08-19.",
+    "textes_faction_source": "Textes enfants validés par Fred, 2026-08-19 — écrits pour cette tranche, absents de la planche."
+  },
+  "stats_communes": {
+    "pv": 3,
+    "degats": 2,
+    "race": {
+      "nom": "Humain",
+      "note": "Race fixe de la planche enfant, SANS le bonus +1 PV / +1 Mana du corpus 12+ (arbitrage Fred t005)."
+    }
+  },
+  "evolution": {
+    "regle": "Une capacité aux niveaux 1, 3 et 5 ; +1 Lutte au niveau 2 ; +1 Dégâts au niveau 4.",
+    "table": [
+      { "niv": 1, "capacite": true },
+      { "niv": 2, "lutte": 1 },
+      { "niv": 3, "capacite": true },
+      { "niv": 4, "degats": 1 },
+      { "niv": 5, "capacite": true }
+    ]
+  },
+  "regle_maison": {
+    "nom": "Un seul PV à la fois",
+    "affichage": "Peu importe la force du coup reçu, tu ne perds jamais plus de 1 PV à la fois."
+  },
+  "factions": {
+    "regle_choix": "N'importe quelle classe dans n'importe quelle faction.",
+    "liste": [
+      {
+        "id": "sanctum",
+        "nom": "Sanctum",
+        "affichage": "Les gens du Sanctum viennent de grandes civilisations. Leur force : être unis, s'organiser et ne jamais abandonner. Ils sont généreux et pensent aux autres avant de penser à eux."
+      },
+      {
+        "id": "legion",
+        "nom": "Légion",
+        "affichage": "Dans la Légion, chacun porte une part d'ombre — de naissance, ou par un pacte avec un démon. On gagne par le nombre et la force, coûte que coûte. Un légionnaire pense d'abord à lui."
+      }
+    ]
+  },
+  "classes": {
+    "liste": [
+      {
+        "id": "guerrier",
+        "nom": "Guerrier",
+        "lutte": 3,
+        "capacites": [
+          {
+            "id": "vigueur",
+            "niveau": 1,
+            "nom": "Vigueur",
+            "verbatim": "2 Fois par heure: peut récupérer 1 PV en criant \"VIGUEUR!\" en se tappant le torse. 30 secondes entre chaque utilisations.",
+            "affichage": "2 fois par heure : peut récupérer 1 PV en criant \"VIGUEUR!\" en se tapant le torse. 30 secondes entre chaque utilisation."
+          },
+          {
+            "id": "renverse",
+            "niveau": 3,
+            "nom": "Renverse",
+            "verbatim": "1 Fois par heure: En frappant la cible aux jambe, elle à tombe à terre.",
+            "affichage": "1 fois par heure : en frappant la cible aux jambes, elle tombe à terre."
+          },
+          {
+            "id": "crittique",
+            "niveau": 5,
+            "nom": "Crittique",
+            "nom_affichage": "Critique",
+            "verbatim": "1 Fois par heure: +3 dégâts divin sur une coup, conserver si raté.",
+            "affichage": "1 fois par heure : +3 dégâts divins sur un coup, conserver si raté."
+          }
+        ]
+      },
+      {
+        "id": "roublard",
+        "nom": "Roublard",
+        "lutte": 2,
+        "capacites": [
+          {
+            "id": "camouflage",
+            "niveau": 1,
+            "nom": "Camouflage",
+            "verbatim": "1 Fois par heure: Devient invisible (croise ses bras) jusqu'à ce qu'il drécroise ses bras. Ne peux pas bouger.",
+            "affichage": "1 fois par heure : devient invisible (croise ses bras) jusqu'à ce qu'il décroise ses bras. Ne peut pas bouger."
+          },
+          {
+            "id": "sournois",
+            "niveau": 3,
+            "nom": "Sournois",
+            "verbatim": "Fait toujours +1 dégâts dans le dos.",
+            "affichage": "Fait toujours +1 dégât dans le dos."
+          },
+          {
+            "id": "esquive",
+            "niveau": 5,
+            "nom": "Esquive",
+            "verbatim": "2 Fois par heure: Peux esquiver une attaque ou un pouvoir en criant \"esquive\".",
+            "affichage": "2 fois par heure : peut esquiver une attaque ou un pouvoir en criant \"esquive\"."
+          }
+        ]
+      },
+      {
+        "id": "magicien",
+        "nom": "Magicien",
+        "lutte": 1,
+        "capacites": [
+          {
+            "id": "boule_de_feu",
+            "niveau": 1,
+            "nom": "Boule de feu",
+            "verbatim": "3 fois par heure, Fait 4 dégâts de feu à une cible. 10 secondes entre chaque utilisations.",
+            "affichage": "3 fois par heure : fait 4 dégâts de feu à une cible. 10 secondes entre chaque utilisation."
+          },
+          {
+            "id": "fracassement",
+            "niveau": 3,
+            "nom": "Fracassement",
+            "verbatim": "3 Fois par heure: peut détruire une armes/armure ou bouclier au touché (avec main ou bâton).",
+            "affichage": "3 fois par heure : peut détruire une arme, une armure ou un bouclier au toucher (avec main ou bâton)."
+          },
+          {
+            "id": "teleportation",
+            "niveau": 5,
+            "nom": "Téléportation",
+            "verbatim": "3 Fois par heure: peut se déplacer immatériel (bras croisés au dessus de la tête) jusqu'à l'endroit choisit.",
+            "affichage": "3 fois par heure : peut se déplacer immatériel (bras croisés au-dessus de la tête) jusqu'à l'endroit choisi."
+          }
+        ]
+      },
+      {
+        "id": "druide",
+        "nom": "Druide",
+        "lutte": 1,
+        "capacites": [
+          {
+            "id": "soins",
+            "niveau": 1,
+            "nom": "Soins",
+            "verbatim": "Soigne une personne de 2 PV en touchant l'épaule. 1 fois par cible par heure."
+          },
+          {
+            "id": "sanctuaire",
+            "niveau": 3,
+            "nom": "Sanctuaire",
+            "verbatim": "1 Fois par heure: Devient invulnérable maximum 2 minutes. Peut seulement parler (pas bouger).",
+            "affichage": "1 fois par heure : devient invulnérable maximum 2 minutes. Peut seulement parler (pas bouger)."
+          },
+          {
+            "id": "rappel_a_la_vie",
+            "niveau": 5,
+            "nom": "Rappel à la vie",
+            "verbatim": "1 Fois par heure: Rappel un mort à la Vie au maximum de ses PV.",
+            "affichage": "1 fois par heure : rappelle un mort à la vie au maximum de ses PV."
+          }
+        ]
+      }
+    ]
+  }
+}

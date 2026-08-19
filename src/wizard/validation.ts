@@ -61,11 +61,22 @@ export const ETAPES = [
 
 export type EtapeId = (typeof ETAPES)[number]['id']
 
-/** Tranche d'âge qui poursuit le wizard (l'autre est renvoyée à l'accueil). */
+/** Tranche d'âge qui poursuit le wizard du Tome (l'autre prend le flux enfant). */
 export function trancheQuiContinue(): TrancheAge {
   const interdite = getRules().competences.artisanats.interdit_tranche
   const restantes = TRANCHES_AGE.filter((t) => t !== interdite)
   return restantes[0]
+}
+
+/**
+ * Tranche qui joue avec la planche enfant : celle à qui le Tome interdit les
+ * artisanats (lue du fichier, jamais recopiée). Une seule et même donnée
+ * décide donc de la gate artisanats et de l'embranchement du wizard — pas de
+ * second marqueur sur le joueur.
+ */
+export function trancheEnfant(): TrancheAge {
+  const interdite = getRules().competences.artisanats.interdit_tranche
+  return TRANCHES_AGE.filter((t) => t === interdite)[0]
 }
 
 // ---------------------------------------------------------------------------

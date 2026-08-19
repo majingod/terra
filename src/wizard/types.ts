@@ -16,6 +16,20 @@ export interface ExtrasCaracs {
   e: number
 }
 
+/**
+ * Choix du flux ≤11 (planche enfant, corpus rules_kids.json). Vit sous
+ * `FicheCreation.enfant` : la tranche d'âge reste le champ partagé qui
+ * décide du flux, et le corpus 12+ n'est jamais mélangé au corpus enfant.
+ */
+export interface FicheEnfant {
+  faction?: string
+  classe?: string
+  /** Niveau de départ (1-5 de la table enfant) — défaut : niveau min. */
+  niveau?: number
+  /** Nom du PERSONNAGE — jamais le vrai nom du joueur. */
+  nom?: string
+}
+
 export interface FicheCreation {
   trancheAge?: TrancheAge
   faction?: string
@@ -45,6 +59,8 @@ export interface FicheCreation {
   nom?: string
   histoire?: string
   reglesVersion?: string
+  /** Choix du flux ≤11 — présent seulement sur une fiche enfant. */
+  enfant?: FicheEnfant
 }
 
 export const FICHE_VIDE: FicheCreation = {}
