@@ -182,13 +182,35 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
   )
 }
 
-/** Affiche un verbatim du Tome tel quel, fautes incluses (D5), via la seule
- * exception d'affichage arbitrée (A1 : « tavernier » → « marchand »). */
-export function Verbatim({ texte, gras }: { texte: string; gras?: string }) {
+/**
+ * Source d'un texte de règle : le verbatim du Tome et, quand les données en
+ * portent une, sa correction d'affichage.
+ *
+ * D14 : les coquilles se corrigent À L'AFFICHAGE, le verbatim sous gate reste
+ * intact. Ce lot livre le MÉCANISME ; aucun champ `affichage` n'existe encore
+ * dans rules.json, donc tout retombe aujourd'hui sur `verbatim`.
+ */
+export interface SourceDeTexte {
+  verbatim: string
+  affichage?: string
+}
+
+/** Le texte à montrer : `affichage` s'il existe, sinon le verbatim (D14). */
+export function texteAffiche(source: SourceDeTexte): string {
+  return afficherVerbatim(source.affichage ?? source.verbatim)
+}
+
+/**
+ * Le SEUL composant qui rend un texte de règle. Il prend la donnée elle-même
+ * (une capacité, un don, un désavantage…), jamais une chaîne recopiée, et en
+ * affiche `affichage ?? verbatim` — A1 (« tavernier » → « marchand »), seule
+ * exception d'affichage déjà arbitrée, reste appliquée.
+ */
+export function TexteRegle({ source, gras }: { source: SourceDeTexte; gras?: string }) {
   return (
     <p className="my-1 text-[15px] italic text-secondary-foreground">
       {gras && <b className="not-italic">{gras}. </b>}
-      {afficherVerbatim(texte)}
+      {texteAffiche(source)}
     </p>
   )
 }

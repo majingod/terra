@@ -1,14 +1,18 @@
 /**
- * Wizard de création t004, conforme à la maquette A v3 validée : 9 étapes,
- * hors ligne, persistance Dexie à CHAQUE geste (D8-bis), fenêtre de
- * répercussions (rien ne s'applique avant Continuer), barre de progression
- * et pastilles nommées, bandeau vivant fixé au-dessus de la navigation.
+ * Wizard de création (maquette A v3 validée) : les étapes de `ETAPES`, hors
+ * ligne, persistance Dexie à CHAQUE geste (D8-bis), fenêtre de répercussions
+ * (rien ne s'applique avant Continuer), barre de progression et pastilles
+ * nommées, bandeau vivant fixé au-dessus de la navigation.
+ *
+ * D12 (t006) : l'étape « Ton niveau » s'insère après le camp, avant tout ce
+ * qui consomme dons ou capacités.
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db, nouvellePersonnageVierge } from '../db'
 import { branchesDe, capacitesDeBase } from '../rules/branches'
 import { getRules, getVersion } from '../rules/load'
+import { capacitesAcquises, normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import type { FicheCreation } from '../wizard/types'
@@ -29,6 +33,7 @@ import EtapeDestin from './creation/EtapeDestin'
 import EtapeFiche from './creation/EtapeFiche'
 import EtapeForces from './creation/EtapeForces'
 import EtapeLangues from './creation/EtapeLangues'
+import EtapeNiveau from './creation/EtapeNiveau'
 import EtapeNom from './creation/EtapeNom'
 import EtapeTalents from './creation/EtapeTalents'
 import EtapeTerminee from './creation/EtapeTerminee'
@@ -133,7 +138,7 @@ export default function Creer() {
     const regles = getRules()
     const classe = classeSquelette(fiche.classe)
     const voie = branchesDe(fiche.classe ?? '').find((b) => b.id === fiche.voie)
-    const capNiveau1 = voie?.capacites.find((c) => c.niveau === 1)
+    const niveau = normaliserNiveau(fiche.niveau)
     const now = Date.now()
     const complet: FicheCreation = { ...fiche, reglesVersion: getVersion() }
     await db.personnages.add({
@@ -152,9 +157,10 @@ export default function Creer() {
       competences: [...(fiche.comps ?? [])],
       capacites: [
         ...capacitesDeBase(fiche.classe ?? '').map((c) => c.id),
-        ...(capNiveau1 ? [capNiveau1.id] : []),
+        ...capacitesAcquises(fiche.classe, fiche.voie, niveau).map((c) => c.id),
         ...Object.values(fiche.capChoix ?? {}).flat(),
       ],
+      niveau,
       langues: [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])],
       createdAt: now,
       updatedAt: now,
@@ -212,6 +218,7 @@ export default function Creer() {
       {etapeId === 'camp' && (
         <EtapeCamp fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
       )}
+      {etapeId === 'niveau' && <EtapeNiveau fiche={fiche} onChangement={appliquerChangement} />}
       {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
       {etapeId === 'destin' && (
         <EtapeDestin fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />

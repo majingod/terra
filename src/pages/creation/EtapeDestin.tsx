@@ -22,7 +22,7 @@ import { consommationDons, droitCompetences, droitDons } from '../../rules/talen
 import { bassinCapacites } from '../../wizard/capacites'
 import type { Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { Badge, CarteChoix, ErreurNote, Note, TitreCarte, Tutoriel, Verbatim } from './ui'
+import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
   fiche: FicheCreation
@@ -82,13 +82,13 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
     const impacts: string[] = []
     const effet = effetAchat(achat.achat)
     if (effet.type === 'don') {
-      const droit = droitDons(valeurCarac(fiche, 'e'), achats)
+      const droit = droitDons(valeurCarac(fiche, 'e'), achats, fiche.niveau)
       if (consommationDons(fiche.dons ?? {}) > droit) {
         impacts.push(`Tu as déjà choisi tes dons : il faudra en retirer 1 à l'étape Talents.`)
       }
     }
     if (effet.type === 'competence') {
-      if ((fiche.comps ?? []).length > droitCompetences(achats)) {
+      if ((fiche.comps ?? []).length > droitCompetences(achats, fiche.niveau)) {
         impacts.push(
           `Tu as déjà choisi tes compétences : il faudra en retirer 1 à l'étape Talents.`,
         )
@@ -106,7 +106,9 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
         const capChoix = { ...(fiche.capChoix ?? {}) }
         const perdue = choisis[choisis.length - 1]
         const nomPerdue =
-          bassinCapacites(fiche.classe, fiche.voie, effet.niveau).find((c) => c.id === perdue)
+          bassinCapacites(fiche.classe, fiche.voie, effet.niveau, fiche.niveau).find(
+            (c) => c.id === perdue,
+          )
             ?.nom ?? perdue
         capChoix[String(effet.niveau)] = choisis.slice(0, suiteN)
         suite = { ...suite, capChoix }
@@ -183,7 +185,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                 </Badge>
               )}
             </TitreCarte>
-            <Verbatim texte={desavantage.verbatim} />
+            <TexteRegle source={desavantage} />
             {aVariante && coche && (
               <div className="mt-2.5 flex gap-2">
                 <button
@@ -256,7 +258,8 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                     {(fiche.capChoix?.[String(effet.niveau)] ?? []).length}/{n}) :
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {bassinCapacites(fiche.classe, fiche.voie, effet.niveau).map((capacite) => {
+                    {bassinCapacites(fiche.classe, fiche.voie, effet.niveau, fiche.niveau).map(
+                      (capacite) => {
                       const prise = (fiche.capChoix?.[String(effet.niveau)] ?? []).includes(
                         capacite.id,
                       )

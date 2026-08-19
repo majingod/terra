@@ -1,10 +1,12 @@
 /**
  * Fiche (maquette A v3) : Identité, Statistiques, « Ce que tu as acquis »
- * (D4 : capacités de base, voie niveau 1 seulement, capacités d'héritage,
- * dons, compétences), Désavantages, Héritage — et la version des règles
- * (meta.version, lue du fichier — D8-bis).
+ * (D4-bis : la fiche ne montre QUE l'acquis — capacités de base, échelons de
+ * la voie ≤ niveau du personnage, capacités d'héritage, dons, compétences),
+ * Désavantages, Héritage — et la version des règles (meta.version, lue du
+ * fichier — D8-bis).
  */
 import { branchesDe, capacitesDeBase } from '../../rules/branches'
+import { capacitesAcquises, normaliserNiveau } from '../../rules/niveau'
 import {
   depenseXp,
   listeAchats,
@@ -19,7 +21,7 @@ import { listeDons } from '../../rules/talents'
 import { capaciteParId } from '../../wizard/capacites'
 import { texteVersionRegles } from '../../wizard/fiche'
 import type { FicheCreation } from '../../wizard/types'
-import { Badge, Verbatim } from './ui'
+import { Badge, TexteRegle } from './ui'
 
 function Sheet({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
@@ -44,7 +46,7 @@ function Acquis({
   return (
     <div className="border-t border-border/30 py-2 first:border-t-0">
       <b>{nom}</b> <Badge variante={badgeOr ? 'gold' : undefined}>{badge}</Badge>
-      {verbatim && <Verbatim texte={verbatim} />}
+      {verbatim && <TexteRegle source={{ verbatim }} />}
     </div>
   )
 }
@@ -62,7 +64,8 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const classe = classeSquelette(fiche.classe)
   const faction = regles.factions.liste.find((f) => f.id === fiche.faction)
   const voie = branchesDe(fiche.classe ?? '').find((b) => b.id === fiche.voie)
-  const capNiveau1 = voie?.capacites.find((c) => c.niveau === 1)
+  const niveau = normaliserNiveau(fiche.niveau)
+  const capsDeVoie = capacitesAcquises(fiche.classe, fiche.voie, niveau)
   const stats = statsDe(fiche)
   const dons = listeDons()
   const desavantages = listeDesavantages()
@@ -128,7 +131,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
           </div>
           <div>
             <div className="font-sans text-[13.5px] text-muted-foreground">Niveau</div>
-            <div className="text-[19px] font-semibold">1</div>
+            <div className="text-[19px] font-semibold">{niveau}</div>
           </div>
           <div>
             <div className="font-sans text-[13.5px] text-muted-foreground">Langues</div>
@@ -170,13 +173,15 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
           {capacitesDeBase(classe.id).map((capacite) => (
             <Acquis key={capacite.id} nom={capacite.nom} badge="classe" verbatim={capacite.verbatim} />
           ))}
-          {voie && capNiveau1 && (
-            <Acquis
-              nom={capNiveau1.nom}
-              badge={`${voie.nom} · niv 1`}
-              verbatim={capNiveau1.verbatim}
-            />
-          )}
+          {voie &&
+            capsDeVoie.map((capacite) => (
+              <Acquis
+                key={capacite.id}
+                nom={capacite.nom}
+                badge={`${voie.nom} · niv ${capacite.niveau}`}
+                verbatim={capacite.verbatim}
+              />
+            ))}
           {capsHeritage.map(({ capacite }) => (
             <Acquis
               key={capacite.id}
@@ -202,8 +207,8 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
             <Acquis key={id} nom={nomComp(id)} badge="compétence" />
           ))}
           <p className="mb-0 mt-2 rounded-lg border border-border/50 border-l-[3px] border-l-primary/60 bg-card/50 backdrop-blur-sm px-3 py-2 text-[14px] text-muted-foreground">
-            Affichage progressif : les capacités de niveau 2+ apparaîtront quand tu les auras
-            réellement acquises.
+            Affichage progressif : les capacités au-delà du niveau {niveau} apparaîtront quand tu
+            les auras réellement acquises.
           </p>
         </Sheet>
       )}
