@@ -45,7 +45,8 @@ describe('PR-B — evolution.table corrigée (données)', () => {
 
   it('la correction est datée dans le fichier : version au-delà de 1.0.2', () => {
     expect(getVersion()).not.toBe('1.0.2')
-    expect(getVersion()).toBe('1.0.3')
+    // 1.1.0 : les corrections d'affichage D14 s'ajoutent à la table corrigée.
+    expect(getVersion()).toBe('1.1.0')
   })
 })
 

@@ -170,8 +170,15 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
 
       {classe && (
         <Sheet titre="Ce que tu as acquis">
+          {/* Même grammaire que « Archimage · niv 1 » : le badge nomme d'où
+              vient la capacité, pas sa catégorie. */}
           {capacitesDeBase(classe.id).map((capacite) => (
-            <Acquis key={capacite.id} nom={capacite.nom} badge="classe" verbatim={capacite.verbatim} />
+            <Acquis
+              key={capacite.id}
+              nom={capacite.nom}
+              badge={`${classe.nom} · de base`}
+              verbatim={capacite.verbatim}
+            />
           ))}
           {voie &&
             capsDeVoie.map((capacite) => (
