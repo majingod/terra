@@ -168,6 +168,27 @@
   .carte {
     @apply terra-card p-5;
   }
+  /* Tables de l'encyclopédie (D13 : vue dérivée de rules.json, en tables).
+     Le conteneur défile seul : le corps de page ne part jamais de travers. */
+  .tableau-cadre {
+    @apply my-2 overflow-x-auto rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm;
+  }
+  .tableau-regles {
+    @apply w-full border-collapse text-left align-top font-corps text-[15px];
+  }
+  .tableau-regles th {
+    @apply border-b border-border/50 px-3 py-2 font-sans text-[13px] font-semibold
+      uppercase tracking-wide text-muted-foreground;
+  }
+  .tableau-regles td {
+    @apply border-t border-border/30 px-3 py-2 align-top text-foreground;
+  }
+  .tableau-regles tbody tr:first-child td {
+    @apply border-t-0;
+  }
+  .tableau-regles .cellule-nom {
+    @apply whitespace-nowrap font-titre text-[16.5px] font-bold text-gold;
+  }
 }
 
 @layer utilities {
