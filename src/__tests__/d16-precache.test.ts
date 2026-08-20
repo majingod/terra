@@ -1,10 +1,14 @@
 /**
- * D16 ⑪ — le precache du service worker n'a pas bougé.
+ * Le precache du service worker — le jeu exact de ce qui part sur l'appareil.
  *
- * Ce lot est un changement de LOGIQUE : aucun fichier n'entre dans le bundle,
- * aucun n'en sort. Le jeu des URL précachées doit donc rester le même (aux
- * empreintes de contenu près, qui changent à chaque build), leur compte aussi,
- * et le poids rester sous le plafond.
+ * Écrit pour D16 ⑪ (un changement de LOGIQUE : aucun fichier ne devait entrer
+ * ni sortir du bundle), ce garde-fou reste la seule maison de la vérité du
+ * COMPTE, du JEU d'URL et du POIDS précachés — aux empreintes de contenu
+ * près, qui changent à chaque build.
+ *
+ * Mis à jour par le lot « icônes PNG » : les trois PNG du manifeste entrent
+ * au precache, 16 entrées deviennent 19. Sans elles, une app installée puis
+ * ouverte hors réseau n'aurait pas son icône.
  *
  * `it.runIf` et non `if (…) return` : un test qui `return` est compté PASSÉ,
  * et un test toujours vert ne garde rien.
@@ -19,8 +23,11 @@ const DIST = join(RACINE, 'dist')
 const SW = join(DIST, 'sw.js')
 const IL_Y_A_UN_BUILD = existsSync(SW)
 
-/** Mesuré au commit de départ de ce lot (572204a) : 16 entrées, 568,41 KiB. */
-const ENTREES_ATTENDUES = 16
+/**
+ * Mesuré au commit de départ du lot « icônes PNG » (671c5f7) : 16 entrées,
+ * 571,81 KiB — plus les trois PNG du manifeste ajoutés par ce lot.
+ */
+const ENTREES_ATTENDUES = 19
 /** Plafond du brief. */
 const PLAFOND_KIB = 640
 
@@ -35,6 +42,9 @@ const URLS_ATTENDUES = [
   'assets/crimson-text-latin-600-normal.woff2',
   'assets/index.css',
   'assets/index.js',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png',
   'icon-maskable.svg',
   'icon.svg',
   'index.html',
@@ -61,7 +71,9 @@ function sansEmpreinte(url: string): string {
 
 describe('D16 ⑪ — precache du service worker', () => {
   it.runIf(IL_Y_A_UN_BUILD)('le compte d’entrées n’a pas bougé', () => {
-    expect(entreesPrecache()).toHaveLength(ENTREES_ATTENDUES)
+    const urls = entreesPrecache()
+    // Le message porte la LISTE : un écart se lit sans relancer le build.
+    expect(urls.length, `entrées réelles :\n${urls.join('\n')}`).toBe(ENTREES_ATTENDUES)
   })
 
   it.runIf(IL_Y_A_UN_BUILD)('le jeu des URL est inchangé : aucun fichier ajouté ni retiré', () => {

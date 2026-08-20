@@ -12,6 +12,9 @@ import '@fontsource/cinzel/latin-900.css'
 import '@fontsource/crimson-text/latin-400.css'
 import '@fontsource/crimson-text/latin-600.css'
 import '@fontsource/crimson-text/latin-400-italic.css'
+// ⚠️ AVANT React : le navigateur peut offrir l'installation à tout moment,
+// y compris avant le premier rendu. Ce module retient l'offre à l'import.
+import './pwa/offreInstallation'
 import App from './App'
 import './index.css'
 
