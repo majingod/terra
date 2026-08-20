@@ -129,6 +129,11 @@
   .badge-gold {
     @apply border-gold/30 bg-gold/15 text-gold;
   }
+  /* Une touche du navigateur, citée dans les instructions d'installation. */
+  .touche {
+    @apply inline-block rounded-md border border-border bg-muted px-1.5 py-0.5 font-titre
+      text-[14.5px] text-foreground;
+  }
   /* Encadrés d'aide sur tokens SOMBRES (⛔ aucun amber-50 clair — défaut
      Manus nommé). */
   .note {
