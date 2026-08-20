@@ -3,16 +3,18 @@
  *
  * D5 : aucun chiffre de niveau n'est écrit ici. Les bornes (1 et 5), le
  * nombre de dons par échelon et le nombre de compétences viennent tous de
- * `evolution.table` de rules.json ; les capacités acquises viennent du champ
- * `niveau` porté par chaque capacité de branche.
+ * `evolution.table` de rules.json.
+ *
+ * D16 : les capacités NE sont plus « acquises d'office » par une voie — elles
+ * se choisissent une par niveau dans tout l'arbre de la classe. Le bassin et
+ * le critère de validité vivent dans src/rules/capacites.ts.
  *
  * Lecture de la table : chaque ligne donne ce que l'échelon AJOUTE (dons,
  * points de caractéristique, compétences). Le niveau N cumule donc les
  * lignes 1..N — d'où les fonctions `…Cumule(e)s`. Le rythme des dons et des
  * points de caractéristique n'est PAS écrit ici : il vit dans la table.
  */
-import { branchesDe } from './branches'
-import { getRules, type Capacite, type LigneEvolution } from './load'
+import { getRules, type LigneEvolution } from './load'
 
 /** La table d'évolution, triée par échelon croissant. */
 export function tableEvolution(): LigneEvolution[] {
@@ -72,22 +74,4 @@ export function pointsCaracCumules(niveau?: number): number {
 /** Compétences cumulées du niveau 1 au niveau demandé. */
 export function competencesCumulees(niveau?: number): number {
   return cumul(normaliserNiveau(niveau), (ligne) => ligne.competence ?? 0)
-}
-
-/**
- * Capacités que la voie donne d'office à ce niveau : tous les échelons ≤ N.
- * Vide sans classe ou sans voie choisie.
- */
-export function capacitesAcquises(
-  classeId: string | undefined,
-  voieId: string | undefined,
-  niveau?: number,
-): Capacite[] {
-  if (!classeId || !voieId) return []
-  const plafond = normaliserNiveau(niveau)
-  const voie = branchesDe(classeId).find((branche) => branche.id === voieId)
-  if (!voie) return []
-  return voie.capacites
-    .filter((capacite) => capacite.niveau <= plafond)
-    .sort((a, b) => a.niveau - b.niveau)
 }

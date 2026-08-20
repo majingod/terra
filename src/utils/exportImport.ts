@@ -1,3 +1,10 @@
+/**
+ * Export / import JSON d'une fiche.
+ *
+ * D16 : un ancien export reste lisible — ses champs d'époque (`sousBranche`,
+ * `creation.voie`) sont recopiés tels quels, jamais exigés ; un nouvel export
+ * ne les porte plus.
+ */
 import { db, type Personnage } from '../db'
 
 export function exporterPersonnageJSON(personnage: Personnage) {
@@ -29,7 +36,9 @@ export async function importerPersonnageJSON(fichier: File): Promise<void> {
     faction: reste.faction ?? '',
     race: reste.race ?? '',
     classe: reste.classe ?? '',
-    sousBranche: reste.sousBranche ?? '',
+    // Champ d'époque (v1) : recopié tel quel quand un vieil export le porte,
+    // jamais fabriqué quand il n'y est pas (D16).
+    sousBranche: reste.sousBranche,
     caracs: reste.caracs ?? { puissance: 0, resistance: 0, esprit: 0 },
     dons: reste.dons ?? [],
     competences: reste.competences ?? [],

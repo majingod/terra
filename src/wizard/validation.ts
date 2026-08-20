@@ -1,16 +1,16 @@
 /**
- * Validation des 9 étapes du wizard et fenêtre de répercussions.
+ * Validation des étapes du wizard et fenêtre de répercussions.
  *
  * Deux régimes (spec t004) :
  * - « l'impossible se retire tout seul et la fenêtre le nomme » :
- *   changerFaction / changerClasse / changerVoie rendent la fiche corrigée
+ *   changerFaction / changerClasse / changerNiveau rendent la fiche corrigée
  *   ET la liste nommée des retraits (la fenêtre l'affiche, Annuler restaure) ;
  * - « le surplus se retire par le joueur » : surplusDons / surplusLangues /
  *   surplusCompetences alimentent les bandeaux rouges « retire N », la
  *   navigation avant restant verrouillée par les validateurs.
  */
 import { TRANCHES_AGE, type TrancheAge } from '../rules/age'
-import { branchesDe } from '../rules/branches'
+import { problemesChoix } from '../rules/capacites'
 import { validerRepartition } from '../rules/caracs'
 import {
   compteAchats,
@@ -24,12 +24,7 @@ import {
 } from '../rules/heritage'
 import { droitLangues, refusLangues } from '../rules/langues'
 import { getRules } from '../rules/load'
-import {
-  capacitesAcquises,
-  niveauxPossibles,
-  normaliserNiveau,
-  pointsCaracCumules,
-} from '../rules/niveau'
+import { niveauxPossibles, normaliserNiveau, pointsCaracCumules } from '../rules/niveau'
 import {
   classesPourFaction,
   racesPourFaction,
@@ -43,7 +38,12 @@ import {
   refusCompetences,
   refusDons,
 } from '../rules/talents'
-import { bassinCapacites } from './capacites'
+import {
+  bassinAchat,
+  capaciteParId,
+  choixDeNiveaux,
+  niveauxDeLaFiche,
+} from './capacites'
 import type { FicheCreation } from './types'
 
 export const ETAPES = [
@@ -51,6 +51,7 @@ export const ETAPES = [
   { id: 'camp', nom: 'Camp' },
   { id: 'niveau', nom: 'Ton niveau' },
   { id: 'classe', nom: 'Classe' },
+  { id: 'capacites', nom: 'Tes capacités' },
   { id: 'destin', nom: 'Destin' },
   { id: 'forces', nom: 'Forces' },
   { id: 'talents', nom: 'Talents' },
@@ -121,10 +122,41 @@ export function problemesClasse(fiche: FicheCreation): string[] {
   if (!fiche.faction) return ['faction manquante']
   const classe = classesPourFaction(fiche.faction).find((c) => c.id === fiche.classe)
   if (!classe) return ['classe non choisie']
-  if (!fiche.voie || !branchesDe(classe.id).some((b) => b.id === fiche.voie)) {
-    return ['voie non choisie']
-  }
   return []
+}
+
+/**
+ * Étape « Tes capacités » (D16) : un choix par niveau du personnage, pris
+ * dans TOUT l'arbre de la classe, de niveau ≤ l'échelon d'acquisition,
+ * jamais deux fois la même. Le critère trié vit dans src/rules/capacites.ts ;
+ * ici s'ajoutent les deux vérifications de contexte — la capacité existe bien
+ * dans l'arbre de la classe, et l'emplacement du niveau k ne porte pas plus
+ * haut que k.
+ */
+export function problemesCapacites(fiche: FicheCreation): string[] {
+  if (!fiche.classe) return ['classe manquante']
+  const problemes: string[] = []
+  for (const niveau of niveauxDeLaFiche(fiche)) {
+    const id = fiche.capNiveaux?.[String(niveau)]
+    if (!id) continue
+    const capacite = capaciteParId(fiche.classe, id)
+    if (!capacite) {
+      problemes.push(`capacité hors de l'arbre de la classe : ${id}`)
+      continue
+    }
+    if (capacite.niveau > niveau) {
+      problemes.push(`« ${capacite.nom} » dépasse l'emplacement du niveau ${niveau}`)
+    }
+  }
+  problemes.push(...problemesChoix(normaliserNiveau(fiche.niveau), choixDeNiveaux(fiche)))
+  const desAchats = new Set(Object.values(fiche.capChoix ?? {}).flat())
+  for (const id of Object.values(fiche.capNiveaux ?? {})) {
+    if (desAchats.has(id)) {
+      const capacite = capaciteParId(fiche.classe, id)
+      problemes.push(`« ${capacite?.nom ?? id} » est déjà prise en achat d'héritage`)
+    }
+  }
+  return problemes
 }
 
 export function problemesDestin(fiche: FicheCreation): string[] {
@@ -158,9 +190,7 @@ export function problemesDestin(fiche: FicheCreation): string[] {
     if (choisis.length !== attendus) {
       problemes.push(`capacités de niveau ${niveau} : ${choisis.length}/${attendus} choisies`)
     }
-    const bassin = new Set(
-      bassinCapacites(fiche.classe, fiche.voie, niveau, fiche.niveau).map((c) => c.id),
-    )
+    const bassin = new Set(bassinAchat(fiche, niveau).map((c) => c.id))
     for (const id of choisis) {
       if (!bassin.has(id)) problemes.push(`capacité hors bassin : ${id}`)
     }
@@ -247,6 +277,7 @@ const VALIDATEURS: Record<EtapeId, (fiche: FicheCreation) => string[]> = {
   camp: problemesCamp,
   niveau: problemesNiveau,
   classe: problemesClasse,
+  capacites: problemesCapacites,
   destin: problemesDestin,
   forces: problemesForces,
   talents: problemesTalents,
@@ -311,62 +342,43 @@ export interface Changement {
 
 const CAP_CHOIX_VIDE: Record<string, string[]> = { 1: [], 2: [] }
 
-function nomVoie(classeId: string | undefined, voieId: string | undefined): string {
-  const voie = branchesDe(classeId ?? '').find((b) => b.id === voieId)
-  return voie ? voie.nom : (voieId ?? '')
-}
-
 function nbCapChoix(fiche: FicheCreation): number {
   return Object.values(fiche.capChoix ?? {}).reduce((somme, ids) => somme + ids.length, 0)
 }
 
-/**
- * Retire des achats de capacité ceux que la voie donnera D'OFFICE au niveau
- * du personnage, et nomme chaque retrait. Une seule maison pour les deux
- * appelants : changement de voie et montée de niveau.
- */
-function retirerLesDejaDOffice(
-  capChoix: Record<string, string[]>,
-  classeId: string | undefined,
-  voieId: string | undefined,
-  niveau: number | undefined,
-  raison: string,
-): { capChoix: Record<string, string[]>; retraits: string[] } {
-  const dOffice = capacitesAcquises(classeId, voieId, niveau)
-  const suite = { ...capChoix }
-  const retraits: string[] = []
-  for (const capacite of dOffice) {
-    for (const [cle, ids] of Object.entries(suite)) {
-      if (!ids.includes(capacite.id)) continue
-      suite[cle] = ids.filter((id) => id !== capacite.id)
-      retraits.push(`Ton achat de capacité « ${capacite.nom} » sera retiré : ${raison}`)
-    }
-  }
-  return { capChoix: suite, retraits }
+function nbCapNiveaux(fiche: FicheCreation): number {
+  return Object.keys(fiche.capNiveaux ?? {}).length
 }
 
 /**
- * Changement de voie (maquette v3) : si une capacité que la NOUVELLE voie
- * donne d'office avait été achetée, ce choix est retiré — « tu l'auras
- * d'office avec ta nouvelle voie ». L'achat lui-même reste (à rechoisir).
+ * Une baisse de niveau vide les emplacements en trop (D16) : le niveau 2 n'a
+ * plus d'emplacement de niveau 3. Chaque capacité qui part est NOMMÉE.
  */
-export function changerVoie(fiche: FicheCreation, nouvelleVoie: string): Changement {
-  if (fiche.voie === nouvelleVoie) return { fiche, retraits: [] }
-  const { capChoix, retraits } = retirerLesDejaDOffice(
-    fiche.capChoix ?? {},
-    fiche.classe,
-    nouvelleVoie,
-    fiche.niveau,
-    "tu l'auras d'office avec ta nouvelle voie.",
-  )
-  return { fiche: { ...fiche, voie: nouvelleVoie, capChoix }, retraits }
+function retirerLesEmplacementsEnTrop(
+  fiche: FicheCreation,
+  niveau: number,
+): { capNiveaux: Record<string, string>; retraits: string[] } {
+  const gardes = new Set(niveauxDeLaFiche({ ...fiche, niveau }).map(String))
+  const capNiveaux: Record<string, string> = {}
+  const retraits: string[] = []
+  for (const [cle, id] of Object.entries(fiche.capNiveaux ?? {})) {
+    if (gardes.has(cle)) {
+      capNiveaux[cle] = id
+      continue
+    }
+    const capacite = capaciteParId(fiche.classe, id)
+    retraits.push(
+      `Ta capacité « ${capacite?.nom ?? id} » sera retirée : ton niveau n'a plus d'emplacement de niveau ${cle}.`,
+    )
+  }
+  return { capNiveaux, retraits }
 }
 
 /**
  * Changement de niveau de départ (D12). Les deux régimes de la fenêtre de
  * répercussions EXISTANTE s'appliquent, sans en inventer un troisième :
- * - l'impossible se retire tout seul et se nomme : un achat de capacité que
- *   la voie donnera désormais d'office (cas d'une MONTÉE de niveau) ;
+ * - l'impossible se retire tout seul et se nomme : une BAISSE de niveau
+ *   supprime les emplacements de capacité en trop (D16) ;
  * - le surplus se retire par le joueur : une BAISSE de niveau réduit le
  *   droit de dons (et de compétences) — la fenêtre nomme ce qu'il faudra
  *   retirer aux étapes concernées, le joueur le retire lui-même — dons,
@@ -377,14 +389,8 @@ export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Chan
   if (normaliserNiveau(fiche.niveau) === niveau) {
     return { fiche: { ...fiche, niveau }, retraits: [] }
   }
-  const { capChoix, retraits } = retirerLesDejaDOffice(
-    fiche.capChoix ?? {},
-    fiche.classe,
-    fiche.voie,
-    niveau,
-    "ta voie te le donne d'office à ce niveau.",
-  )
-  const suite: FicheCreation = { ...fiche, niveau, capChoix }
+  const { capNiveaux, retraits } = retirerLesEmplacementsEnTrop(fiche, niveau)
+  const suite: FicheCreation = { ...fiche, niveau, capNiveaux }
   const donsEnTrop = surplusDons(suite)
   if (donsEnTrop > 0) {
     retraits.push(
@@ -407,14 +413,17 @@ export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Chan
 }
 
 /**
- * Changement de classe (maquette v3) : la voie est retirée, les choix de
- * capacités d'héritage sont à rechoisir (achats conservés), les
- * désavantages interdits à la nouvelle classe sont décochés.
+ * Changement de classe (maquette v3, D16) : les capacités appartiennent à
+ * l'arbre de l'ANCIENNE classe — elles se vident, et la fenêtre le dit avant
+ * que quoi que ce soit ne bouge. Les achats d'héritage restent (à rechoisir),
+ * les désavantages interdits à la nouvelle classe sont décochés.
  */
 export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Changement {
   if (fiche.classe === nouvelleClasse) return { fiche, retraits: [] }
   const retraits: string[] = []
-  if (fiche.voie) retraits.push(`Ta voie « ${nomVoie(fiche.classe, fiche.voie)} » sera retirée.`)
+  if (nbCapNiveaux(fiche) > 0) {
+    retraits.push(`Tes capacités seront à rechoisir : elles sont celles de ton ancienne classe.`)
+  }
   if (nbCapChoix(fiche) > 0) retraits.push(`Tes capacités d'héritage seront à rechoisir.`)
   const interdits = desavantagesInterditsPour(nouvelleClasse)
   const decoches = interdits.filter((d) => (fiche.desavOrdre ?? []).includes(d.id))
@@ -426,7 +435,7 @@ export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Cha
     fiche: {
       ...fiche,
       classe: nouvelleClasse,
-      voie: undefined,
+      capNiveaux: {},
       capChoix: { ...CAP_CHOIX_VIDE },
       desavOrdre: (fiche.desavOrdre ?? []).filter((id) => !idsDecoches.has(id)),
     },
@@ -437,7 +446,7 @@ export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Cha
 /**
  * Changement de faction (maquette v3) : une race ou classe réservée à
  * l'autre faction est retirée ; les langues au choix sont à revoir quand la
- * race part ; les capacités d'héritage sont à rechoisir quand la classe part.
+ * race part ; les capacités sont à rechoisir quand la classe part.
  */
 export function changerFaction(fiche: FicheCreation, nouvelleFaction: string): Changement {
   if (fiche.faction === nouvelleFaction) return { fiche, retraits: [] }
@@ -458,11 +467,10 @@ export function changerFaction(fiche: FicheCreation, nouvelleFaction: string): C
     }
   }
   if (classeRetiree) {
-    retraits.push(
-      `Ta classe « ${classe.nom} »${fiche.voie ? ` et ta voie « ${nomVoie(fiche.classe, fiche.voie)} »` : ''} seront retirées.`,
-    )
+    retraits.push(`Ta classe « ${classe.nom} » sera retirée (réservée à l'autre faction).`)
+    if (nbCapNiveaux(fiche) > 0) retraits.push(`Tes capacités seront à rechoisir.`)
     if (nbCapChoix(fiche) > 0) retraits.push(`Tes capacités d'héritage seront à rechoisir.`)
-    suite = { ...suite, classe: undefined, voie: undefined, capChoix: { ...CAP_CHOIX_VIDE } }
+    suite = { ...suite, classe: undefined, capNiveaux: {}, capChoix: { ...CAP_CHOIX_VIDE } }
   }
   return { fiche: suite, retraits }
 }

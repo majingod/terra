@@ -1,11 +1,14 @@
 /**
  * t006 / D12 — baisser le niveau déclenche la fenêtre de répercussions
  * EXISTANTE, avec ses deux régimes et aucun troisième :
- * - l'impossible se retire tout seul et se nomme (une capacité achetée que
- *   la voie donne désormais d'office, cas d'une MONTÉE) ;
+ * - l'impossible se retire tout seul et se nomme (les emplacements de
+ *   capacité en trop d'une BAISSE de niveau, D16) ;
  * - le surplus se retire par le joueur (les dons en trop d'une BAISSE).
  *
- * Aucun nom ni chiffre de règle n'est écrit ici : la voie témoin, ses
+ * D16 : une MONTÉE de niveau ne retire plus rien — la voie ne donne plus
+ * aucune capacité d'office, elle n'a plus rien à reprendre à un achat.
+ *
+ * Aucun nom ni chiffre de règle n'est écrit ici : la classe témoin, ses
  * capacités et les dons témoins sont tirés de rules.json.
  */
 import { describe, expect, it } from 'vitest'
@@ -24,7 +27,7 @@ const BAS = niveauMin()
 function ficheAuPlafond(): FicheCreation {
   const dons: Record<string, number> = {}
   for (const don of listeDons().slice(0, donsCumules(HAUT))) dons[don.id] = 1
-  return { classe: CLASSE, voie: VOIE.id, niveau: HAUT, dons }
+  return { classe: CLASSE, niveau: HAUT, dons }
 }
 
 describe('t006 — répercussions d’un changement de niveau', () => {
@@ -46,28 +49,37 @@ describe('t006 — répercussions d’un changement de niveau', () => {
   })
 
   it('jumelle : sans rien de consommé, une baisse n’ouvre aucune fenêtre', () => {
-    const { fiche, retraits } = changerNiveau(
-      { classe: CLASSE, voie: VOIE.id, niveau: HAUT },
-      BAS,
-    )
+    const { fiche, retraits } = changerNiveau({ classe: CLASSE, niveau: HAUT }, BAS)
     expect(fiche.niveau).toBe(BAS)
     expect(retraits).toEqual([])
   })
 
-  it('jumelle : monter au niveau d’une capacité déjà achetée la retire et la nomme', () => {
-    // Achat d'héritage d'une capacité de sa PROPRE voie, prise au niveau bas :
-    // monter jusqu'à son échelon la donne d'office, l'achat est donc retiré.
+  it('D16 — monter de niveau ne reprend RIEN à un achat : plus rien n’est d’office', () => {
+    // Achat d'héritage d'une capacité d'un échelon haut, pris au niveau bas.
+    // Avant D16, monter jusqu'à cet échelon le donnait d'office et retirait
+    // l'achat. La voie ne donne plus rien : l'achat reste, intact.
     const echelon = VOIE.capacites.find((c) => c.niveau === HAUT)
     expect(echelon).toBeDefined()
     const avant: FicheCreation = {
       classe: CLASSE,
-      voie: VOIE.id,
       niveau: BAS,
       capChoix: { [String(HAUT)]: [echelon!.id] },
     }
     const { fiche, retraits } = changerNiveau(avant, HAUT)
-    expect(fiche.capChoix?.[String(HAUT)]).toEqual([])
-    expect(retraits.some((r) => r.includes(echelon!.nom))).toBe(true)
+    expect(fiche.capChoix?.[String(HAUT)]).toEqual([echelon!.id])
+    expect(retraits.filter((r) => r.includes(echelon!.nom))).toEqual([])
+  })
+
+  it('jumelle : une BAISSE, elle, vide les emplacements en trop et les nomme', () => {
+    const haute = VOIE.capacites.find((c) => c.niveau === HAUT)!
+    const avant: FicheCreation = {
+      classe: CLASSE,
+      niveau: HAUT,
+      capNiveaux: { [String(HAUT)]: haute.id },
+    }
+    const { fiche, retraits } = changerNiveau(avant, BAS)
+    expect(fiche.capNiveaux?.[String(HAUT)]).toBeUndefined()
+    expect(retraits.some((r) => r.includes(haute.nom))).toBe(true)
   })
 
   it('changer pour le même niveau ne répercute rien', () => {
@@ -78,9 +90,9 @@ describe('t006 — répercussions d’un changement de niveau', () => {
     const ids = ETAPES.map((e) => e.id)
     const iNiveau = ids.indexOf('niveau')
     expect(iNiveau).toBeGreaterThan(ids.indexOf('camp'))
-    // classe (arbre des voies), destin (achats de capacité/don) et talents
-    // (dons, compétences) consomment tous ce que le niveau ouvre.
-    for (const consommateur of ['classe', 'destin', 'talents'] as const) {
+    // classe, capacités (un emplacement par niveau), destin (achats de
+    // capacité/don) et talents consomment tous ce que le niveau ouvre.
+    for (const consommateur of ['classe', 'capacites', 'destin', 'talents'] as const) {
       expect(iNiveau).toBeLessThan(ids.indexOf(consommateur))
     }
     expect(ETAPES[iNiveau].nom).toBe('Ton niveau')

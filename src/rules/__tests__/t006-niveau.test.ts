@@ -2,15 +2,19 @@
  * t006 / D12 — niveau de départ.
  *
  * Tout ce qui est attendu ici se lit de rules.json : la table d'évolution
- * pour les dons cumulés, le champ `niveau` des capacités de branche pour les
- * échelons acquis. Aucun chiffre du Tome n'est recopié dans ce fichier —
+ * pour les dons cumulés, le champ `niveau` des capacités de branche pour le
+ * bassin d'un choix. Aucun chiffre du Tome n'est recopié dans ce fichier —
  * les dénominateurs sont mesurés, puis épinglés pour qu'une donnée qui
  * bouge fasse rougir.
+ *
+ * D16 : `capacitesAcquises` a disparu AVEC SON CONCEPT — une voie ne donne
+ * plus rien d'office. Les trois assertions qui l'éprouvaient sont
+ * transformées : ce qu'un niveau ouvre, c'est un BASSIN de choix.
  */
 import { describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches, toutesLesCapacites } from '../branches'
+import { capacitesDeClasse, capacitesDisponibles } from '../capacites'
 import {
-  capacitesAcquises,
   competencesCumulees,
   donsCumules,
   niveauMax,
@@ -73,7 +77,7 @@ describe('t006 — dons cumulés par niveau', () => {
   })
 })
 
-describe('t006 — capacités acquises par niveau', () => {
+describe('t006 / D16 — ce qu’un niveau OUVRE (bassin de choix)', () => {
   const voies = classesAvecBranches().flatMap((classe) =>
     branchesDe(classe.classe_id).map((voie) => ({ classeId: classe.classe_id, voie })),
   )
@@ -84,32 +88,37 @@ describe('t006 — capacités acquises par niveau', () => {
     expect(toutesLesCapacites()).toHaveLength(120)
   })
 
-  it('niveau_3_donne_capacites_echelons_1_a_3', () => {
-    const { classeId, voie } = voies[0]
-    const acquises = capacitesAcquises(classeId, voie.id, 3)
-    expect(acquises.map((c) => c.niveau)).toEqual([1, 2, 3])
-    expect(acquises.map((c) => c.id)).toEqual(
-      voie.capacites.filter((c) => c.niveau <= 3).map((c) => c.id),
+  it('niveau_3_ouvre_les_echelons_1_a_3_de_TOUTES_les_voies', () => {
+    const { classeId } = voies[0]
+    const bassin = capacitesDisponibles(classeId, 3)
+    expect(new Set(bassin.map((c) => c.niveau))).toEqual(new Set([1, 2, 3]))
+    expect(bassin.map((c) => c.id).sort()).toEqual(
+      capacitesDeClasse(classeId)
+        .filter((c) => c.niveau <= 3)
+        .map((c) => c.id)
+        .sort(),
     )
+    // La voie n'est pas un enclos : les trois y sont.
+    expect(new Set(bassin.map((c) => c.voieId)).size).toBe(branchesDe(classeId).length)
   })
 
-  it('jumelle : sur les 24 voies et les 5 niveaux, l’acquis = les échelons ≤ N', () => {
-    const ecarts = voies.flatMap(({ classeId, voie }) =>
+  it('jumelle : sur les 8 classes et les 5 niveaux, le bassin = les échelons ≤ N', () => {
+    const ecarts = classesAvecBranches().flatMap((classe) =>
       NIVEAUX.filter((niveau) => {
-        const acquises = capacitesAcquises(classeId, voie.id, niveau)
-        const attendus = voie.capacites.filter((c) => c.niveau <= niveau)
+        const bassin = capacitesDisponibles(classe.classe_id, niveau)
+        const attendus = capacitesDeClasse(classe.classe_id).filter((c) => c.niveau <= niveau)
         return (
-          acquises.length !== attendus.length ||
-          acquises.some((c) => c.niveau > niveau) ||
-          acquises.length !== niveau
+          bassin.length !== attendus.length ||
+          bassin.some((c) => c.niveau > niveau) ||
+          bassin.length !== niveau * branchesDe(classe.classe_id).length
         )
-      }).map((niveau) => `${voie.id}@${niveau}`),
+      }).map((niveau) => `${classe.classe_id}@${niveau}`),
     )
     expect(ecarts).toEqual([])
   })
 
-  it('sans classe ou sans voie, rien n’est acquis d’office', () => {
-    expect(capacitesAcquises(undefined, undefined, 5)).toEqual([])
-    expect(capacitesAcquises(voies[0].classeId, undefined, 5)).toEqual([])
+  it('sans classe, le bassin est vide — et une voie ne donne plus RIEN d’office', () => {
+    expect(capacitesDisponibles(undefined, 5)).toEqual([])
+    expect(capacitesDeClasse(undefined)).toEqual([])
   })
 })

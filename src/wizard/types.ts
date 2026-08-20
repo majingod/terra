@@ -37,6 +37,11 @@ export interface FicheCreation {
   /** Bonus au choix de l'Humain (libellé lu du fichier). */
   humainChoix?: string
   classe?: string
+  /**
+   * Champ d'époque (avant D16) : la voie choisie à la création. Le code ne
+   * l'exige plus et ne l'écrit plus — il reste lu tel quel sur les fiches et
+   * les brouillons qui le portent, jamais renommé, jamais effacé.
+   */
   voie?: string
   /** Niveau de départ du personnage (D12) — défaut : niveau min de la table. */
   niveau?: number
@@ -56,6 +61,12 @@ export interface FicheCreation {
   achats?: Record<string, number>
   /** Capacités choisies via « +1 Capacité de niveau N » : niveau -> ids. */
   capChoix?: Record<string, string[]>
+  /**
+   * D16 : la capacité choisie à CHAQUE niveau du personnage — niveau (clé
+   * texte, comme capChoix) -> id de la capacité. L'emplacement du niveau k
+   * n'accepte qu'une capacité de niveau ≤ k, jamais deux fois la même.
+   */
+  capNiveaux?: Record<string, string>
   nom?: string
   histoire?: string
   reglesVersion?: string

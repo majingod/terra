@@ -19,9 +19,10 @@ import {
 import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
 import { consommationDons, droitCompetences, droitDons } from '../../rules/talents'
-import { bassinCapacites } from '../../wizard/capacites'
+import { bassinAchat, capaciteParId } from '../../wizard/capacites'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
+import { LigneCapacite } from './EtapeCapacites'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
@@ -104,11 +105,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
       if (choisis.length > suiteN) {
         const capChoix = { ...(fiche.capChoix ?? {}) }
         const perdue = choisis[choisis.length - 1]
-        const nomPerdue =
-          bassinCapacites(fiche.classe, fiche.voie, effet.niveau, fiche.niveau).find(
-            (c) => c.id === perdue,
-          )
-            ?.nom ?? perdue
+        const nomPerdue = capaciteParId(fiche.classe, perdue)?.nom ?? perdue
         capChoix[String(effet.niveau)] = choisis.slice(0, suiteN)
         suite = { ...suite, capChoix }
         impacts.push(`Ta capacité « ${nomPerdue} » sera retirée.`)
@@ -256,9 +253,8 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                     Choisis {n > 1 ? `${n} capacités` : 'la capacité'} de niveau {effet.niveau} (
                     {(fiche.capChoix?.[String(effet.niveau)] ?? []).length}/{n}) :
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {bassinCapacites(fiche.classe, fiche.voie, effet.niveau, fiche.niveau).map(
-                      (capacite) => {
+                  <div className="flex flex-col">
+                    {bassinAchat(fiche, effet.niveau).map((capacite) => {
                       const prise = (fiche.capChoix?.[String(effet.niveau)] ?? []).includes(
                         capacite.id,
                       )
@@ -268,9 +264,12 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                           type="button"
                           aria-pressed={prise}
                           onClick={() => basculerCapacite(effet.niveau, capacite.id)}
-                          className={`chip ${prise ? 'chip-on' : ''}`}
+                          className={`my-1 block w-full rounded-lg border p-2.5 text-left ${
+                            prise ? 'border-primary bg-primary/10' : 'border-border/50 bg-muted/40'
+                          }`}
                         >
-                          {capacite.voieNom} · {capacite.nom}
+                          <LigneCapacite capacite={capacite} />
+                          <TexteRegle source={capacite} />
                         </button>
                       )
                     })}

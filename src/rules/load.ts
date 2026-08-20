@@ -100,6 +100,8 @@ export interface Capacite {
   niveau: number
   nom: string
   verbatim: string
+  /** Correction d'affichage du Tome (D14) — le verbatim reste intact. */
+  affichage?: string
 }
 
 export interface CapaciteDeBase {
