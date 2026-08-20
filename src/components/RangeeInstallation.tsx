@@ -17,13 +17,9 @@
  * Une fois l'app installée, la rangée disparaît complètement — plus rien à
  * lire, plus rien à ignorer.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import FeuilleInstallation from './FeuilleInstallation'
-
-/** L'événement n'est pas dans lib.dom : sa forme est déclarée ici. */
-interface EvenementInstallation extends Event {
-  prompt: () => Promise<void>
-}
+import { offreRetenue, passerLaMainAuNavigateur, sAbonner } from '../pwa/offreInstallation'
 
 /**
  * L'app tourne-t-elle déjà installée ? `display-mode: standalone` couvre
@@ -40,25 +36,22 @@ export function dejaInstallee(): boolean {
 }
 
 export default function RangeeInstallation() {
-  const [offre, setOffre] = useState<EvenementInstallation | null>(null)
+  // ⚠️ L'offre ne s'écoute PAS ici : elle est retenue par un module importé
+  // avant React (`src/pwa/offreInstallation`). Un écouteur posé dans le
+  // `useEffect` d'un composant monté sur le seul Accueil raterait toute
+  // offre émise avant ce montage — et la rangée retomberait sur « Comment
+  // faire » alors que le navigateur offrait l'installation en un tap.
+  const offre = useSyncExternalStore(sAbonner, offreRetenue, () => null)
   const [installee, setInstallee] = useState(dejaInstallee)
   const [instructions, setInstructions] = useState(false)
 
   useEffect(() => {
-    function surOffre(e: Event) {
-      // Sans ceci, le navigateur affiche sa propre invite à notre place.
-      e.preventDefault()
-      setOffre(e as EvenementInstallation)
-    }
     function surInstallation() {
-      setOffre(null)
       setInstallee(true)
       setInstructions(false)
     }
-    window.addEventListener('beforeinstallprompt', surOffre)
     window.addEventListener('appinstalled', surInstallation)
     return () => {
-      window.removeEventListener('beforeinstallprompt', surOffre)
       window.removeEventListener('appinstalled', surInstallation)
     }
   }, [])
@@ -82,8 +75,7 @@ export default function RangeeInstallation() {
             onClick={() => {
               // L'offre ne sert qu'une fois : après elle, la rangée bascule
               // sur « Comment faire », qui marche toujours.
-              void offre.prompt()
-              setOffre(null)
+              passerLaMainAuNavigateur()
             }}
           >
             Installer
