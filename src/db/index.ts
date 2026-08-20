@@ -48,6 +48,17 @@ export interface Personnage {
   reglesVersion?: string
   /** Fiche complète produite par le wizard t004. */
   creation?: FicheCreation
+  /**
+   * Horodatage (ms) du retrait de la liste principale. Absent = fiche active.
+   *
+   * Champ **non indexé** : Dexie ne stocke dans `.stores()` que les index, pas
+   * la forme des enregistrements. L'ajouter n'exige donc AUCUNE montée de
+   * version, et D7 (export obligatoire avant migration) n'est pas rouvert.
+   * Le tri et le filtrage se font en mémoire, sur 30 à 50 fiches.
+   *
+   * Une fiche retirée n'est jamais effacée : elle reste dans `personnages`.
+   */
+  retireeLe?: number
 }
 
 export interface Brouillon {
