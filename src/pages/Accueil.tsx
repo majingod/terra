@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { remettreFiche, retirerFiche, separerFiches } from '../db/retrait'
-import BandeauInstallation from '../components/BandeauInstallation'
+import RangeeInstallation from '../components/RangeeInstallation'
 
 export default function Accueil() {
   const personnages = useLiveQuery(() => db.personnages.orderBy('updatedAt').reverse().toArray(), [])
@@ -21,7 +21,7 @@ export default function Accueil() {
         prépare-toi pour le prochain GN — même sans réseau.
       </p>
 
-      <BandeauInstallation />
+      <RangeeInstallation />
 
       <Link to="/creer" className="btn-grand">
         Créer un personnage
