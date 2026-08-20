@@ -206,6 +206,11 @@
   .glow-gold {
     box-shadow: 0 0 15px oklch(var(--gold) / 0.4);
   }
+  /* La coche ronde d'une capacité choisie (maquette v5) : même dégradé or que
+     .text-gradient-gold, posé en fond plein plutôt qu'en habillage de texte. */
+  .coche-or {
+    background: linear-gradient(135deg, oklch(var(--gold)), oklch(0.65 0.15 75));
+  }
   .text-gradient-gold {
     background: linear-gradient(135deg, oklch(var(--gold)), oklch(0.65 0.15 75));
     -webkit-background-clip: text;

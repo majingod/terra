@@ -11,19 +11,62 @@
  */
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto'
-import { cleanup, render, screen } from '@testing-library/react'
+import { useState } from 'react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches } from '../../../rules/branches'
-import { capacitesDeClasse } from '../../../rules/capacites'
+import {
+  capaciteDeClasseParId,
+  capacitesDeClasse,
+  capacitesDisponibles,
+} from '../../../rules/capacites'
+import { effetAchat, listeAchats } from '../../../rules/heritage'
 import { niveauMax, niveauxPossibles } from '../../../rules/niveau'
 import { classeSquelette } from '../../../rules/stats'
 import type { FicheCreation } from '../../../wizard/types'
 import EtapeCapacites, { texteAide } from '../EtapeCapacites'
+import EtapeDestin from '../EtapeDestin'
 import FicheAffichage from '../FicheAffichage'
 import { texteAffiche } from '../ui'
 
 const CLASSE = classesAvecBranches()[0].classe_id
 const VOIES = branchesDe(CLASSE)
+
+/** L'en-tête d'accordéon de voie qui porte `nom` (le chevron le précède). */
+function accordeonDeVoie(nom: string): HTMLElement | undefined {
+  return screen
+    .getAllByRole('button')
+    .find((el) => el.hasAttribute('aria-expanded') && (el.textContent ?? '').includes(nom))
+}
+
+function boutonVoie(nom: string): HTMLElement {
+  const bouton = accordeonDeVoie(nom)
+  expect(bouton, `accordéon de voie introuvable : ${nom}`).toBeTruthy()
+  return bouton!
+}
+
+/** Ouvre (ou referme) l'accordéon d'une voie. */
+function basculerVoie(nom: string) {
+  fireEvent.click(boutonVoie(nom))
+}
+
+/** La carte d'une capacité choisissable, par son nom — accessible name ancrée au début. */
+function carteCapacite(nom: string): HTMLElement {
+  const carte = screen
+    .getAllByRole('button')
+    .find((el) => el.hasAttribute('aria-pressed') && (el.textContent ?? '').startsWith(nom))
+  expect(carte, `carte de capacité introuvable : ${nom}`).toBeTruthy()
+  return carte!
+}
+
+/** Le bouton (« Choisir » ou « Changer ») qui ouvre l'emplacement d'un niveau. */
+function ouvrirEmplacement(niveau: number) {
+  const carte = screen.getByText(`Capacité du niveau ${niveau}`).closest('.carte-choix') as HTMLElement
+  const bouton =
+    within(carte).queryByRole('button', { name: 'Choisir' }) ??
+    within(carte).getByRole('button', { name: 'Changer' })
+  fireEvent.click(bouton)
+}
 
 /** Une capacité par niveau, prise dans une voie DIFFÉRENTE à chaque échelon. */
 function capNiveauxPanaches(niveau: number): Record<string, string> {
@@ -109,12 +152,17 @@ describe('D16 ⑥ — un emplacement par niveau du personnage', () => {
     expect(screen.getByText(texteAide(1, niveauMax()))).toBeTruthy()
   })
 
-  it('l’emplacement ouvert montre les TROIS voies, et raye ce qui est déjà pris', () => {
+  it('l’emplacement ouvert montre les TROIS voies (accordéons), et raye ce qui est déjà pris', () => {
     // Niveau 2, l'emplacement 1 rempli : l'emplacement 2 s'ouvre tout seul.
-    const fiche = { ...ficheAuNiveau(2), capNiveaux: { '1': capNiveauxPanaches(2)['1'] } }
+    const idPris = capNiveauxPanaches(2)['1']
+    const fiche = { ...ficheAuNiveau(2), capNiveaux: { '1': idPris } }
     render(<EtapeCapacites fiche={fiche} onMaj={() => {}} />)
     const sections = screen.getAllByRole('heading', { level: 4 }).map((h) => h.textContent)
     expect(sections).toEqual(VOIES.map((v) => v.nom))
+    // Maquette v5 : fermées par défaut, la rayée n'apparaît qu'à l'ouverture de sa voie.
+    expect(screen.queryAllByText('déjà choisie')).toEqual([])
+    const voieDeLaPrise = capaciteDeClasseParId(CLASSE, idPris)!.voieNom
+    basculerVoie(voieDeLaPrise)
     expect(screen.getAllByText('déjà choisie')).toHaveLength(1)
   })
 
@@ -143,16 +191,165 @@ describe('D16 ⑦ — D14 à l’écran : `affichage ?? verbatim`', () => {
     expect(SANS, 'une capacité sans correction d’affichage').toBeDefined()
   })
 
-  it('une capacité corrigée rend son `affichage`, pas son verbatim', () => {
+  it('une capacité corrigée rend son `affichage`, pas son verbatim — une fois sa voie ouverte', () => {
     render(<EtapeCapacites fiche={ficheDernierOuvert()} onMaj={() => {}} />)
+    basculerVoie(AVEC!.voieNom)
     expect(screen.getAllByText(AVEC!.affichage!).length).toBeGreaterThan(0)
     expect(screen.queryAllByText(AVEC!.verbatim)).toEqual([])
   })
 
-  it('jumelle : une capacité sans correction rend son verbatim tel quel', () => {
+  it('jumelle : une capacité sans correction rend son verbatim tel quel — une fois sa voie ouverte', () => {
     render(<EtapeCapacites fiche={ficheDernierOuvert()} onMaj={() => {}} />)
+    basculerVoie(SANS!.voieNom)
     expect(screen.getAllByText(texteAffiche(SANS!)).length).toBeGreaterThan(0)
     expect(texteAffiche(SANS!)).toBe(SANS!.verbatim)
+  })
+})
+
+describe('Maquette v5 ① — les accordéons de voie sont fermés par défaut', () => {
+  it('au rendu d’un emplacement ouvert, aucune description de capacité n’est dans le document', () => {
+    render(<EtapeCapacites fiche={ficheAuNiveau(3, false)} onMaj={() => {}} />)
+    ouvrirEmplacement(3)
+    for (const capacite of capacitesDeClasse(CLASSE).filter((c) => c.niveau <= 3)) {
+      expect(screen.queryByText(texteAffiche(capacite)), capacite.nom).toBeNull()
+    }
+  })
+
+  it('ouvrir une voie fait apparaître ses capacités, texte complet (`affichage ?? verbatim`)', () => {
+    render(<EtapeCapacites fiche={ficheAuNiveau(3, false)} onMaj={() => {}} />)
+    ouvrirEmplacement(3)
+    const capacite = capacitesDeClasse(CLASSE).find((c) => c.niveau <= 3)!
+    basculerVoie(capacite.voieNom)
+    expect(screen.getByText(texteAffiche(capacite))).toBeTruthy()
+    // Comparaison à la chaîne entière, jamais un extrait : aucune troncature.
+    expect(screen.getByText(texteAffiche(capacite)).textContent).toBe(texteAffiche(capacite))
+  })
+})
+
+describe('Maquette v5 ② — retoucher la carte choisie désélectionne', () => {
+  function Controlee({ initiale }: { initiale: FicheCreation }) {
+    const [fiche, setFiche] = useState(initiale)
+    return <EtapeCapacites fiche={fiche} onMaj={setFiche} />
+  }
+
+  it('choisir puis retoucher la même carte : plus aucune carte choisie dans l’emplacement', () => {
+    const capacite = capacitesDeClasse(CLASSE).find((c) => c.niveau === 1)!
+    render(<Controlee initiale={ficheAuNiveau(1, false)} />)
+    basculerVoie(capacite.voieNom)
+    fireEvent.click(carteCapacite(capacite.nom))
+    // Une sélection avance/referme l'emplacement (comportement existant,
+    // inchangé) : le rouvrir pour retoucher le choix qu'il porte.
+    ouvrirEmplacement(1)
+    basculerVoie(capacite.voieNom)
+    const carte = carteCapacite(capacite.nom)
+    expect(carte.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(carte)
+    expect(carte.getAttribute('aria-pressed')).toBe('false')
+    expect(screen.queryAllByRole('button', { pressed: true })).toEqual([])
+    // La validation existante (1 choix par emplacement) fait le reste : rien
+    // n'est ajouté ici pour la remplacer.
+    expect(screen.getByText('Capacité du niveau 1')).toBeTruthy()
+  })
+})
+
+describe('Maquette v5 ③ — la pastille de voie compte juste (scénario Bob)', () => {
+  it('druide niveau 3, Liane et Rafale prises, emplacement 3 : Chaman 2, Élémentaliste 2, Clerc 3', () => {
+    const capNiveaux = { '1': 'druide.chaman.1', '2': 'druide.elementaliste.2' }
+    const fiche: FicheCreation = {
+      faction: classeSquelette('druide')!.faction,
+      classe: 'druide',
+      niveau: 3,
+      capNiveaux,
+    }
+    render(<EtapeCapacites fiche={fiche} onMaj={() => {}} />)
+    // L'emplacement 3 est le premier vide : il s'ouvre tout seul.
+    const attendu: [string, number][] = [
+      ['Chaman', 2],
+      ['Élémentaliste', 2],
+      ['Clerc', 3],
+    ]
+    for (const [voie, n] of attendu) {
+      expect(within(boutonVoie(voie)).getByText(String(n)), voie).toBeTruthy()
+    }
+    // Jumelle : le même compte, tiré de `capacitesDisponibles` — jamais un nombre en dur.
+    for (const [voie, n] of attendu) {
+      const bassin = capacitesDisponibles('druide', 3, Object.values(capNiveaux))
+      expect(bassin.filter((c) => c.voieNom === voie), voie).toHaveLength(n)
+    }
+  })
+})
+
+describe('Maquette v5 ④ — l’indicateur de voie fermée', () => {
+  function Controlee({ initiale }: { initiale: FicheCreation }) {
+    const [fiche, setFiche] = useState(initiale)
+    return <EtapeCapacites fiche={fiche} onMaj={setFiche} />
+  }
+
+  it('choix fait puis voie repliée : l’en-tête porte le nom de la capacité ; désélection → il disparaît', () => {
+    const capacite = capacitesDeClasse(CLASSE).find((c) => c.niveau === 1)!
+    render(<Controlee initiale={ficheAuNiveau(1, false)} />)
+    basculerVoie(capacite.voieNom)
+    fireEvent.click(carteCapacite(capacite.nom))
+    // La sélection referme l'emplacement (comportement existant) : le
+    // rouvrir montre la voie repliée par défaut, indicateur déjà posé.
+    ouvrirEmplacement(1)
+    expect(boutonVoie(capacite.voieNom).textContent).toContain(capacite.nom)
+
+    basculerVoie(capacite.voieNom) // ouvre pour retoucher
+    fireEvent.click(carteCapacite(capacite.nom)) // retouche = désélectionne
+    basculerVoie(capacite.voieNom) // replie — la désélection, elle, ne referme pas l'emplacement
+    expect(boutonVoie(capacite.voieNom).textContent).not.toContain(capacite.nom)
+  })
+})
+
+describe('Maquette v5 ⑤ — la rayée : dans sa voie ouverte, sans description, hors pastille', () => {
+  it('une capacité prise à un autre niveau est rayée, sans texte, et sort du compte de sa voie', () => {
+    // Niveau 2, l'emplacement 1 rempli : l'emplacement 2 s'ouvre tout seul.
+    const idPris = capNiveauxPanaches(2)['1']
+    const prise = capaciteDeClasseParId(CLASSE, idPris)!
+    const fiche = { ...ficheAuNiveau(2), capNiveaux: { '1': idPris } }
+    render(<EtapeCapacites fiche={fiche} onMaj={() => {}} />)
+    const totalVoie = capacitesDeClasse(CLASSE).filter(
+      (c) => c.voieId === prise.voieId && c.niveau <= 2,
+    ).length
+    basculerVoie(prise.voieNom)
+    // Scopé à CET accordéon : l'emplacement 1 (fermé) montre aussi sa propre
+    // capacité choisie avec sa description complète — hors de propos ici.
+    const accordeon = within(boutonVoie(prise.voieNom).parentElement!)
+    expect(accordeon.getByText('déjà choisie')).toBeTruthy()
+    expect(accordeon.queryByText(texteAffiche(prise))).toBeNull()
+    expect(within(boutonVoie(prise.voieNom)).getByText(String(totalVoie - 1))).toBeTruthy()
+  })
+})
+
+describe('Maquette v5 ⑥ — les achats XP : 3 cartes à plat, jamais d’étage voie', () => {
+  it('un achat « +1 Capacité de niveau N » montre 3 cartes (une par voie), sans accordéon', () => {
+    const achat = listeAchats().find((a) => effetAchat(a.achat).type === 'capacite')!
+    const effet = effetAchat(achat.achat) as { type: 'capacite'; niveau: number }
+    const fiche: FicheCreation = {
+      faction: classeSquelette(CLASSE)!.faction,
+      classe: CLASSE,
+      niveau: niveauMax(),
+      xpPerm: 99,
+      achats: { [achat.achat]: 1 },
+    }
+    render(<EtapeDestin fiche={fiche} onMaj={() => {}} onChangement={() => {}} />)
+    const bassin = capacitesDeClasse(CLASSE).filter((c) => c.niveau === effet.niveau)
+    expect(bassin, 'l’invariant D16 : une capacité par niveau et par voie').toHaveLength(3)
+    for (const capacite of bassin) {
+      expect(screen.getAllByText(capacite.nom).length, capacite.nom).toBeGreaterThan(0)
+      expect(screen.getAllByText(capacite.voieNom).length, `voie de ${capacite.nom}`).toBeGreaterThan(
+        0,
+      )
+      expect(
+        screen.getAllByText(texteAffiche(capacite)).length,
+        `texte de ${capacite.nom}`,
+      ).toBeGreaterThan(0)
+    }
+    // Pas d'étage voie : aucun accordéon pour ces trois voies.
+    for (const capacite of bassin) {
+      expect(accordeonDeVoie(capacite.voieNom), `accordéon parasite pour ${capacite.voieNom}`).toBeUndefined()
+    }
   })
 })
 
