@@ -78,16 +78,35 @@ describe('D16 ⑥ — un emplacement par niveau du personnage', () => {
     ).toBeTruthy()
   })
 
-  it('l’aide dit jusqu’où va CE choix, et se tait sur les prochains au dernier échelon', () => {
+  it('l’aide a TROIS formes : plusieurs échelons au-dessus, un seul, aucun', () => {
     const plafond = niveauMax()
+    // ① il reste plusieurs échelons : pluriel, et l'intervalle k+1 → plafond.
     expect(texteAide(1, plafond)).toBe(
       `Ce choix-ci peut aller jusqu'au niveau 1. Les capacités de niveau 2 à ${plafond} t'attendent aux prochains niveaux.`,
     )
+    // ② il n'en reste qu'un : singulier, et pas d'intervalle « 5 à 5 ».
+    expect(texteAide(plafond - 1, plafond)).toBe(
+      `Ce choix-ci peut aller jusqu'au niveau ${plafond - 1}. Les capacités de niveau ${plafond} t'attendent au prochain niveau.`,
+    )
+    expect(texteAide(plafond - 1, plafond)).not.toContain(`${plafond} à ${plafond}`)
+    // ③ au dernier échelon : la première phrase, et rien d'autre.
     expect(texteAide(plafond, plafond)).toBe(
       `Ce choix-ci peut aller jusqu'au niveau ${plafond}.`,
     )
+  })
+
+  it('jumelle : aucune forme ne bégaie l’intervalle, sur tous les échelons', () => {
+    const plafond = niveauMax()
+    for (const niveau of niveauxPossibles()) {
+      const aide = texteAide(niveau, plafond)
+      expect(aide.startsWith(`Ce choix-ci peut aller jusqu'au niveau ${niveau}.`), aide).toBe(true)
+      expect(aide, aide).not.toMatch(/niveau (\d+) à \1\b/)
+    }
+  })
+
+  it('l’aide de l’emplacement ouvert est bien à l’écran', () => {
     render(<EtapeCapacites fiche={ficheAuNiveau(1, false)} onMaj={() => {}} />)
-    expect(screen.getByText(texteAide(1, plafond))).toBeTruthy()
+    expect(screen.getByText(texteAide(1, niveauMax()))).toBeTruthy()
   })
 
   it('l’emplacement ouvert montre les TROIS voies, et raye ce qui est déjà pris', () => {

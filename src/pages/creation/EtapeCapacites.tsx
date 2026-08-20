@@ -47,13 +47,24 @@ export function LigneCapacite({
 
 /**
  * L'aide au bas d'un emplacement ouvert : ce jusqu'où CE choix peut aller,
- * et ce qui attend aux prochains niveaux. Au dernier échelon de la table,
- * seule la première phrase a un sens — il n'y a plus de « prochains ».
+ * et ce qui attend aux prochains niveaux. Trois formes, parce que le français
+ * n'accorde pas comme les bornes d'un intervalle (libellés arbitrés par
+ * l'organisateur, mot pour mot) :
+ * - il reste plusieurs échelons au-dessus : « de niveau k+1 à N … prochains
+ *   niveaux » ;
+ * - il n'en reste qu'un : « de niveau N … au prochain niveau » ;
+ * - au dernier échelon de la table, seule la première phrase a un sens.
+ *
+ * D5 : le plafond vient de la table d'évolution, jamais d'un 5 écrit ici.
  */
 export function texteAide(niveauDuChoix: number, plafond: number): string {
   const premiere = `Ce choix-ci peut aller jusqu'au niveau ${niveauDuChoix}.`
   if (niveauDuChoix >= plafond) return premiere
-  return `${premiere} Les capacités de niveau ${niveauDuChoix + 1} à ${plafond} t'attendent aux prochains niveaux.`
+  const suivant = niveauDuChoix + 1
+  if (suivant === plafond) {
+    return `${premiere} Les capacités de niveau ${plafond} t'attendent au prochain niveau.`
+  }
+  return `${premiere} Les capacités de niveau ${suivant} à ${plafond} t'attendent aux prochains niveaux.`
 }
 
 /** Les options d'un emplacement, regroupées par voie, dans l'ordre de l'arbre. */
