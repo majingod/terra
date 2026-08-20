@@ -1,19 +1,17 @@
 /**
  * Étape — Classe : toucher une classe la CHOISIT (avec fenêtre de
- * répercussions au besoin) et ouvre ses trois voies dedans.
+ * répercussions au besoin). La classe donne les PV, le Mana et les capacités
+ * de base.
  *
- * D4-bis (t006) : au MOMENT DU CHOIX, le wizard montre l'ARBRE COMPLET de la
- * voie — les cinq échelons, verbatim complet, aucun réduit à un badge. Les
- * échelons que ton niveau te donne sont marqués « acquis » ; les suivants
- * sont montrés pour que tu saches où mène la voie. La fiche, elle, ne montre
- * que l'acquis.
+ * D16 : il n'y a plus de choix de voie ici. Les capacités se choisissent une
+ * par niveau, dans tout l'arbre de la classe, à l'étape « Tes capacités » qui
+ * suit — la voie n'est plus qu'une étiquette portée par chaque capacité.
  */
-import { branchesDe, capacitesDeBase } from '../../rules/branches'
-import { capacitesAcquises, normaliserNiveau } from '../../rules/niveau'
+import { capacitesDeBase } from '../../rules/branches'
+import { normaliserNiveau } from '../../rules/niveau'
 import { classesPourFaction } from '../../rules/stats'
-import { changerClasse, changerVoie, type Changement } from '../../wizard/validation'
+import { changerClasse, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import ArbreVoie from '../../components/ArbreVoie'
 import { Badge, CarteChoix, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
@@ -31,14 +29,13 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
       <Tutoriel
         etapeId="classe"
         gestes={[
-          'Touche une classe : ses trois voies s’ouvrent dedans.',
-          'Touche la voie qui te parle — elle se choisit à la création, sans panachage.',
+          'Touche la classe qui te parle : elle donne tes PV, ton Mana et tes capacités de base.',
           <>
-            Chaque voie montre son arbre complet ; au niveau {niveau}, tu tiens les échelons
-            marqués « acquis ».
+            Tes capacités se choisissent à l’étape suivante — au niveau {niveau}, tu en choisis{' '}
+            {niveau}.
           </>,
         ]}
-        pourquoi="la classe donne tes PV, ton Mana et tes capacités de base ; la voie donne les capacités de ton niveau — et tu vois d'avance où elle mène."
+        pourquoi="la classe donne tes PV, ton Mana et tes capacités de base ; les capacités, elles, se prennent une par niveau dans tout l'arbre de la classe."
       />
       {classes.map((classe) => {
         const ouverte = fiche.classe === classe.id
@@ -72,40 +69,12 @@ export default function EtapeClasse({ fiche, onChangement }: Props) {
               />
             )}
 
-            {ouverte && (
-              <div className="mt-2 border-t border-border/30 pt-1.5">
-                {branchesDe(classe.id).map((voie) => {
-                  // « Acquis » ne se dit que de TA voie : tant qu'elle n'est
-                  // pas choisie, l'arbre est montré sans rien te promettre.
-                  const choisie = fiche.voie === voie.id
-                  const acquises = new Set(
-                    choisie ? capacitesAcquises(classe.id, voie.id, niveau).map((c) => c.id) : [],
-                  )
-                  return (
-                    <CarteChoix
-                      key={voie.id}
-                      petite
-                      choisi={choisie}
-                      onChoisir={() => {
-                        if (fiche.voie === voie.id) return
-                        onChangement(changerVoie(fiche, voie.id))
-                      }}
-                    >
-                      <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
-                        {voie.nom}
-                      </h3>
-                      <ArbreVoie capacites={voie.capacites} acquises={acquises} />
-                    </CarteChoix>
-                  )
-                })}
-              </div>
-            )}
           </CarteChoix>
         )
       })}
       <Note>
-        L'arbre entier est montré ici, au moment du choix. Ta fiche, elle, ne portera que ce que
-        tu as acquis — et tout vit dans l'encyclopédie.
+        L'arbre entier de chaque classe vit dans l'encyclopédie. À l'étape suivante, tu choisis
+        tes capacités dedans — une par niveau, n'importe quelle voie.
       </Note>
     </section>
   )

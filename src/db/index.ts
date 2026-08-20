@@ -9,10 +9,14 @@
  * plus référence — la seule donnée d'âge que le code manipule est la
  * tranche ('≤11' | '12+', D10).
  *
- * Les champs du wizard t004 (trancheAge, humainChoix, voie, caracs {p,r,e},
- * extras, dons ×n, capChoix, …) vivent sous `creation` : les clés `dons` et
- * `caracs` de la v1 portent d'autres types, les fusionner à plat serait un
- * renommage — interdit par D7.
+ * Les champs du wizard t004 (trancheAge, humainChoix, caracs {p,r,e},
+ * extras, dons ×n, capChoix, capNiveaux, …) vivent sous `creation` : les clés
+ * `dons` et `caracs` de la v1 portent d'autres types, les fusionner à plat
+ * serait un renommage — interdit par D7.
+ *
+ * D16 : le champ `voie` de `creation` et le champ `sousBranche` de la v1
+ * deviennent optionnels — un changement de TYPE seulement. Ni l'un ni l'autre
+ * n'est indexé : aucune montée de version Dexie (D7 n'est pas rouvert).
  */
 import Dexie, { type EntityTable } from 'dexie'
 import type { TrancheAge } from '../rules/age'
@@ -31,7 +35,13 @@ export interface Personnage {
   faction: string
   race: string
   classe: string
-  sousBranche: string
+  /**
+   * Champ d'époque (v1, avant D16) : le nom de la voie unique du personnage.
+   * Le code ne l'écrit plus et ne l'exige plus — il reste stocké tel quel sur
+   * les vieux enregistrements, jamais renommé, jamais effacé (même patron que
+   * le champ d'époque du scaffold sur le statut du joueur).
+   */
+  sousBranche?: string
   caracs: Caracteristiques
   dons: string[]
   competences: string[]
@@ -110,7 +120,6 @@ export function nouvellePersonnageVierge(): Omit<Personnage, 'id'> {
     faction: '',
     race: '',
     classe: '',
-    sousBranche: '',
     caracs: { puissance: 0, resistance: 0, esprit: 0 },
     dons: [],
     competences: [],

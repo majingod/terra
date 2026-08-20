@@ -38,7 +38,7 @@ export default function EtapeNiveau({ fiche, onChangement }: Props) {
           'Niveau 1 si tu commences aujourd’hui — c’est le défaut.',
           'Baisser ton niveau après coup te dira ce qu’il faudra retirer.',
         ]}
-        pourquoi="ton niveau décide combien de dons tu choisis, combien de points de caractéristique tu places en plus, et quelles capacités de ta voie tu tiens déjà."
+        pourquoi="ton niveau décide combien de dons tu choisis, combien de points de caractéristique tu places en plus, et combien de capacités tu choisis."
       />
 
       {niveauxPossibles().map((valeur) => {
@@ -63,7 +63,9 @@ export default function EtapeNiveau({ fiche, onChangement }: Props) {
                   {points} point{points > 1 ? 's' : ''} de caractéristique
                 </Badge>
               )}
-              <Badge>capacités de ta voie jusqu’à l’échelon {valeur}</Badge>
+              <Badge>
+                {valeur} capacité{valeur > 1 ? 's' : ''} à choisir
+              </Badge>
             </p>
           </CarteChoix>
         )

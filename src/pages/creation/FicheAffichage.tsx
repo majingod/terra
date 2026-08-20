@@ -1,12 +1,16 @@
 /**
- * Fiche (maquette A v3) : Identité, Statistiques, « Ce que tu as acquis »
- * (D4-bis : la fiche ne montre QUE l'acquis — capacités de base, échelons de
- * la voie ≤ niveau du personnage, capacités d'héritage, dons, compétences),
- * Désavantages, Héritage — et la version des règles (meta.version, lue du
- * fichier — D8-bis).
+ * Fiche (maquette A v3, maquette D16 v2) : Identité, Statistiques,
+ * « Capacités », « Ce que tu as acquis » (capacités de base, dons,
+ * compétences), Désavantages, Héritage — et la version des règles
+ * (meta.version, lue du fichier — D8-bis).
+ *
+ * D16 : l'en-tête ne porte plus de voie. La voie vit SUR CHAQUE CAPACITÉ, en
+ * italique après le niveau — lisible aussi en noir et blanc à l'impression.
+ * Les capacités sont triées par niveau croissant, les achats d'héritage
+ * marqués « · achat XP », et chacune porte son texte (D14).
  */
-import { branchesDe, capacitesDeBase } from '../../rules/branches'
-import { capacitesAcquises, normaliserNiveau } from '../../rules/niveau'
+import { capacitesDeBase } from '../../rules/branches'
+import { normaliserNiveau } from '../../rules/niveau'
 import {
   depenseXp,
   listeAchats,
@@ -18,9 +22,10 @@ import { languesAcquises, listeLangues } from '../../rules/langues'
 import { getRules } from '../../rules/load'
 import { classeSquelette, raceDe, statsDe, valeurCarac } from '../../rules/stats'
 import { listeDons } from '../../rules/talents'
-import { capaciteParId } from '../../wizard/capacites'
+import { capacitesDeLaFiche } from '../../wizard/capacites'
 import { texteVersionRegles } from '../../wizard/fiche'
 import type { FicheCreation } from '../../wizard/types'
+import { LigneCapacite } from './EtapeCapacites'
 import { Badge, TexteRegle } from './ui'
 
 function Sheet({ titre, children }: { titre: string; children: React.ReactNode }) {
@@ -63,22 +68,14 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const race = raceDe(fiche.race)
   const classe = classeSquelette(fiche.classe)
   const faction = regles.factions.liste.find((f) => f.id === fiche.faction)
-  const voie = branchesDe(fiche.classe ?? '').find((b) => b.id === fiche.voie)
   const niveau = normaliserNiveau(fiche.niveau)
-  const capsDeVoie = capacitesAcquises(fiche.classe, fiche.voie, niveau)
+  const capacites = capacitesDeLaFiche(fiche)
   const stats = statsDe(fiche)
   const dons = listeDons()
   const desavantages = listeDesavantages()
   const plafond = plafondDesavantagesXp()
   const langues = [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])].map(
     (id) => listeLangues().find((l) => l.id === id)?.nom ?? id,
-  )
-  const capsHeritage = Object.entries(fiche.capChoix ?? {}).flatMap(([niveau, ids]) =>
-    ids
-      .map((id) => ({ capacite: capaciteParId(fiche.classe, id), nivAchat: niveau }))
-      .filter((x): x is { capacite: NonNullable<typeof x.capacite>; nivAchat: string } =>
-        Boolean(x.capacite),
-      ),
   )
   const depense = depenseXp(fiche.achats)
   const comps = fiche.comps ?? []
@@ -124,10 +121,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
           </div>
           <div>
             <div className="font-sans text-[13.5px] text-muted-foreground">Classe</div>
-            <div className="text-[19px] font-semibold">
-              {classe?.nom ?? '—'}
-              {voie ? ` — ${voie.nom}` : ''}
-            </div>
+            <div className="text-[19px] font-semibold">{classe?.nom ?? '—'}</div>
           </div>
           <div>
             <div className="font-sans text-[13.5px] text-muted-foreground">Niveau</div>
@@ -168,6 +162,17 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
         </Sheet>
       )}
 
+      {classe && capacites.length > 0 && (
+        <Sheet titre="Capacités">
+          {capacites.map(({ capacite, achatXp }) => (
+            <div key={capacite.id} className="border-t border-border/30 py-2 first:border-t-0">
+              <LigneCapacite capacite={capacite} achatXp={achatXp} />
+              <TexteRegle source={capacite} />
+            </div>
+          ))}
+        </Sheet>
+      )}
+
       {classe && (
         <Sheet titre="Ce que tu as acquis">
           {/* Même grammaire que « Archimage · niv 1 » : le badge nomme d'où
@@ -177,24 +182,6 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
               key={capacite.id}
               nom={capacite.nom}
               badge={`${classe.nom} · de base`}
-              verbatim={capacite.verbatim}
-            />
-          ))}
-          {voie &&
-            capsDeVoie.map((capacite) => (
-              <Acquis
-                key={capacite.id}
-                nom={capacite.nom}
-                badge={`${voie.nom} · niv ${capacite.niveau}`}
-                verbatim={capacite.verbatim}
-              />
-            ))}
-          {capsHeritage.map(({ capacite }) => (
-            <Acquis
-              key={capacite.id}
-              nom={capacite.nom}
-              badge={`héritage · ${capacite.voieNom} niv ${capacite.niveau}`}
-              badgeOr
               verbatim={capacite.verbatim}
             />
           ))}
@@ -213,10 +200,6 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
           {comps.map((id) => (
             <Acquis key={id} nom={nomComp(id)} badge="compétence" />
           ))}
-          <p className="mb-0 mt-2 rounded-lg border border-border/50 border-l-[3px] border-l-primary/60 bg-card/50 backdrop-blur-sm px-3 py-2 text-[14px] text-muted-foreground">
-            Affichage progressif : les capacités au-delà du niveau {niveau} apparaîtront quand tu
-            les auras réellement acquises.
-          </p>
         </Sheet>
       )}
 
