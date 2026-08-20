@@ -22,7 +22,7 @@ import { consommationDons, droitCompetences, droitDons } from '../../rules/talen
 import { bassinAchat, capaciteParId } from '../../wizard/capacites'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { LigneCapacite } from './EtapeCapacites'
+import { CarteCapacite } from './EtapeCapacites'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
@@ -259,18 +259,13 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                         capacite.id,
                       )
                       return (
-                        <button
+                        <CarteCapacite
                           key={capacite.id}
-                          type="button"
-                          aria-pressed={prise}
-                          onClick={() => basculerCapacite(effet.niveau, capacite.id)}
-                          className={`my-1 block w-full rounded-lg border p-2.5 text-left ${
-                            prise ? 'border-primary bg-primary/10' : 'border-border/50 bg-muted/40'
-                          }`}
-                        >
-                          <LigneCapacite capacite={capacite} />
-                          <TexteRegle source={capacite} />
-                        </button>
+                          capacite={capacite}
+                          choisie={prise}
+                          avecVoie
+                          onChoisir={() => basculerCapacite(effet.niveau, capacite.id)}
+                        />
                       )
                     })}
                   </div>

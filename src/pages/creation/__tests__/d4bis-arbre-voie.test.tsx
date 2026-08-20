@@ -1,18 +1,18 @@
 /**
- * D4-bis — au moment du CHOIX, l'écran montre l'ARBRE COMPLET, texte complet,
- * pas un seul échelon réduit à un badge. La fiche, elle, ne montre que ce que
- * le personnage a.
+ * D4-bis — au moment du CHOIX, le joueur voit le texte COMPLET de chaque
+ * capacité, jamais tronqué ni réduit à un badge. La fiche, elle, ne montre
+ * que ce que le personnage a.
  *
- * D16 : l'écran du choix a changé de maison. Il n'y a plus d'étape de voie —
- * c'est « Tes capacités » qui ouvre l'arbre, les trois voies ensemble, chaque
- * capacité avec son texte. L'exigence D4-bis, elle, ne bouge pas : au moment
- * de choisir, le joueur voit ce que fait chaque capacité.
+ * Maquette v5 (accordéons) : les trois voies existent bien ensemble sous un
+ * emplacement ouvert, mais chacune replie SES capacités par défaut — D4-bis
+ * porte désormais sur ce qui s'affiche une fois la voie ouverte, jamais sur
+ * une troncature du texte lui-même. Fred, 2026-08-21.
  *
  * Rien n'est recopié ici : la classe, les voies et les textes attendus sont
  * lus de rules.json.
  */
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches } from '../../../rules/branches'
 import { capacitesDeClasse } from '../../../rules/capacites'
@@ -22,6 +22,15 @@ import EtapeCapacites from '../EtapeCapacites'
 import { texteAffiche } from '../ui'
 import FicheAffichage from '../FicheAffichage'
 import type { FicheCreation } from '../../../wizard/types'
+
+/** Ouvre l'accordéon de la voie dont l'en-tête porte `nom`. */
+function ouvrirVoie(nom: string) {
+  const bouton = screen
+    .getAllByRole('button')
+    .find((el) => el.hasAttribute('aria-expanded') && (el.textContent ?? '').includes(nom))
+  expect(bouton, `accordéon de voie introuvable : ${nom}`).toBeTruthy()
+  fireEvent.click(bouton!)
+}
 
 const CLASSE = getRules().classes_squelette.liste.find((c) =>
   classesAvecBranches().some((b) => b.classe_id === c.id),
@@ -49,9 +58,10 @@ function ficheDernierEmplacementOuvert(): FicheCreation {
 }
 
 describe('D4-bis / D16 — arbre complet au moment du choix', () => {
-  it('au dernier échelon, les 5 échelons de la voie sont à l’écran, texte complet', () => {
+  it('au dernier échelon, les 5 échelons de la voie sont à l’écran, texte complet — sa voie ouverte', () => {
     render(<EtapeCapacites fiche={ficheDernierEmplacementOuvert()} onMaj={() => {}} />)
     expect(VOIE.capacites).toHaveLength(niveauMax())
+    ouvrirVoie(VOIE.nom)
     for (const capacite of VOIE.capacites) {
       expect(screen.getAllByText(capacite.nom).length, capacite.nom).toBeGreaterThan(0)
       expect(
@@ -61,10 +71,12 @@ describe('D4-bis / D16 — arbre complet au moment du choix', () => {
     }
   })
 
-  it('jumelle : les TROIS voies sont ouvertes ensemble, pas une seule', () => {
+  it('jumelle : les TROIS voies peuvent s’ouvrir ENSEMBLE, aucune n’est exclusive des autres', () => {
     render(<EtapeCapacites fiche={ficheDernierEmplacementOuvert()} onMaj={() => {}} />)
     const sections = screen.getAllByRole('heading', { level: 4 }).map((h) => h.textContent)
     expect(sections).toEqual(VOIES.map((v) => v.nom))
+    // Ouvrir une voie n'en referme aucune autre (accordéons indépendants).
+    for (const voie of VOIES) ouvrirVoie(voie.nom)
     for (const capacite of capacitesDeClasse(CLASSE.id)) {
       expect(screen.getAllByText(capacite.nom).length, capacite.nom).toBeGreaterThan(0)
     }
@@ -77,6 +89,8 @@ describe('D4-bis / D16 — arbre complet au moment du choix', () => {
     const niveau = 3
     render(<EtapeCapacites fiche={ficheAuNiveau(niveau)} onMaj={() => {}} />)
     // Seul l'emplacement du niveau 1 est ouvert : rien au-dessus de 1.
+    // Maquette v5 : les capacités sont derrière l'accordéon de leur voie.
+    for (const voie of VOIES) ouvrirVoie(voie.nom)
     const badges = screen.getAllByText(/^niv \d+$/).map((el) => Number(el.textContent!.slice(4)))
     expect(badges.length).toBeGreaterThan(0)
     expect(Math.max(...badges)).toBe(1)
