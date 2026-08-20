@@ -4,6 +4,10 @@
  *
  * Mesuré sur Fred : « Élémentaliste [classe] » se lisait comme un nom de
  * classe. Ce test rougit si un badge « classe » nu revient sur la fiche.
+ *
+ * D16 : les capacités de base sont HORS PÉRIMÈTRE et ne bougent pas. La
+ * jumelle, elle, suit la nouvelle grammaire — la voie vit désormais sur la
+ * capacité, en italique après sa marche.
  */
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
@@ -20,11 +24,13 @@ const CLASSE = classesSquelette().find(
 )!
 const VOIE = branchesDe(CLASSE.id)[0]
 
+const ECHELON = VOIE.capacites.find((c) => c.niveau === 1)!
+
 const FICHE: FicheCreation = {
   faction: CLASSE.faction,
   classe: CLASSE.id,
-  voie: VOIE.id,
   niveau: 1,
+  capNiveaux: { '1': ECHELON.id },
 }
 
 afterEach(cleanup)
@@ -46,10 +52,15 @@ describe('Badge des capacités de base', () => {
     expect(screen.queryAllByText('classe')).toEqual([])
   })
 
-  it('jumelle : la même grammaire que les capacités de voie (« Voie · niv N »)', () => {
+  it('jumelle : une capacité choisie dit sa marche ET sa voie (D16)', () => {
+    // Avant D16, la fiche portait un badge « Voie · niv N ». La voie n'est
+    // plus un enclos : elle s'écrit en italique après la marche, sur la
+    // capacité elle-même — lisible aussi en noir et blanc à l'impression.
     render(<FicheAffichage fiche={FICHE} />)
-    const echelon = VOIE.capacites.find((c) => c.niveau === 1)!
-    expect(screen.getByText(`${VOIE.nom} · niv ${echelon.niveau}`)).toBeTruthy()
+    expect(screen.getByText(ECHELON.nom)).toBeTruthy()
+    expect(screen.getByText(`niv ${ECHELON.niveau}`)).toBeTruthy()
+    expect(screen.getByText(VOIE.nom)).toBeTruthy()
+    expect(screen.queryAllByText(`${VOIE.nom} · niv ${ECHELON.niveau}`)).toEqual([])
     // Un badge par capacité de base — la classe en a autant que le Tome lui donne.
     expect(screen.getAllByText(`${CLASSE.nom} · de base`)).toHaveLength(
       capacitesDeBase(CLASSE.id).length,

@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db, nouvellePersonnageVierge } from '../db'
-import { branchesDe, capacitesDeBase } from '../rules/branches'
+import { capacitesDeBase } from '../rules/branches'
 import {
   capacitesEnfantAcquises,
   classeEnfant,
@@ -25,7 +25,7 @@ import {
   raceEnfant,
 } from '../rules/kids'
 import { getRules, getVersion } from '../rules/load'
-import { capacitesAcquises, normaliserNiveau } from '../rules/niveau'
+import { normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
@@ -41,6 +41,7 @@ import {
 import Bandeau from './creation/Bandeau'
 import EtapeAge from './creation/EtapeAge'
 import EtapeCamp from './creation/EtapeCamp'
+import EtapeCapacites from './creation/EtapeCapacites'
 import EtapeClasse from './creation/EtapeClasse'
 import EtapeDestin from './creation/EtapeDestin'
 import EtapeFiche from './creation/EtapeFiche'
@@ -163,7 +164,6 @@ export default function Creer() {
   async function enregistrer() {
     const regles = getRules()
     const classe = classeSquelette(fiche.classe)
-    const voie = branchesDe(fiche.classe ?? '').find((b) => b.id === fiche.voie)
     const niveau = normaliserNiveau(fiche.niveau)
     const now = Date.now()
     const complet: FicheCreation = { ...fiche, reglesVersion: getVersion() }
@@ -173,7 +173,6 @@ export default function Creer() {
       faction: regles.factions.liste.find((f) => f.id === fiche.faction)?.nom ?? '',
       race: raceDe(fiche.race)?.nom ?? '',
       classe: classe?.nom ?? '',
-      sousBranche: voie?.nom ?? '',
       caracs: {
         puissance: valeurCarac(fiche, 'p'),
         resistance: valeurCarac(fiche, 'r'),
@@ -181,9 +180,11 @@ export default function Creer() {
       },
       dons: Object.keys(fiche.dons ?? {}),
       competences: [...(fiche.comps ?? [])],
+      // D16 : les capacités de base de la classe, puis celles que le joueur
+      // a choisies — une par niveau — et celles achetées par XP.
       capacites: [
         ...capacitesDeBase(fiche.classe ?? '').map((c) => c.id),
-        ...capacitesAcquises(fiche.classe, fiche.voie, niveau).map((c) => c.id),
+        ...Object.values(fiche.capNiveaux ?? {}),
         ...Object.values(fiche.capChoix ?? {}).flat(),
       ],
       niveau,
@@ -292,6 +293,7 @@ export default function Creer() {
           )}
           {etapeId === 'niveau' && <EtapeNiveau fiche={fiche} onChangement={appliquerChangement} />}
           {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
+          {etapeId === 'capacites' && <EtapeCapacites fiche={fiche} onMaj={maj} />}
           {etapeId === 'destin' && (
             <EtapeDestin fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
           )}

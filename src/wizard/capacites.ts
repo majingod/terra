@@ -1,49 +1,136 @@
 /**
- * Bassin des achats « +1 Capacité de niveau N » — comportement de la
- * maquette A v3 validée : capacités de niveau N de TA classe, toutes voies
- * confondues, SAUF celles que ta voie te donne DÉJÀ D'OFFICE. Chaque entrée
- * porte le nom de sa voie pour l'affichage « voie · capacité ».
+ * Les capacités d'une fiche en création — D16.
  *
- * D12 : « déjà d'office » se lit au niveau du personnage — au niveau N, ta
- * voie te donne ses échelons ≤ N. Au niveau 1 (défaut), c'est exactement la
- * règle d'avant : seul l'échelon 1 de ta propre voie sort du bassin.
+ * Deux sources, une seule règle anti-doublon GLOBALE : les capacités
+ * choisies à chaque niveau (`capNiveaux`) et celles achetées par XP
+ * (`capChoix`, « +1 Capacité de niveau N »). Une capacité prise d'un côté
+ * sort du bassin de l'autre.
+ *
+ * D5 : les échelons proposés viennent de la table d'évolution, l'arbre de
+ * `branches_de_classes`. Rien n'est recopié ici.
  */
-import { branchesDe } from '../rules/branches'
-import { capacitesAcquises } from '../rules/niveau'
-import type { Capacite } from '../rules/load'
+import {
+  capaciteDeClasseParId,
+  capacitesDisponibles,
+  type CapaciteDeVoie,
+  type ChoixCapacite,
+} from '../rules/capacites'
+import { niveauxPossibles, normaliserNiveau } from '../rules/niveau'
+import type { FicheCreation } from './types'
 
-export interface CapaciteDeBassin extends Capacite {
-  voieId: string
-  voieNom: string
+/** Les emplacements du personnage : un par niveau, du plus bas au plus haut. */
+export function niveauxDeLaFiche(fiche: FicheCreation): number[] {
+  const niveau = normaliserNiveau(fiche.niveau)
+  return niveauxPossibles().filter((valeur) => valeur <= niveau)
 }
 
-function toutesDeLaClasse(classeId: string): CapaciteDeBassin[] {
-  return branchesDe(classeId).flatMap((branche) =>
-    branche.capacites.map((capacite) => ({
-      ...capacite,
-      voieId: branche.id,
-      voieNom: branche.nom,
-    })),
+/** Les ids déjà pris, choix de niveaux ET achats XP confondus. */
+export function idsDejaPris(fiche: FicheCreation): string[] {
+  return [
+    ...Object.values(fiche.capNiveaux ?? {}),
+    ...Object.values(fiche.capChoix ?? {}).flat(),
+  ]
+}
+
+/**
+ * Ce qui est pris AILLEURS que dans l'emplacement qu'on regarde. Un
+ * emplacement laisse toujours voir SON propre choix (il s'y montre coché) ;
+ * tout le reste, choix de niveaux comme achats XP, en sort.
+ */
+function prisesAilleurs(
+  fiche: FicheCreation,
+  emplacement: { niveau?: number; achat?: number },
+): string[] {
+  const desNiveaux = Object.entries(fiche.capNiveaux ?? {})
+    .filter(([cle]) => cle !== String(emplacement.niveau))
+    .map(([, id]) => id)
+  const desAchats = Object.entries(fiche.capChoix ?? {})
+    .filter(([cle]) => cle !== String(emplacement.achat))
+    .flatMap(([, ids]) => ids)
+  return [...desNiveaux, ...desAchats]
+}
+
+/** Le bassin de l'emplacement du niveau k : niveau ≤ k, moins le déjà-pris. */
+export function bassinDuNiveau(fiche: FicheCreation, niveauDuChoix: number): CapaciteDeVoie[] {
+  return capacitesDisponibles(
+    fiche.classe,
+    niveauDuChoix,
+    prisesAilleurs(fiche, { niveau: niveauDuChoix }),
   )
 }
 
-export function bassinCapacites(
-  classeId: string | undefined,
-  voieId: string | undefined,
-  niveauAchat: number,
-  niveauPersonnage?: number,
-): CapaciteDeBassin[] {
-  if (!classeId) return []
-  const dOffice = new Set(capacitesAcquises(classeId, voieId, niveauPersonnage).map((c) => c.id))
-  return toutesDeLaClasse(classeId).filter(
-    (capacite) => capacite.niveau === niveauAchat && !dOffice.has(capacite.id),
-  )
+/**
+ * Le bassin d'un achat « +1 Capacité de niveau N » : toutes les capacités de
+ * la classe DE CE NIVEAU, moins tout ce qui est déjà pris — les choix de
+ * niveaux inclus. Plus aucun concept « d'office » : la voie ne donne plus
+ * rien toute seule.
+ */
+export function bassinAchat(fiche: FicheCreation, niveauAchat: number): CapaciteDeVoie[] {
+  return capacitesDisponibles(
+    fiche.classe,
+    niveauAchat,
+    prisesAilleurs(fiche, { achat: niveauAchat }),
+  ).filter((capacite) => capacite.niveau === niveauAchat)
 }
 
+export interface OptionDeCapacite {
+  capacite: CapaciteDeVoie
+  /** Prise ailleurs — à un autre niveau ou en achat XP : rayée, non cliquable. */
+  dejaPrise: boolean
+  /** Le choix actuel de CET emplacement. */
+  choisie: boolean
+}
+
+/**
+ * Ce que montre l'emplacement du niveau k : tout l'arbre de la classe jusqu'à
+ * l'échelon k — rien n'est caché, ce qui est pris ailleurs se raye. L'ordre
+ * est celui de l'arbre, voie par voie.
+ */
+export function optionsDuNiveau(fiche: FicheCreation, niveauDuChoix: number): OptionDeCapacite[] {
+  const actuelle = fiche.capNiveaux?.[String(niveauDuChoix)]
+  const ailleurs = new Set(prisesAilleurs(fiche, { niveau: niveauDuChoix }))
+  return capacitesDisponibles(fiche.classe, niveauDuChoix).map((capacite) => ({
+    capacite,
+    dejaPrise: ailleurs.has(capacite.id),
+    choisie: capacite.id === actuelle,
+  }))
+}
+
+/** Les choix de niveaux résolus en capacités (les emplacements vides sautent). */
+export function choixDeNiveaux(fiche: FicheCreation): ChoixCapacite[] {
+  return niveauxDeLaFiche(fiche).flatMap((niveau) => {
+    const capacite = capaciteDeClasseParId(fiche.classe, fiche.capNiveaux?.[String(niveau)] ?? '')
+    return capacite ? [{ id: capacite.id, niveau: capacite.niveau }] : []
+  })
+}
+
+/** Une capacité de la classe, retrouvée par son id (affichage). */
 export function capaciteParId(
   classeId: string | undefined,
   id: string,
-): CapaciteDeBassin | undefined {
-  if (!classeId) return undefined
-  return toutesDeLaClasse(classeId).find((capacite) => capacite.id === id)
+): CapaciteDeVoie | undefined {
+  return capaciteDeClasseParId(classeId, id)
+}
+
+export interface CapaciteDeFiche {
+  capacite: CapaciteDeVoie
+  /** Vraie quand la capacité vient d'un achat « +1 Capacité de niveau N ». */
+  achatXp: boolean
+}
+
+/**
+ * Toutes les capacités de la fiche, triées par niveau croissant : les choix
+ * de niveaux et les achats XP dans la même liste, chacun sachant d'où il vient.
+ */
+export function capacitesDeLaFiche(fiche: FicheCreation): CapaciteDeFiche[] {
+  const desNiveaux = Object.values(fiche.capNiveaux ?? {}).map((id) => ({ id, achatXp: false }))
+  const desAchats = Object.values(fiche.capChoix ?? {})
+    .flat()
+    .map((id) => ({ id, achatXp: true }))
+  return [...desNiveaux, ...desAchats]
+    .flatMap(({ id, achatXp }) => {
+      const capacite = capaciteDeClasseParId(fiche.classe, id)
+      return capacite ? [{ capacite, achatXp }] : []
+    })
+    .sort((a, b) => a.capacite.niveau - b.capacite.niveau)
 }
