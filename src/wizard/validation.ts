@@ -3,7 +3,7 @@
  *
  * Deux régimes (spec t004) :
  * - « l'impossible se retire tout seul et la fenêtre le nomme » :
- *   changerFaction / changerClasse / changerNiveau rendent la fiche corrigée
+ *   changerFaction / changerClasse rendent la fiche corrigée
  *   ET la liste nommée des retraits (la fenêtre l'affiche, Annuler restaure) ;
  * - « le surplus se retire par le joueur » : surplusDons / surplusLangues /
  *   surplusCompetences alimentent les bandeaux rouges « retire N », la
@@ -52,6 +52,7 @@ import {
   emplacementsTroques,
   niveauxDeLaFiche,
 } from './capacites'
+import { niveauCourant } from './historique'
 import { capacitesTroquees, donsPris } from './troc'
 import type { FicheCreation } from './types'
 
@@ -119,10 +120,15 @@ export function problemesCamp(fiche: FicheCreation): string[] {
   return problemes
 }
 
+/**
+ * Étape « Ton niveau » (D20) : elle ne remplit plus le niveau, elle fixe la
+ * CIBLE du train de montées. Le personnage, lui, naît toujours au niveau 1.
+ * Absente, la cible vaut le niveau minimum — le train ne part pas.
+ */
 export function problemesNiveau(fiche: FicheCreation): string[] {
-  if (fiche.niveau === undefined) return [] // défaut : niveau min de la table (D12)
-  if (!niveauxPossibles().includes(fiche.niveau)) {
-    return [`niveau hors table : ${fiche.niveau}`]
+  if (fiche.cible === undefined) return [] // défaut : niveau min de la table
+  if (!niveauxPossibles().includes(fiche.cible)) {
+    return [`niveau hors table : ${fiche.cible}`]
   }
   return []
 }
@@ -172,7 +178,7 @@ export function problemesCapacites(fiche: FicheCreation): string[] {
   }
   problemes.push(
     ...problemesChoix(
-      normaliserNiveau(fiche.niveau),
+      niveauCourant(fiche),
       choixDeNiveaux(fiche),
       emplacementsTroques(fiche).length,
     ),
@@ -202,7 +208,7 @@ function problemesTrocDeDon(fiche: FicheCreation): string[] {
     problemes.push(`cette classe ne troque pas ses dons contre des capacités`)
     return problemes
   }
-  const echelons = new Set(echelonsDeDon(fiche.niveau).map(String))
+  const echelons = new Set(echelonsDeDon(niveauCourant(fiche)).map(String))
   const ailleurs = [
     ...Object.values(fiche.capNiveaux ?? {}),
     ...Object.values(fiche.capChoix ?? {}).flat(),
@@ -277,7 +283,7 @@ export function problemesDestin(fiche: FicheCreation): string[] {
  * ceux achetés à l'héritage. Aucun rythme n'est écrit ici.
  */
 export function pointsCaracAPlacer(fiche: FicheCreation): number {
-  return pointsCaracCumules(fiche.niveau) + totalAchats(fiche.achats, 'carac')
+  return pointsCaracCumules(niveauCourant(fiche)) + totalAchats(fiche.achats, 'carac')
 }
 
 /** Points de caractéristique posés au-delà du droit (le joueur les retire). */
@@ -320,12 +326,12 @@ export function problemesTalents(fiche: FicheCreation): string[] {
   // sur TOUTES les prises — celles de l'étape des dons et celles des
   // emplacements de capacité troqués.
   problemes.push(...refusDons(donsPris(fiche)))
-  const droit = droitDons(esprit, fiche.achats, fiche.niveau)
+  const droit = droitDons(esprit, fiche.achats, niveauCourant(fiche))
   const pris = consommationDonsDeLaFiche(fiche)
   if (pris !== droit) problemes.push(`dons : ${pris}/${droit}`)
   const comps = fiche.comps ?? []
   problemes.push(...refusCompetences(comps, fiche.trancheAge))
-  const droitComps = droitCompetences(fiche.achats, fiche.niveau)
+  const droitComps = droitCompetences(fiche.achats, niveauCourant(fiche))
   if (comps.length !== droitComps) problemes.push(`compétences : ${comps.length}/${droitComps}`)
   return problemes
 }
@@ -400,12 +406,15 @@ export function consommationDonsDeLaFiche(fiche: FicheCreation): number {
 }
 
 export function surplusDons(fiche: FicheCreation): number {
-  const droit = droitDons(valeurCarac(fiche, 'e'), fiche.achats, fiche.niveau)
+  const droit = droitDons(valeurCarac(fiche, 'e'), fiche.achats, niveauCourant(fiche))
   return Math.max(0, consommationDonsDeLaFiche(fiche) - droit)
 }
 
 export function surplusCompetences(fiche: FicheCreation): number {
-  return Math.max(0, (fiche.comps ?? []).length - droitCompetences(fiche.achats, fiche.niveau))
+  return Math.max(
+    0,
+    (fiche.comps ?? []).length - droitCompetences(fiche.achats, niveauCourant(fiche)),
+  )
 }
 
 export function surplusLangues(fiche: FicheCreation): number {
@@ -437,99 +446,19 @@ function nbCapNiveaux(fiche: FicheCreation): number {
 }
 
 /**
- * Une baisse de niveau vide les emplacements en trop (D16) : le niveau 2 n'a
- * plus d'emplacement de niveau 3. Chaque capacité qui part est NOMMÉE.
+ * Changement de CIBLE à l'étape « Ton niveau » (D20).
+ *
+ * La cible ne donne rien : elle dit seulement jusqu'où le train de montées
+ * mènera le personnage après sa création, qui se fait toujours au niveau 1.
+ * Aucun droit n'en dépend, donc aucun retrait à nommer — la fenêtre de
+ * répercussions ne s'ouvre pas.
+ *
+ * ⛔ Il n'y a plus de « baisse de niveau » à la création : on ne peut plus
+ * naître au-dessus du niveau 1. Le retour EN ARRIÈRE sur un niveau déjà
+ * traversé, et sa fenêtre de répercussions, sont le lot 2.
  */
-function retirerLesEmplacementsEnTrop(
-  fiche: FicheCreation,
-  niveau: number,
-): {
-  capNiveaux: Record<string, string>
-  donNiveaux: Record<string, string>
-  capDons: Record<string, string>
-  retraits: string[]
-} {
-  const gardes = new Set(niveauxDeLaFiche({ ...fiche, niveau }).map(String))
-  const capNiveaux: Record<string, string> = {}
-  const donNiveaux: Record<string, string> = {}
-  const retraits: string[] = []
-  for (const [cle, id] of Object.entries(fiche.capNiveaux ?? {})) {
-    if (gardes.has(cle)) {
-      capNiveaux[cle] = id
-      continue
-    }
-    const capacite = capaciteParId(fiche.classe, id)
-    retraits.push(
-      `Ta capacité « ${capacite?.nom ?? id} » sera retirée : ton niveau n'a plus d'emplacement de niveau ${cle}.`,
-    )
-  }
-  // D18 : un emplacement troqué en don part comme les autres, et se nomme.
-  const catalogueDons = listeDons()
-  for (const [cle, id] of Object.entries(fiche.donNiveaux ?? {})) {
-    if (gardes.has(cle)) {
-      donNiveaux[cle] = id
-      continue
-    }
-    const don = catalogueDons.find((d) => d.id === id)
-    retraits.push(
-      `Ton don « ${don?.nom ?? id} » sera retiré : ton niveau n'a plus d'emplacement de niveau ${cle}.`,
-    )
-  }
-  // D18 : l'échelon qui donnait le don troqué peut disparaître lui aussi.
-  const echelons = new Set(echelonsDeDon(niveau).map(String))
-  const capDons: Record<string, string> = {}
-  for (const [cle, id] of Object.entries(fiche.capDons ?? {})) {
-    if (echelons.has(cle)) {
-      capDons[cle] = id
-      continue
-    }
-    const capacite = capaciteParId(fiche.classe, id)
-    retraits.push(
-      `Ta capacité « ${capacite?.nom ?? id} » sera retirée : ton niveau n'a plus de don à l'échelon ${cle}.`,
-    )
-  }
-  return { capNiveaux, donNiveaux, capDons, retraits }
-}
-
-/**
- * Changement de niveau de départ (D12). Les deux régimes de la fenêtre de
- * répercussions EXISTANTE s'appliquent, sans en inventer un troisième :
- * - l'impossible se retire tout seul et se nomme : une BAISSE de niveau
- *   supprime les emplacements de capacité en trop (D16) ;
- * - le surplus se retire par le joueur : une BAISSE de niveau réduit le
- *   droit de dons (et de compétences) — la fenêtre nomme ce qu'il faudra
- *   retirer aux étapes concernées, le joueur le retire lui-même — dons,
- *   compétences, et les points de caractéristique des échelons pairs.
- */
-export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Changement {
-  const niveau = normaliserNiveau(nouveauNiveau)
-  if (normaliserNiveau(fiche.niveau) === niveau) {
-    return { fiche: { ...fiche, niveau }, retraits: [] }
-  }
-  const { capNiveaux, donNiveaux, capDons, retraits } = retirerLesEmplacementsEnTrop(
-    fiche,
-    niveau,
-  )
-  const suite: FicheCreation = { ...fiche, niveau, capNiveaux, donNiveaux, capDons }
-  const donsEnTrop = surplusDons(suite)
-  if (donsEnTrop > 0) {
-    retraits.push(
-      `Ton niveau baisse : retire ${donsEnTrop} don${donsEnTrop > 1 ? 's' : ''} à l'étape Talents.`,
-    )
-  }
-  const compsEnTrop = surplusCompetences(suite)
-  if (compsEnTrop > 0) {
-    retraits.push(
-      `Ton niveau baisse : retire ${compsEnTrop} compétence${compsEnTrop > 1 ? 's' : ''} à l'étape Talents.`,
-    )
-  }
-  const caracsEnTrop = surplusPointsCarac(suite)
-  if (caracsEnTrop > 0) {
-    retraits.push(
-      `Ton niveau baisse : retire ${caracsEnTrop} point${caracsEnTrop > 1 ? 's' : ''} de caractéristique à l'étape Forces (tu choisis lesquels).`,
-    )
-  }
-  return { fiche: suite, retraits }
+export function changerCible(fiche: FicheCreation, cible: number): Changement {
+  return { fiche: { ...fiche, cible: normaliserNiveau(cible) }, retraits: [] }
 }
 
 /**

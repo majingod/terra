@@ -15,12 +15,18 @@ import {
   type CapaciteDeVoie,
   type ChoixCapacite,
 } from '../rules/capacites'
-import { niveauxPossibles, normaliserNiveau } from '../rules/niveau'
+import { niveauxPossibles } from '../rules/niveau'
+import { niveauCourant } from './historique'
 import type { FicheCreation } from './types'
 
-/** Les emplacements du personnage : un par niveau, du plus bas au plus haut. */
+/**
+ * Les emplacements du personnage : un par niveau, du plus bas au plus haut.
+ *
+ * D20 : le niveau vient de l'historique, jamais d'un champ saisi — une fiche
+ * en création n'a donc qu'un seul emplacement, celui du niveau 1.
+ */
 export function niveauxDeLaFiche(fiche: FicheCreation): number[] {
-  const niveau = normaliserNiveau(fiche.niveau)
+  const niveau = niveauCourant(fiche)
   return niveauxPossibles().filter((valeur) => valeur <= niveau)
 }
 

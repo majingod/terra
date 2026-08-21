@@ -21,6 +21,7 @@ import { branchesDe, classesAvecBranches } from '../../rules/branches'
 import { capacitesDisponibles } from '../../rules/capacites'
 import { niveauMin, niveauxPossibles, tableEvolution } from '../../rules/niveau'
 import { ficheComplete } from '../../wizard/__tests__/aide-fiche-complete'
+import { niveauCourant } from '../../wizard/historique'
 import { personnageDeLaFiche } from '../../pages/montee/__tests__/aide-montee'
 import Fiche from '../../pages/Fiche'
 import { db, type Personnage } from '../index'
@@ -151,7 +152,17 @@ describe('D17 ⑤ — confirmer écrit niveau, capacité et caractéristique d�
     expect(apres.caracs.esprit).toBe(avant.caracs.esprit)
     // La fiche du wizard avance avec l'enregistrement : c'est elle qui
     // s'affiche, et elle qui porte l'anti-doublon de la prochaine montée.
-    expect(apres.creation?.niveau).toBe(ATTEINT)
+    //
+    // ⚠️ GATE MODIFIÉE PAR D20, avec sa raison : le niveau n'est plus un champ
+    // de la fiche, c'est un fait dérivé de son HISTORIQUE. Ce que la gate
+    // garde est intact — « la fiche du wizard avance » — mais elle le lit
+    // désormais là où la vérité vit, et vérifie AUSSI que la montée y a
+    // laissé son entrée datée.
+    expect(niveauCourant(apres.creation)).toBe(ATTEINT)
+    expect(apres.creation?.historique?.map((e) => e.niveau)).toEqual(
+      niveauxPossibles().filter((n) => n <= ATTEINT),
+    )
+    expect(apres.creation?.historique?.at(-1)?.le).toBeGreaterThan(0)
     expect(apres.creation?.capNiveaux?.[String(ATTEINT)]).toBe(capacite.id)
     expect(apres.creation?.extras?.p).toBe((avant.creation?.extras?.p ?? 0) + POINTS)
 

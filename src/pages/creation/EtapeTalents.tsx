@@ -19,7 +19,8 @@ import {
   maxArtisanats,
 } from '../../rules/talents'
 import { compteAchats } from '../../rules/heritage'
-import { donsCumules, normaliserNiveau } from '../../rules/niveau'
+import { donsCumules } from '../../rules/niveau'
+import { niveauCourant } from '../../wizard/historique'
 import { echelonsDeDon, prendUneCapaciteAuLieuDUnDon } from '../../rules/troc'
 import { prisesAilleurs } from '../../wizard/capacites'
 import {
@@ -50,7 +51,7 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
   const regles = getRules()
   const esprit = valeurCarac(fiche, 'e')
   const dons = fiche.dons ?? {}
-  const niveau = normaliserNiveau(fiche.niveau)
+  const niveau = niveauCourant(fiche)
   const droit = droitDons(esprit, fiche.achats, niveau)
   // D18 : une capacité prise à la place d'un don consomme le même droit.
   const pris = consommationDonsDeLaFiche(fiche)

@@ -8,7 +8,7 @@
  * suit — la voie n'est plus qu'une étiquette portée par chaque capacité.
  */
 import { capacitesDeBase } from '../../rules/branches'
-import { normaliserNiveau } from '../../rules/niveau'
+import { niveauCourant } from '../../wizard/historique'
 import { classesPourFaction } from '../../rules/stats'
 import { changerClasse, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
@@ -21,7 +21,7 @@ interface Props {
 
 export default function EtapeClasse({ fiche, onChangement }: Props) {
   const classes = fiche.faction ? classesPourFaction(fiche.faction) : []
-  const niveau = normaliserNiveau(fiche.niveau)
+  const niveau = niveauCourant(fiche)
 
   return (
     <section>

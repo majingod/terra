@@ -17,6 +17,15 @@
  * D16 : le champ `voie` de `creation` et le champ `sousBranche` de la v1
  * deviennent optionnels — un changement de TYPE seulement. Ni l'un ni l'autre
  * n'est indexé : aucune montée de version Dexie (D7 n'est pas rouvert).
+ *
+ * v3 (D20) : l'historique daté entre dans `creation`. Aucun index n'est ajouté
+ * ni retiré — le diff du schéma est VIDE, et c'est voulu : l'historique vit
+ * sous `creation`, qui n'est pas indexé. La montée de version, elle, n'est pas
+ * cosmétique : à partir de cette version, l'ABSENCE de ce champ a un sens
+ * neuf — la fiche vient d'une version précédente, et l'app lui propose de la
+ * supprimer. D7 exige alors ce qu'il exige à chaque montée, et pour la même
+ * raison : un export JSON complet écrit et PROUVÉ écrit AVANT que le nouveau
+ * code ne touche à quoi que ce soit. C'est le filet du joueur.
  */
 import Dexie, { type EntityTable } from 'dexie'
 import type { TrancheAge } from '../rules/age'
@@ -97,6 +106,14 @@ export const STORES_V2 = {
   exports: '++id, date',
 } as const
 
+/**
+ * Schéma v3 (D20) — ADDITIF au sens strict : aucun index ajouté, aucun index
+ * retiré. Le champ neuf (`creation.historique`) n'est pas indexé, donc le
+ * schéma ne bouge pas ; ce qui bouge est la LECTURE qu'on fait des données,
+ * et c'est ce qui justifie l'export obligatoire de la montée.
+ */
+export const STORES_V3 = { ...STORES_V2 } as const
+
 export function creerBase(nom = 'TerraMortisDB'): BaseApp {
   const base = new Dexie(nom) as BaseApp
   base.version(1).stores(STORES_V1)
@@ -106,6 +123,16 @@ export function creerBase(nom = 'TerraMortisDB'): BaseApp {
     .upgrade((tx) =>
       // D7 : export JSON prouvé écrit AVANT toute mutation ; la montée v2
       // n'altère aucun enregistrement (les nouveaux champs sont optionnels).
+      migrationD7(tx, async () => {}),
+    )
+  base
+    .version(3)
+    .stores(STORES_V3)
+    .upgrade((tx) =>
+      // D7 : même harnais, même exigence. La montée v3 n'écrit RIEN sur les
+      // fiches existantes — ⛔ on ne fabrique pas l'historique qu'elles n'ont
+      // pas : c'est précisément son absence qui dira au joueur que sa fiche
+      // vient d'une version précédente. L'export, lui, part avant tout.
       migrationD7(tx, async () => {}),
     )
   return base

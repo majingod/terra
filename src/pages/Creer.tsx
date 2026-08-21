@@ -7,6 +7,12 @@
  * D12 (t006) : l'étape « Ton niveau » s'insère après le camp, avant tout ce
  * qui consomme dons ou capacités.
  *
+ * D20 : la création se fait au NIVEAU 1. L'étape « Ton niveau » fixe une
+ * cible ; une fois le niveau 1 complet, l'app enchaîne directement sur la
+ * montée 2, puis la 3, sans renvoyer le joueur à sa fiche entre chaque. Un
+ * seul passage pour lui ; autant de niveaux vraiment traversés et datés dans
+ * les données.
+ *
  * Lot C : l'étape tranche d'âge EMBRANCHE. La tranche enfant suit le flux de
  * la planche (camp → niveau → classe → nom → fiche, corpus rules_kids.json) ;
  * l'autre poursuit le wizard du Tome. Une seule maison pour la persistance,
@@ -14,7 +20,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { db, nouvellePersonnageVierge } from '../db'
+import { db, nouvellePersonnageVierge, type Personnage } from '../db'
 import { capacitesDeBase } from '../rules/branches'
 import {
   capacitesEnfantAcquises,
@@ -25,10 +31,13 @@ import {
   raceEnfant,
 } from '../rules/kids'
 import { getRules, getVersion } from '../rules/load'
+import { niveauAtteignable } from '../rules/montee'
 import { normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
+import { entreeDeCreation, niveauCourant } from '../wizard/historique'
+import { miseAJourMontee, type ChoixMontee } from '../wizard/montee'
 import { capacitesTroquees, donsPris } from '../wizard/troc'
 import type { FicheCreation } from '../wizard/types'
 import {
@@ -58,9 +67,26 @@ import EtapeFicheEnfant from './creation/enfant/EtapeFicheEnfant'
 import EtapeNiveauEnfant from './creation/enfant/EtapeNiveauEnfant'
 import EtapeNomEnfant from './creation/enfant/EtapeNomEnfant'
 import Fenetre from './creation/Fenetre'
+import Fil from './creation/Fil'
 import Pastilles from './creation/Pastilles'
+import EcranMontee from './montee/EcranMontee'
 
 const ID_BROUILLON = 1
+
+/**
+ * D20 — un brouillon commencé AVANT ce lot porte un niveau SAISI. Il devient
+ * une cible : le personnage naîtra au niveau 1 et montera jusque-là. Le champ
+ * saisi ne survit pas au chargement — sinon deux sources se contrediraient
+ * pendant toute la création, et c'est exactement ce que D20 supprime.
+ *
+ * (Un brouillon est un travail en cours, jamais une fiche enregistrée : D7 ne
+ * protège pas ce champ-ci, il protège ceux de `personnages`.)
+ */
+export function brouillonSansNiveauSaisi(fiche: FicheCreation): FicheCreation {
+  if (fiche.niveau === undefined) return fiche
+  const { niveau, ...reste } = fiche
+  return { ...reste, cible: fiche.cible ?? normaliserNiveau(niveau) }
+}
 
 interface EtatFenetre {
   impacts: string[]
@@ -73,6 +99,14 @@ export default function Creer() {
   const [charge, setCharge] = useState(false)
   const [fenetre, setFenetre] = useState<EtatFenetre | null>(null)
   const [enregistree, setEnregistree] = useState(false)
+  /**
+   * Le train de montées (D20) : le personnage tel qu'il vient d'être créé au
+   * niveau 1, et l'échelon que l'app lui fait traverser en ce moment.
+   * `null` = pas de train en cours.
+   */
+  const [enTrain, setEnTrain] = useState<{ personnage: Personnage; niveauAtteint: number } | null>(
+    null,
+  )
 
   useEffect(() => {
     let annule = false
@@ -81,7 +115,7 @@ export default function Creer() {
       .then((brouillon) => {
         if (annule) return
         if (brouillon?.donnees.fiche) {
-          setFiche(brouillon.donnees.fiche)
+          setFiche(brouillonSansNiveauSaisi(brouillon.donnees.fiche))
           setEtape(Math.max(brouillon.etape - 1, 0))
         }
         setCharge(true)
@@ -162,13 +196,22 @@ export default function Creer() {
     allerEtape(suivante)
   }
 
+  /**
+   * D20 — la création écrit une fiche de NIVEAU 1, avec sa première entrée
+   * d'historique datée. Le niveau n'est plus copié d'un champ saisi : il se
+   * dérive de cet historique, ici comme partout ailleurs.
+   */
   async function enregistrer() {
     const regles = getRules()
     const classe = classeSquelette(fiche.classe)
-    const niveau = normaliserNiveau(fiche.niveau)
     const now = Date.now()
-    const complet: FicheCreation = { ...fiche, reglesVersion: getVersion() }
-    await db.personnages.add({
+    const complet: FicheCreation = {
+      ...fiche,
+      historique: [entreeDeCreation(now)],
+      reglesVersion: getVersion(),
+    }
+    const niveau = niveauCourant(complet)
+    const id = await db.personnages.add({
       ...nouvellePersonnageVierge(),
       nomPerso: fiche.nom ?? '',
       faction: regles.factions.liste.find((f) => f.id === fiche.faction)?.nom ?? '',
@@ -201,6 +244,39 @@ export default function Creer() {
       creation: complet,
     })
     await db.brouillons.delete(ID_BROUILLON)
+
+    // Le train : la cible dit jusqu'où monter. Le premier échelon au-dessus du
+    // niveau de départ vient de la table, jamais d'un « +1 » écrit ici.
+    const cible = normaliserNiveau(fiche.cible)
+    const premier = niveauAtteignable(niveau)
+    if (cible > niveau && premier !== undefined) {
+      const personnage = await db.personnages.get(id)
+      if (personnage) {
+        setEnTrain({ personnage, niveauAtteint: premier })
+        return
+      }
+    }
+    setEnregistree(true)
+  }
+
+  /**
+   * Une montée du train confirmée : elle s'écrit comme n'importe quelle
+   * montée (D17, une SEULE mise à jour), puis l'app enchaîne sur l'échelon
+   * suivant — ou rend la main à la fiche quand la cible est atteinte.
+   */
+  async function confirmerLaMontee(choix: ChoixMontee) {
+    if (!enTrain) return
+    const { personnage, niveauAtteint } = enTrain
+    const maj = miseAJourMontee(personnage, niveauAtteint, choix, Date.now())
+    await db.personnages.update(personnage.id as number, maj)
+    const suite: Personnage = { ...personnage, ...maj }
+    const cible = normaliserNiveau(fiche.cible)
+    const prochain = niveauAtteignable(niveauAtteint)
+    if (prochain !== undefined && prochain <= cible) {
+      setEnTrain({ personnage: suite, niveauAtteint: prochain })
+      return
+    }
+    setEnTrain(null)
     setEnregistree(true)
   }
 
@@ -236,6 +312,48 @@ export default function Creer() {
     return <p className="text-muted-foreground">Chargement…</p>
   }
 
+  // D20 — le train : entre la fiche créée au niveau 1 et la cible, l'app
+  // enchaîne les montées SANS repasser par la fiche. Le fil montre où on en est.
+  if (enTrain) {
+    return (
+      <div className="pb-6">
+        <header className="pas-a-imprimer px-1 pb-0.5 pt-2 text-center">
+          <Link
+            to="/"
+            className="text-gradient-gold font-wordmark text-sm font-extrabold tracking-[0.24em]"
+          >
+            TERRA MORTIS
+          </Link>
+          <h1 className="text-gradient-gold terra-heading m-0 text-[26px]">Créer un personnage</h1>
+        </header>
+        <Fil
+          etapes={etapes}
+          valides={valides}
+          etape={etapes.length - 1}
+          onAller={() => {}}
+          barre={!enfant}
+          ici={enTrain.niveauAtteint}
+          fige
+        />
+        <EcranMontee
+          // `key` par échelon : chaque montée est un écran NEUF. Sans elle,
+          // React réutilise l'instance et les choix du niveau précédent
+          // fuiraient dans le suivant.
+          key={enTrain.niveauAtteint}
+          personnage={enTrain.personnage}
+          niveauAtteint={enTrain.niveauAtteint}
+          onConfirmer={(choix: ChoixMontee) => void confirmerLaMontee(choix)}
+          onAnnuler={() => {
+            // Quitter le train laisse la fiche telle qu'elle est : le joueur
+            // reprendra ses montées depuis sa fiche, quand il voudra.
+            setEnTrain(null)
+            setEnregistree(true)
+          }}
+        />
+      </div>
+    )
+  }
+
   if (enregistree) {
     return (
       <div>
@@ -269,15 +387,22 @@ export default function Creer() {
         </Link>
         <h1 className="text-gradient-gold terra-heading m-0 text-[26px]">Créer un personnage</h1>
       </header>
-      <div className="pas-a-imprimer">
-        <Pastilles
+      {/* ⚠️ ≤11 : rien ne change — la planche enfant garde son stepper, sans
+          étage de niveaux : chez les enfants le niveau se déclare. */}
+      {enfant ? (
+        <div className="pas-a-imprimer">
+          <Pastilles etapes={etapes} valides={valides} etape={etape} onAller={allerEtape} />
+        </div>
+      ) : (
+        <Fil
           etapes={etapes}
           valides={valides}
           etape={etape}
           onAller={allerEtape}
-          barre={!enfant}
+          barre
+          ici={niveauCourant(fiche)}
         />
-      </div>
+      )}
 
       {etapeId === 'age' && <EtapeAge fiche={fiche} onMaj={maj} />}
 
