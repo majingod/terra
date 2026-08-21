@@ -35,7 +35,11 @@ import {
   type ChoixMontee,
   type CleCarac,
 } from '../../wizard/montee'
-import { libelleTrocDuGuerrier, libelleTrocDuMage } from '../../wizard/troc'
+import {
+  libellePlafondDuTroc,
+  libelleTrocDuGuerrier,
+  libelleTrocDuMage,
+} from '../../wizard/troc'
 import { CARACS } from '../creation/EtapeForces'
 import SelecteurCapacites, { SelecteurTrocDeDon } from '../creation/SelecteurCapacites'
 import { CarteDon } from '../creation/SelecteurDons'
@@ -167,7 +171,8 @@ export default function EcranMontee({
           {/* D18 — le troc du mage : sous les dons, les voies de la classe. */}
           {prendUneCapaciteAuLieuDUnDon(personnage.creation?.classe) && (
             <SelecteurTrocDeDon
-              titre={libelleTrocDuMage(niveauAtteint)}
+              titre={libelleTrocDuMage()}
+              plafond={libellePlafondDuTroc(niveauAtteint)}
               options={optionsDeTrocDeDonDeLaMontee(personnage, niveauAtteint, choix)}
               onChoisir={choisirCapaciteTroquee}
             />

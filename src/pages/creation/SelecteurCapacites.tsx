@@ -10,7 +10,7 @@
  * qu'on lui donne (`optionsDuNiveau`, qui s'appuie sur `capacitesDisponibles`
  * et l'anti-doublon global).
  */
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import type { CapaciteDeVoie } from '../../rules/capacites'
 import type { Don } from '../../rules/load'
 import type { OptionDeCapacite } from '../../wizard/capacites'
@@ -164,15 +164,12 @@ function AccordeonVoie({
   ouverte,
   onBasculer,
   onChoisir,
-  pastille,
 }: {
   voieNom: string
   options: OptionDeCapacite[]
   ouverte: boolean
   onBasculer: () => void
   onChoisir: (id: string) => void
-  /** Ce que porte la pastille de droite — par défaut, le compte choisissable. */
-  pastille?: ReactNode
 }) {
   const choisissables = options.filter((option) => !option.dejaPrise).length
   const choix = options.find((option) => option.choisie)
@@ -202,7 +199,7 @@ function AccordeonVoie({
           </span>
         )}
         <span className="ml-auto flex-none">
-          <Badge>{pastille ?? choisissables}</Badge>
+          <Badge>{choisissables}</Badge>
         </span>
       </button>
       {ouverte && (
@@ -369,29 +366,37 @@ export default function SelecteurCapacites({
 const TROC = '\u0000troc'
 
 /**
- * D18 — le troc du mage : sous les dons, les voies de la classe en
- * accordéons. Maquette D18 v1 écran B : l'en-tête porte le LIBELLÉ du troc
- * (« ✦ Troc du mage — une capacité ≤ niv N »), un par voie, et la pastille
- * porte le nom de la voie. Les capacités au-dessus du plafond s'y montrent
- * éteintes avec leur raison, plutôt que d'être escamotées.
+ * D18-bis — le troc du mage : sous les dons, UN SEUL en-tête
+ * (« ✦ Troquer contre une capacité », le plafond de l'échelon à droite), puis
+ * les voies de la classe en accordéons ORDINAIRES — chacune garde son nom et
+ * son compte de choisissables, comme n'importe quel accordéon depuis #20.
+ *
+ * Les capacités au-dessus du plafond, et celles déjà prises ailleurs, s'y
+ * montrent éteintes avec leur raison plutôt que d'être escamotées.
  */
 export function SelecteurTrocDeDon({
   titre,
+  plafond,
   options,
   onChoisir,
 }: {
   titre: string
+  /** Ce que l'en-tête porte à droite (« niveau ≤ N »). */
+  plafond: string
   options: OptionDeCapacite[]
   onChoisir: (id: string) => void
 }) {
   const [voiesOuvertes, setVoiesOuvertes] = useState<Set<string>>(new Set())
   return (
     <>
+      <div className="mt-4 flex items-baseline gap-2 border-t border-gold-dark/60 pt-3">
+        <h4 className="m-0 flex-1 font-titre text-[15px] font-semibold text-gold">{titre}</h4>
+        <span className="flex-none text-[13.5px] text-muted-foreground">{plafond}</span>
+      </div>
       {groupesParVoie(options).map((groupe) => (
         <AccordeonVoie
           key={groupe.voieId}
-          voieNom={titre}
-          pastille={groupe.voieNom}
+          voieNom={groupe.voieNom}
           options={groupe.options}
           ouverte={voiesOuvertes.has(groupe.voieId)}
           onBasculer={() =>

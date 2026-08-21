@@ -2,10 +2,12 @@
  * D18 ② — GATE : le mage, en montée 2→3, prend une capacité à la place du
  * don de l'échelon.
  *
- * Maquette D18 v1, écran B : les dons à plat comme aujourd'hui, puis — sous
- * eux — les voies de la classe en accordéons, chacun titré « ✦ Troc du mage —
- * une capacité ≤ niv N ». Une capacité au-dessus de N est indisponible avec
- * sa raison. La capacité troquée traverse l'anti-doublon D16.
+ * Maquette D18-bis v2, écran B : les dons à plat comme aujourd'hui, puis —
+ * sous eux — UN SEUL en-tête « ✦ Troquer contre une capacité » avec le
+ * plafond de l'échelon à droite, et les voies de la classe en accordéons
+ * ordinaires (leur nom, leur compte). Une capacité au-dessus du plafond est
+ * indisponible avec sa raison. La capacité troquée traverse l'anti-doublon
+ * D16.
  *
  * D5 : la classe témoin est celle que les DONNÉES désignent par leur champ
  * `troc` ; l'échelon témoin est le premier de la table qui donne un don
@@ -19,7 +21,7 @@ import { capacitesDeClasse } from '../../../rules/capacites'
 import { getRules } from '../../../rules/load'
 import { niveauMin, niveauxPossibles, tableEvolution } from '../../../rules/niveau'
 import { gainsMontee } from '../../../rules/montee'
-import { miseAJourMontee } from '../../../wizard/montee'
+import { miseAJourMontee, optionsDeTrocDeDonDeLaMontee } from '../../../wizard/montee'
 import type { FicheCreation } from '../../../wizard/types'
 import { ficheComplete } from '../../../wizard/__tests__/aide-fiche-complete'
 import EcranMontee from '../EcranMontee'
@@ -45,8 +47,12 @@ const ATTEINT = tableEvolution()
   .map((ligne) => ligne.niv)[0]
 const DEPART = ATTEINT - 1
 const TITRE_DON = `+${gainsMontee(ATTEINT).dons} don`
-/** Le libellé arbitré de la maquette D18 v1, écran B. */
-const TITRE_TROC = `✦ Troc du mage — une capacité ≤ niv ${ATTEINT}`
+/**
+ * Les libellés arbitrés de la maquette D18-bis v2, écran B : UN SEUL en-tête
+ * au-dessus du groupe, le plafond de l'échelon à sa droite.
+ */
+const TITRE_TROC = '✦ Troquer contre une capacité'
+const PLAFOND_TROC = `niveau ≤ ${ATTEINT}`
 
 function capNiveaux(classe: string, niveau: number): Record<string, string> {
   const arbre = capacitesDeClasse(classe)
@@ -115,22 +121,34 @@ describe('D18 ② — sous les dons de l’échelon, les voies de la classe', ()
     expect(gainsMontee(ATTEINT).dons).toBeGreaterThan(0)
   })
 
-  it('la carte du don porte un accordéon par voie, au libellé du troc', () => {
+  it('un seul en-tête de troc, et les voies dessous gardent nom ET compte', () => {
     afficher()
     const carte = carteDeGain(TITRE_DON)
+    // Compté par MOTIF sur tout le texte de la carte : une répétition se voit.
+    const texte = carte.textContent ?? ''
+    expect(texte.split(TITRE_TROC).length - 1, `texte vu : ${texte.slice(0, 300)}`).toBe(1)
+    expect(texte).toContain(PLAFOND_TROC)
+
     const entetes = accordeons(carte)
     expect(
       entetes.length,
       `accordéons vus : ${entetes.map((e) => e.textContent).join(' | ')}`,
     ).toBe(VOIES.length)
-    for (const entete of entetes) {
-      expect(entete.textContent).toContain(TITRE_TROC)
-    }
-    // La pastille nomme la voie (maquette D18 v1, écran B).
+
+    // Chaque accordéon est un accordéon de voie ORDINAIRE : son nom, et son
+    // compte de choisissables — le compte ne se perd plus.
+    const options = optionsDeTrocDeDonDeLaMontee(personnage(), ATTEINT)
     for (const voie of VOIES) {
+      const entete = entetes.find((e) => (e.textContent ?? '').startsWith(`▸${voie.nom}`))
+      expect(entete, `voie absente des en-têtes : ${voie.nom}`).toBeTruthy()
+      const attendu = options.filter(
+        (o) => o.capacite.voieNom === voie.nom && !o.dejaPrise,
+      ).length
+      expect(attendu, `voie sans capacité choisissable : ${voie.nom}`).toBeGreaterThan(0)
+      // La pastille est le dernier élément de l'en-tête.
       expect(
-        entetes.some((e) => (e.textContent ?? '').includes(voie.nom)),
-        `voie absente des pastilles : ${voie.nom}`,
+        (entete!.textContent ?? '').endsWith(String(attendu)),
+        `compte absent ou faux pour ${voie.nom} : « ${entete!.textContent} », attendu ${attendu}`,
       ).toBe(true)
     }
   })

@@ -28,7 +28,13 @@ import {
   surplusDons,
   type Changement,
 } from '../../wizard/validation'
-import { libelleTrocDuMage, optionsDeTrocCapacite } from '../../wizard/troc'
+import {
+  libelleDonDuNiveau,
+  libellePlafondDuTroc,
+  libelleTroquableContre,
+  libelleTrocDuMage,
+  optionsDeTrocCapacite,
+} from '../../wizard/troc'
 import type { FicheCreation } from '../../wizard/types'
 import { SelecteurTrocDeDon } from './SelecteurCapacites'
 import { CarteDon } from './SelecteurDons'
@@ -133,20 +139,31 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
         />
       ))}
 
-      {/* D18 — le troc du mage : sous les dons, les voies de la classe en
-          accordéons, un jeu par échelon qui donne un don. */}
+      {/* D18-bis — un bloc par emplacement de don que la table donne : il dit
+          à quel échelon il appartient, et jusqu'où son troc peut aller. */}
       {troque &&
         echelonsDeDon(niveau).map((echelon) => (
-          <SelecteurTrocDeDon
+          <div
             key={echelon}
-            titre={libelleTrocDuMage(echelon)}
-            options={optionsDeTrocCapacite(
-              fiche,
-              echelon,
-              prisesAilleurs(fiche, { echelonDon: echelon }),
-            )}
-            onChoisir={(id) => majTroc(echelon, id)}
-          />
+            className="my-3 rounded-lg border border-border/50 bg-card/50 p-3.5 backdrop-blur-sm"
+          >
+            <h3 className="m-0 font-titre text-[17px] font-semibold">
+              {libelleDonDuNiveau(echelon)}
+            </h3>
+            <p className="m-0 text-[14.5px] text-muted-foreground">
+              {libelleTroquableContre(echelon)}
+            </p>
+            <SelecteurTrocDeDon
+              titre={libelleTrocDuMage()}
+              plafond={libellePlafondDuTroc(echelon)}
+              options={optionsDeTrocCapacite(
+                fiche,
+                echelon,
+                prisesAilleurs(fiche, { echelonDon: echelon }),
+              )}
+              onChoisir={(id) => majTroc(echelon, id)}
+            />
+          </div>
         ))}
 
       <h2 className="titre-mini">Tes compétences</h2>

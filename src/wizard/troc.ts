@@ -25,9 +25,28 @@ export function libelleTrocDuGuerrier(): string {
   return '⚔ Troc du guerrier — un don à la place'
 }
 
-/** L'en-tête des voies de troc, sous les dons de l'échelon N. */
-export function libelleTrocDuMage(echelon: number): string {
-  return `✦ Troc du mage — une capacité ≤ niv ${plafondDuTrocDeDon(echelon)}`
+/**
+ * L'en-tête du troc, UNE SEULE FOIS au-dessus des voies (maquette D18-bis
+ * v2) : les accordéons dessous restent des accordéons de voie ordinaires,
+ * avec leur nom et leur compte.
+ */
+export function libelleTrocDuMage(): string {
+  return '✦ Troquer contre une capacité'
+}
+
+/** Ce que l'en-tête du troc porte à droite : le plafond de l'échelon. */
+export function libellePlafondDuTroc(echelon: number): string {
+  return `niveau ≤ ${plafondDuTrocDeDon(echelon)}`
+}
+
+/** Le titre du bloc d'un emplacement de don, à la création. */
+export function libelleDonDuNiveau(echelon: number): string {
+  return `Don du niveau ${echelon}`
+}
+
+/** La ligne sous ce titre : ce que cet emplacement-là peut devenir. */
+export function libelleTroquableContre(echelon: number): string {
+  return `Troquable contre une capacité de niveau ≤ ${plafondDuTrocDeDon(echelon)}.`
 }
 
 /** La raison affichée sur un don qu'un emplacement ne peut plus offrir. */
@@ -39,6 +58,11 @@ export function raisonDonDejaPris(niveau?: number): string {
 /** La raison affichée sur une capacité au-dessus du plafond du troc. */
 export function raisonCapaciteTropHaute(echelon: number): string {
   return `Au-dessus du niveau du don obtenu (${plafondDuTrocDeDon(echelon)}).`
+}
+
+/** La raison affichée sur une capacité déjà prise à un AUTRE échelon de don. */
+export function raisonCapaciteDejaAuTroc(echelon: number): string {
+  return `Déjà prise — au don du niveau ${echelon}.`
 }
 
 // ---------------------------------------------------------------------------
@@ -180,13 +204,24 @@ export function optionsDeTrocCapacite(
   const plafond = plafondDuTrocDeDon(echelon)
   const ici = fiche.capDons?.[String(echelon)]
   const ailleurs = new Set(dejaPrisesAilleurs)
+  /** Les autres échelons de don, et ce qu'ils portent : id -> échelon. */
+  const auxAutresEchelons = new Map(
+    Object.entries(fiche.capDons ?? {})
+      .filter(([cle]) => cle !== String(echelon))
+      .map(([cle, id]) => [id, Number(cle)]),
+  )
   return capacitesDeClasse(fiche.classe).map((capacite: CapaciteDeVoie) => {
     const tropHaute = capacite.niveau > plafond
-    const prise = ailleurs.has(capacite.id)
+    const autreEchelon = auxAutresEchelons.get(capacite.id)
+    const prise = ailleurs.has(capacite.id) || autreEchelon !== undefined
     return {
       capacite,
       dejaPrise: tropHaute || prise,
-      raison: tropHaute ? raisonCapaciteTropHaute(echelon) : undefined,
+      raison: tropHaute
+        ? raisonCapaciteTropHaute(echelon)
+        : autreEchelon !== undefined
+          ? raisonCapaciteDejaAuTroc(autreEchelon)
+          : undefined,
       choisie: capacite.id === ici,
     }
   })
