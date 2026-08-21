@@ -1,6 +1,11 @@
 /**
  * La fiche d'un personnage enregistré.
  *
+ * Le repli d'AVANT le wizard (une fiche sans `creation`) ne montre plus la
+ * ligne « Sous-branche » : la voie n'est plus un enclos depuis D16, et le
+ * libellé ne veut plus rien dire à l'écran. Le champ, lui, reste stocké tel
+ * quel sur les vieux enregistrements — jamais renommé, jamais effacé (D16 ⑨).
+ *
  * D17 : depuis deux ans, les personnages gagnent des niveaux ENTRE les GN —
  * la fiche monte, elle ne se recrée pas. Sous le contenu (et hors zone
  * d'impression) : « Monter au niveau {N+1} », ou, au plafond de la table, la
@@ -116,7 +121,6 @@ export default function Fiche() {
             <p><span className="font-bold">Faction :</span> {personnage.faction || '—'}</p>
             <p><span className="font-bold">Race :</span> {personnage.race || '—'}</p>
             <p><span className="font-bold">Classe :</span> {personnage.classe || '—'}</p>
-            <p><span className="font-bold">Sous-branche :</span> {personnage.sousBranche || '—'}</p>
             <p><span className="font-bold">Niveau :</span> {personnage.niveau}</p>
             <p>
               <span className="font-bold">Caractéristiques :</span> Puissance{' '}
