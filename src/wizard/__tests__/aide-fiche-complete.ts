@@ -9,11 +9,36 @@
  */
 import { getRules } from '../../rules/load'
 import { droitLangues, languesProposables } from '../../rules/langues'
-import { normaliserNiveau, pointsCaracCumules } from '../../rules/niveau'
+import { niveauxPossibles, normaliserNiveau, pointsCaracCumules } from '../../rules/niveau'
 import { classeSquelette, racesPourFaction, valeurCarac } from '../../rules/stats'
 import { droitCompetences, droitDons, listeCompetencesSimples, listeDons } from '../../rules/talents'
 import { trancheQuiContinue } from '../validation'
-import type { FicheCreation } from '../types'
+import type { EntreeNiveau, FicheCreation } from '../types'
+
+/**
+ * D20 — l'historique d'un personnage qui a VRAIMENT traversé les échelons
+ * jusqu'à ce niveau : une entrée datée par échelon, avec les points de
+ * caractéristique que la table donne à chacun.
+ *
+ * C'est LUI qui porte le niveau, désormais : `FicheCreation.niveau` est un
+ * champ d'époque, et une fabrique de fiche qui l'écrirait mentirait.
+ *
+ * Les dates sont fixes (jamais `Date.now()`) : une fabrique de test doit
+ * rendre deux fois la même fiche.
+ */
+const PREMIER_JOUR = 1_700_000_000_000
+
+export function historiqueJusquA(niveau: number): EntreeNiveau[] {
+  return niveauxPossibles()
+    .filter((n) => n <= normaliserNiveau(niveau))
+    .map((n, index) => {
+      const points = pointsCaracCumules(n) - pointsCaracCumules(n - 1)
+      const entree: EntreeNiveau = { niveau: n, le: PREMIER_JOUR + index }
+      // Placés sur la Puissance : le compte fait foi, pas la carac visée.
+      if (points > 0) entree.caracs = { p: points }
+      return entree
+    })
+}
 
 /** Répartit N points sur p/r/e sans dépasser le plafond de création. */
 function repartirExtras(base: { p: number; r: number; e: number }, points: number) {
@@ -57,7 +82,7 @@ export function ficheComplete(
     faction,
     race: race.id,
     classe: classeId,
-    niveau: normaliserNiveau(niveau),
+    historique: historiqueJusquA(niveau),
     capNiveaux,
     caracs: base,
     extras,

@@ -10,7 +10,7 @@
  * marqués « · achat XP », et chacune porte son texte (D14).
  */
 import { capacitesDeBase } from '../../rules/branches'
-import { normaliserNiveau } from '../../rules/niveau'
+import { niveauCourant } from '../../wizard/historique'
 import {
   depenseXp,
   listeAchats,
@@ -68,7 +68,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const race = raceDe(fiche.race)
   const classe = classeSquelette(fiche.classe)
   const faction = regles.factions.liste.find((f) => f.id === fiche.faction)
-  const niveau = normaliserNiveau(fiche.niveau)
+  const niveau = niveauCourant(fiche)
   const capacites = capacitesDeLaFiche(fiche)
   const stats = statsDe(fiche)
   const dons = donsDeLaFiche(fiche)

@@ -9,7 +9,7 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import { db, nouvellePersonnageVierge, type Personnage } from '../index'
@@ -80,8 +80,22 @@ describe('retrait d’une fiche — rien n’est effacé', () => {
     expect(retirees.map((p) => p.nomPerso)).toEqual(['Intermediaire'])
   })
 
-  it('⭐ aucun db.personnages.delete() dans src/ — pas dans le code, pas « au cas où »', () => {
+  /**
+   * ⚠️ GATE MODIFIÉE PAR D20, avec sa raison. Elle interdisait TOUT
+   * effacement définitif dans `src/`. D20 ③ en autorise UN, et un seul : le
+   * bouton « Supprimer » d'une fiche d'ancienne version, que le joueur
+   * atteint après un bandeau, une proposition d'export et une confirmation.
+   *
+   * La garde n'est donc pas levée, elle est RESSERRÉE : l'effacement est
+   * nommé, à un seul endroit, et tout autre reste interdit. Un `delete()` qui
+   * apparaîtrait ailleurs — « au cas où », au démarrage, au chargement d'une
+   * liste — rougit toujours.
+   */
+  const EFFACEMENT_AUTORISE = ['src/pages/Fiche.tsx']
+
+  it('⭐ un seul db.personnages.delete() dans src/ — celui que D20 ③ autorise', () => {
     const suspects: string[] = []
+    const autorises: string[] = []
 
     const parcours = (repertoire: string) => {
       for (const entree of readdirSync(repertoire)) {
@@ -97,14 +111,20 @@ describe('retrait d’une fiche — rien n’est effacé', () => {
         const source = readFileSync(chemin, 'utf8')
           .replace(/\/\*[\s\S]*?\*\//g, '')
           .replace(/\/\/.*$/gm, '')
-        if (/personnages\s*\.\s*(delete|bulkDelete)\s*\(/.test(source)) suspects.push(chemin)
+        if (!/personnages\s*\.\s*(delete|bulkDelete)\s*\(/.test(source)) continue
+        const relatif = relative(join(SRC, '..'), chemin)
+        if (EFFACEMENT_AUTORISE.includes(relatif)) autorises.push(relatif)
+        else suspects.push(chemin)
       }
     }
     parcours(SRC)
 
     expect(
       suspects,
-      `effacement définitif trouvé dans : ${suspects.join(', ')} — ce lot retire, il n'efface pas`,
+      `effacement définitif hors du seul endroit autorisé : ${suspects.join(', ')} — retirer n'est pas effacer`,
     ).toEqual([])
+    // Jumelle : l'endroit autorisé existe bien — la gate garderait le vide
+    // sinon, et ne dirait plus rien le jour où il disparaîtrait.
+    expect(autorises, 'la suppression de D20 ③ a disparu').toEqual(EFFACEMENT_AUTORISE)
   })
 })

@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches } from '../../rules/branches'
 import { classeSquelette } from '../../rules/stats'
 import { importerPersonnageJSON } from '../../utils/exportImport'
+import { historiqueJusquA } from '../../wizard/__tests__/aide-fiche-complete'
 import FicheAffichage from '../../pages/creation/FicheAffichage'
 import type { FicheCreation } from '../../wizard/types'
 import { db, nouvellePersonnageVierge, type Personnage } from '../index'
@@ -74,15 +75,32 @@ describe('D16 ⑨ — une fiche d’époque s’affiche sans planter', () => {
   })
 })
 
-describe('D16 ⑨ — un ancien export JSON s’importe, champs d’époque compris', () => {
-  it('ancien_export_avec_sousBranche_et_creation_voie_s_importe', async () => {
-    const ancien = { ...personnageEpoque(), id: 42 }
-    const fichier = new File([JSON.stringify(ancien)], 'ancienne.json', {
+/**
+ * ⚠️ GATE MODIFIÉE PAR D20, avec sa raison — et c'est la seule collision
+ * frontale de ce lot avec une gate d'avant.
+ *
+ * D16 ⑨ garantissait qu'un ancien export JSON s'importe. D20 ③ arbitre
+ * l'inverse pour les fichiers d'une version précédente : ils sont REFUSÉS, et
+ * le refus se lit. Le brief D20 est postérieur et explicite ; c'est lui qui
+ * tranche. Ce que D16 ⑨ gardait VRAIMENT — « les champs d'époque sont
+ * recopiés tels quels, jamais exigés, jamais fabriqués » — reste gardé ici,
+ * sur un export courant qui les porte encore.
+ */
+describe('D16 ⑨ / D20 ③ — les champs d’époque survivent à l’import, l’ancienne version non', () => {
+  it('les champs d’époque d’un export COURANT sont recopiés tels quels', async () => {
+    const epoque = personnageEpoque()
+    const courant = {
+      ...epoque,
+      id: 42,
+      // D20 : c'est l'historique qui fait qu'une fiche est encore tenable.
+      creation: { ...epoque.creation, historique: historiqueJusquA(1) },
+    }
+    const fichier = new File([JSON.stringify(courant)], 'courante.json', {
       type: 'application/json',
     })
     await importerPersonnageJSON(fichier)
     const importe = (await db.personnages.toArray())[0]
-    expect(importe.nomPerso).toBe(ancien.nomPerso)
+    expect(importe.nomPerso).toBe(courant.nomPerso)
     // Rien n'est renommé, rien n'est effacé : les champs d'époque survivent.
     expect(importe.sousBranche).toBe(VOIE.nom)
     expect(importe.creation?.voie).toBe(VOIE.id)
@@ -92,7 +110,11 @@ describe('D16 ⑨ — un ancien export JSON s’importe, champs d’époque comp
     const neuf = {
       ...nouvellePersonnageVierge(),
       nomPerso: 'Fiche neuve',
-      creation: { classe: CLASSE, niveau: 1, capNiveaux: { '1': VOIE.capacites[0].id } },
+      creation: {
+        classe: CLASSE,
+        historique: historiqueJusquA(1),
+        capNiveaux: { '1': VOIE.capacites[0].id },
+      },
     }
     expect('sousBranche' in neuf).toBe(false)
     const fichier = new File([JSON.stringify(neuf)], 'neuve.json', { type: 'application/json' })
@@ -100,6 +122,15 @@ describe('D16 ⑨ — un ancien export JSON s’importe, champs d’époque comp
     const importe = (await db.personnages.toArray())[0]
     expect(importe.sousBranche).toBeUndefined()
     expect(importe.creation?.capNiveaux).toEqual({ '1': VOIE.capacites[0].id })
+  })
+
+  it('D20 ③ — le MÊME export, sans historique, est refusé', async () => {
+    const ancien = { ...personnageEpoque(), id: 42 }
+    const fichier = new File([JSON.stringify(ancien)], 'ancienne.json', {
+      type: 'application/json',
+    })
+    await expect(importerPersonnageJSON(fichier)).rejects.toThrow()
+    expect(await db.personnages.count()).toBe(0)
   })
 })
 

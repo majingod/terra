@@ -50,8 +50,18 @@ async function remplirMagasinV1(nom: string): Promise<void> {
   v1.close()
 }
 
+/**
+ * ⚠️ GATE MODIFIÉE PAR D20, avec sa raison. Elle attendait UN export après la
+ * montée, parce qu'il n'y avait qu'une version à franchir (v1 → v2). D20
+ * ajoute la v3 : un magasin v1 en traverse maintenant DEUX, et D7 exige un
+ * export à CHAQUE montée — deux exports, donc. Ce que la gate garde est
+ * intact et même renforcé : un export par version franchie, chacun complet.
+ * Le compte est calculé depuis les versions, jamais écrit en dur.
+ */
+const VERSIONS_DEPUIS_V1 = 2
+
 describe('T10 — migration D7 sur un magasin rempli par l’app', () => {
-  it('montée v1 → v2 : fiche relisible, aucun champ perdu, export auto écrit', async () => {
+  it('montée v1 → v3 : fiche relisible, aucun champ perdu, un export par version', async () => {
     const nom = 'terra-test-t10'
     await remplirMagasinV1(nom)
 
@@ -68,12 +78,14 @@ describe('T10 — migration D7 sur un magasin rempli par l’app', () => {
     expect(fiche.caracs).toEqual({ puissance: 0, resistance: 0, esprit: 0 })
     expect(fiche[CHAMP_EPOQUE]).toBe(false)
 
-    // L'export JSON automatique a été déclenché par la montée de version.
+    // L'export JSON automatique a été déclenché par CHAQUE montée de version.
     const exports = (await v2.exports.toArray()) as ExportEnregistre[]
-    expect(exports).toHaveLength(1)
-    const contenu = JSON.parse(exports[0].contenu) as { personnages: unknown[] }
-    expect(contenu.personnages).toHaveLength(1)
-    expect(exports[0].contenu).toContain('Test1')
+    expect(exports).toHaveLength(VERSIONS_DEPUIS_V1)
+    for (const exporte of exports) {
+      const contenu = JSON.parse(exporte.contenu) as { personnages: unknown[] }
+      expect(contenu.personnages).toHaveLength(1)
+      expect(exporte.contenu).toContain('Test1')
+    }
   })
 
   it('jumelle : un magasin v1 vide migre aussi (export écrit, zéro personnage)', async () => {
@@ -89,8 +101,10 @@ describe('T10 — migration D7 sur un magasin rempli par l’app', () => {
     await v2.open()
     expect(await v2.personnages.count()).toBe(0)
     const exports = await v2.exports.toArray()
-    expect(exports).toHaveLength(1)
-    const contenu = JSON.parse(exports[0].contenu) as { personnages: unknown[] }
-    expect(contenu.personnages).toHaveLength(0)
+    expect(exports).toHaveLength(VERSIONS_DEPUIS_V1)
+    for (const exporte of exports) {
+      const contenu = JSON.parse(exporte.contenu) as { personnages: unknown[] }
+      expect(contenu.personnages).toHaveLength(0)
+    }
   })
 })

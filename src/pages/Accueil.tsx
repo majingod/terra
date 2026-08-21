@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db'
 import { remettreFiche, retirerFiche, separerFiches } from '../db/retrait'
+import { niveauDeLaFiche } from '../wizard/montee'
 import RangeeInstallation from '../components/RangeeInstallation'
 
 export default function Accueil() {
@@ -43,7 +44,7 @@ export default function Accueil() {
             <Link to={`/fiche/${p.id}`} className="carte flex flex-col gap-1">
               <span className="text-lg font-bold">{p.nomPerso || 'Sans nom'}</span>
               <span className="text-muted-foreground">
-                {p.race || '—'} · {p.classe || '—'} · Niveau {p.niveau}
+                {p.race || '—'} · {p.classe || '—'} · Niveau {niveauDeLaFiche(p)}
               </span>
             </Link>
 
@@ -102,7 +103,7 @@ export default function Accueil() {
               <div key={p.id} className="flex flex-col gap-2">
                 <span className="text-lg font-bold">{p.nomPerso || 'Sans nom'}</span>
                 <span className="text-muted-foreground">
-                  {p.race || '—'} · {p.classe || '—'} · Niveau {p.niveau}
+                  {p.race || '—'} · {p.classe || '—'} · Niveau {niveauDeLaFiche(p)}
                 </span>
                 <button
                   type="button"

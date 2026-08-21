@@ -6,18 +6,24 @@
  * libellé ne veut plus rien dire à l'écran. Le champ, lui, reste stocké tel
  * quel sur les vieux enregistrements — jamais renommé, jamais effacé (D16 ⑨).
  *
+ * D20 : une fiche SANS historique vient d'une version précédente du jeu. Elle
+ * s'ouvre en lecture seule (`AncienneFiche`) — bandeau, Exporter d'abord,
+ * Supprimer — et rien n'y est modifiable. ⛔ Aucune suppression sans un geste
+ * du joueur. Le niveau, lui, se dérive de l'historique : jamais d'un champ.
+ *
  * D17 : depuis deux ans, les personnages gagnent des niveaux ENTRE les GN —
  * la fiche monte, elle ne se recrée pas. Sous le contenu (et hors zone
  * d'impression) : « Monter au niveau {N+1} », ou, au plafond de la table, la
  * ligne « vois ton MJ ». Le MJ arbitre la quête ; l'app ne garde rien.
  */
 import { useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Personnage } from '../db'
 import { niveauMaxEnfant, normaliserNiveauEnfant } from '../rules/kids'
 import { niveauAtteignable, niveauAtteignableEnfant } from '../rules/montee'
 import { niveauMax } from '../rules/niveau'
+import { estAncienneFiche } from '../wizard/historique'
 import {
   miseAJourMontee,
   miseAJourMonteeEnfant,
@@ -25,6 +31,7 @@ import {
   type ChoixMontee,
 } from '../wizard/montee'
 import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportImport'
+import AncienneFiche from './AncienneFiche'
 import FicheAffichage from './creation/FicheAffichage'
 import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
 import BoutonMontee from './montee/BoutonMontee'
@@ -37,6 +44,7 @@ export default function Fiche() {
   const personnage = useLiveQuery(() => db.personnages.get(idNombre), [idNombre])
   const inputFichier = useRef<HTMLInputElement>(null)
   const [enMontee, setEnMontee] = useState(false)
+  const naviguer = useNavigate()
 
   async function surImport(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0]
@@ -62,6 +70,20 @@ export default function Fiche() {
           Retour à l'accueil
         </Link>
       </div>
+    )
+  }
+
+  // D20 — fiche d'une version précédente : lecture seule, et deux gestes.
+  // Le critère est l'absence d'historique, pas un numéro de version.
+  if (estAncienneFiche(personnage.creation)) {
+    return (
+      <AncienneFiche
+        personnage={personnage}
+        onExporter={() => exporterPersonnageJSON(personnage)}
+        onSupprimer={() => {
+          void db.personnages.delete(personnage.id as number).then(() => naviguer('/'))
+        }}
+      />
     )
   }
 
