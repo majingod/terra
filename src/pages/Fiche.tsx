@@ -1,16 +1,42 @@
-import { useRef } from 'react'
+/**
+ * La fiche d'un personnage enregistré.
+ *
+ * Le repli d'AVANT le wizard (une fiche sans `creation`) ne montre plus la
+ * ligne « Sous-branche » : la voie n'est plus un enclos depuis D16, et le
+ * libellé ne veut plus rien dire à l'écran. Le champ, lui, reste stocké tel
+ * quel sur les vieux enregistrements — jamais renommé, jamais effacé (D16 ⑨).
+ *
+ * D17 : depuis deux ans, les personnages gagnent des niveaux ENTRE les GN —
+ * la fiche monte, elle ne se recrée pas. Sous le contenu (et hors zone
+ * d'impression) : « Monter au niveau {N+1} », ou, au plafond de la table, la
+ * ligne « vois ton MJ ». Le MJ arbitre la quête ; l'app ne garde rien.
+ */
+import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db'
+import { db, type Personnage } from '../db'
+import { niveauMaxEnfant, normaliserNiveauEnfant } from '../rules/kids'
+import { niveauAtteignable, niveauAtteignableEnfant } from '../rules/montee'
+import { niveauMax } from '../rules/niveau'
+import {
+  miseAJourMontee,
+  miseAJourMonteeEnfant,
+  niveauDeLaFiche,
+  type ChoixMontee,
+} from '../wizard/montee'
 import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportImport'
 import FicheAffichage from './creation/FicheAffichage'
 import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
+import BoutonMontee from './montee/BoutonMontee'
+import EcranMontee from './montee/EcranMontee'
+import EcranMonteeEnfant from './montee/EcranMonteeEnfant'
 
 export default function Fiche() {
   const { id } = useParams()
   const idNombre = Number(id)
   const personnage = useLiveQuery(() => db.personnages.get(idNombre), [idNombre])
   const inputFichier = useRef<HTMLInputElement>(null)
+  const [enMontee, setEnMontee] = useState(false)
 
   async function surImport(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0]
@@ -39,6 +65,45 @@ export default function Fiche() {
     )
   }
 
+  // Le flux de la fiche se lit de la fiche elle-même : la planche enfant et
+  // le Tome ne se mélangent pas, ici pas plus qu'ailleurs.
+  const enfant = Boolean(personnage.creation?.enfant)
+  const niveauCourant = enfant
+    ? normaliserNiveauEnfant(personnage.creation?.enfant?.niveau)
+    : niveauDeLaFiche(personnage)
+  const niveauAtteint = enfant
+    ? niveauAtteignableEnfant(niveauCourant)
+    : niveauAtteignable(niveauCourant)
+  const plafond = enfant ? niveauMaxEnfant() : niveauMax()
+
+  /** D7 : une SEULE mise à jour — niveau, capacité, don ou caractéristique. */
+  async function confirmer(maj: Partial<Personnage>) {
+    await db.personnages.update(personnage!.id as number, maj)
+    setEnMontee(false)
+  }
+
+  if (enMontee && niveauAtteint !== undefined) {
+    return enfant ? (
+      <EcranMonteeEnfant
+        personnage={personnage}
+        niveauAtteint={niveauAtteint}
+        onConfirmer={() =>
+          void confirmer(miseAJourMonteeEnfant(personnage, niveauAtteint, Date.now()))
+        }
+        onAnnuler={() => setEnMontee(false)}
+      />
+    ) : (
+      <EcranMontee
+        personnage={personnage}
+        niveauAtteint={niveauAtteint}
+        onConfirmer={(choix: ChoixMontee) =>
+          void confirmer(miseAJourMontee(personnage, niveauAtteint, choix, Date.now()))
+        }
+        onAnnuler={() => setEnMontee(false)}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {personnage.creation?.enfant ? (
@@ -56,7 +121,6 @@ export default function Fiche() {
             <p><span className="font-bold">Faction :</span> {personnage.faction || '—'}</p>
             <p><span className="font-bold">Race :</span> {personnage.race || '—'}</p>
             <p><span className="font-bold">Classe :</span> {personnage.classe || '—'}</p>
-            <p><span className="font-bold">Sous-branche :</span> {personnage.sousBranche || '—'}</p>
             <p><span className="font-bold">Niveau :</span> {personnage.niveau}</p>
             <p>
               <span className="font-bold">Caractéristiques :</span> Puissance{' '}
@@ -65,6 +129,17 @@ export default function Fiche() {
             </p>
           </div>
         </>
+      )}
+
+      {/* La montée part de la fiche du wizard : une fiche d'avant le wizard
+          n'a ni classe identifiée ni emplacements de capacité — elle ne
+          monte pas ici (écart rapporté, rien n'est inventé à sa place). */}
+      {personnage.creation && (
+        <BoutonMontee
+          niveauAtteint={niveauAtteint}
+          plafond={plafond}
+          onMonter={() => setEnMontee(true)}
+        />
       )}
 
       <div className="pas-a-imprimer flex flex-col gap-3">

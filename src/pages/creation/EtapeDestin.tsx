@@ -22,7 +22,7 @@ import { consommationDons, droitCompetences, droitDons } from '../../rules/talen
 import { bassinAchat, capaciteParId } from '../../wizard/capacites'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { CarteCapacite } from './EtapeCapacites'
+import { CarteCapacite } from './SelecteurCapacites'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {

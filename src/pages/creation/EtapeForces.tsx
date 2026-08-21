@@ -24,7 +24,12 @@ import { ErreurNote, Note, Tutoriel } from './ui'
 
 type CleCarac = 'p' | 'r' | 'e'
 
-const CARACS: Array<{
+/**
+ * Les trois caractéristiques, leur nom d'affichage et la table qui les
+ * décrit. Exportée : la montée de niveau (D17) pose ses jetons sur les mêmes
+ * trois noms et lit la même table — jamais une seconde liste recopiée.
+ */
+export const CARACS: Array<{
   cle: CleCarac
   table: 'puissance' | 'resistance' | 'esprit'
   nom: string
