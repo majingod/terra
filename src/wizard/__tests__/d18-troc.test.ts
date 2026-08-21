@@ -8,19 +8,15 @@
  *   place d'un don sort du bassin des niveaux et des achats XP, et
  *   réciproquement.
  *
+ * D18-bis : le troc ne vaut QUE sur les emplacements de la table d'évolution.
+ * Ce que l'écran d'achats n'offre plus se prouve dans `d18bis-sans-achats`.
+ *
  * D5 : ni classe, ni don, ni capacité n'est nommé ici — tous les témoins sont
  * retrouvés dans rules.json par critère (le champ `troc`, le champ
  * `cumulable`, l'arbre de la classe).
  */
 import { describe, expect, it } from 'vitest'
 import { capacitesDeClasse } from '../../rules/capacites'
-import {
-  coutDunDonTroque,
-  depenseXp,
-  effetAchat,
-  listeAchats,
-  xpRestant,
-} from '../../rules/heritage'
 import { getRules } from '../../rules/load'
 import { gainsMontee } from '../../rules/montee'
 import { niveauMax, niveauMin, niveauxPossibles, tableEvolution } from '../../rules/niveau'
@@ -33,7 +29,7 @@ import {
 import { bassinAchat, idsDejaPris, optionsDuNiveau, prisesAilleurs } from '../capacites'
 import { donsDeLaFiche, donsPris, optionsDeTrocCapacite, optionsDeTrocDon } from '../troc'
 import { miseAJourMontee } from '../montee'
-import { problemesCapacites, problemesDestin, problemesTalents } from '../validation'
+import { problemesCapacites, problemesTalents } from '../validation'
 import type { FicheCreation } from '../types'
 import { personnageDeLaFiche } from '../../pages/montee/__tests__/aide-montee'
 import { ficheComplete } from './aide-fiche-complete'
@@ -225,81 +221,6 @@ describe('D18 ④ — la fiche range un don troqué comme un don', () => {
   })
 })
 
-
-describe('D18 ③③ — l’achat XP de capacité peut devenir un don (guerrier)', () => {
-  /** Le moins cher des achats « +1 Capacité de niveau N » du catalogue. */
-  const ACHAT = listeAchats()
-    .filter((a) => effetAchat(a.achat).type === 'capacite')
-    .sort((a, b) => a.cout_xp - b.cout_xp)[0]
-  const NIVEAU_ACHAT = (effetAchat(ACHAT.achat) as { type: 'capacite'; niveau: number }).niveau
-
-  /** Un achat plus cher que le troc, s'il en existe un au catalogue. */
-  const PLUS_CHER = listeAchats()
-    .filter((a) => effetAchat(a.achat).type === 'capacite' && a.cout_xp > coutDunDonTroque())
-    .sort((a, b) => a.cout_xp - b.cout_xp)[0]
-
-  function ficheAchat(troque: boolean): FicheCreation {
-    const niveau = niveauMax()
-    const socle = ficheComplete(GUERRIER, niveau, capNiveaux(GUERRIER, niveau))
-    const libre = capacitesDeClasse(GUERRIER).find(
-      (c) => c.niveau === NIVEAU_ACHAT && !Object.values(socle.capNiveaux ?? {}).includes(c.id),
-    )!
-    return {
-      ...socle,
-      xpPerm: 99,
-      achats: { [ACHAT.achat]: 1 },
-      capChoix: troque ? {} : { [String(NIVEAU_ACHAT)]: [libre.id] },
-      donChoix: troque ? { [String(NIVEAU_ACHAT)]: [SIMPLE.id] } : {},
-    }
-  }
-
-  it('un don remplit l’emplacement acheté : l’étape Destin est satisfaite', () => {
-    expect(problemesDestin(ficheAchat(true))).toEqual([])
-    expect(problemesDestin(ficheAchat(false))).toEqual([])
-  })
-
-  it('l’emplacement acheté n’accepte pas les deux à la fois', () => {
-    const fiche = ficheAchat(true)
-    const enTrop = {
-      ...fiche,
-      capChoix: { [String(NIVEAU_ACHAT)]: [capaciteDeNiveau(GUERRIER, NIVEAU_ACHAT).id] },
-    }
-    expect(problemesDestin(enTrop).some((p) => p.includes('2/1'))).toBe(true)
-  })
-
-  it('le don troqué se paie au prix du troc, pas à celui de sa ligne', () => {
-    const troque = { [String(NIVEAU_ACHAT)]: [SIMPLE.id] }
-    expect(depenseXp({ [ACHAT.achat]: 1 }, troque)).toBe(coutDunDonTroque())
-    if (PLUS_CHER) {
-      const niveau = (effetAchat(PLUS_CHER.achat) as { niveau: number }).niveau
-      expect(depenseXp({ [PLUS_CHER.achat]: 1 })).toBe(PLUS_CHER.cout_xp)
-      expect(depenseXp({ [PLUS_CHER.achat]: 1 }, { [String(niveau)]: [SIMPLE.id] })).toBe(
-        coutDunDonTroque(),
-      )
-    }
-  })
-
-  it('le budget XP suit : le reste tient compte du prix troqué', () => {
-    const fiche: FicheCreation = {
-      xpPerm: coutDunDonTroque(),
-      achats: { [ACHAT.achat]: 1 },
-      donChoix: { [String(NIVEAU_ACHAT)]: [SIMPLE.id] },
-    }
-    expect(xpRestant(fiche)).toBe(0)
-  })
-
-  it('jumelle négative : une classe sans troc ne peut pas troquer son achat', () => {
-    const sans = CLASSES.find((c) => c.troc === undefined)!.id
-    const fiche: FicheCreation = {
-      classe: sans,
-      niveau: niveauMax(),
-      xpPerm: 99,
-      achats: { [ACHAT.achat]: 1 },
-      donChoix: { [String(NIVEAU_ACHAT)]: [SIMPLE.id] },
-    }
-    expect(problemesDestin(fiche).some((p) => p.includes('troque'))).toBe(true)
-  })
-})
 
 describe('D18 ① — le troc du guerrier vaut aussi à la montée', () => {
   /** L'échelon de montée qui donne un don (le plus bas au-dessus du minimum). */

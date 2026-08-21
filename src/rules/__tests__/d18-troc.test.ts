@@ -13,7 +13,6 @@
 import { describe, expect, it } from 'vitest'
 import { getRules } from '../load'
 import { niveauMax, tableEvolution } from '../niveau'
-import { coutDunDonTroque, effetAchat, listeAchats } from '../heritage'
 import {
   TROC_CAPACITE_VERS_DON,
   TROC_DON_VERS_CAPACITE,
@@ -102,15 +101,5 @@ describe('D18 — les échelons troquables viennent de la table, pas d’un ryth
     for (const echelon of echelonsDeDon(niveauMax())) {
       expect(plafondDuTrocDeDon(echelon)).toBe(echelon)
     }
-  })
-})
-
-describe('D18 — le prix d’un achat XP troqué en don', () => {
-  it('c’est le coût du moins cher des achats de capacité du catalogue', () => {
-    const couts = listeAchats()
-      .filter((a) => effetAchat(a.achat).type === 'capacite')
-      .map((a) => a.cout_xp)
-    expect(couts.length).toBeGreaterThan(0)
-    expect(coutDunDonTroque()).toBe(Math.min(...couts))
   })
 })

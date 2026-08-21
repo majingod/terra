@@ -157,41 +157,12 @@ export function compteAchats(
   return total
 }
 
-/**
- * D18 — ce que coûte un emplacement d'achat de capacité qu'on a troqué
- * contre un don (troc du guerrier). Fred a arbitré ce prix ; il ne s'écrit
- * pas ici pour autant : c'est le coût du MOINS CHER des achats de capacité du
- * catalogue — un don troqué ne coûte jamais plus qu'entrer par la porte la
- * plus basse. Si le catalogue bouge, le prix suit.
- */
-export function coutDunDonTroque(): number {
-  const capacites = listeAchats().filter((a) => effetAchat(a.achat).type === 'capacite')
-  if (capacites.length === 0) {
-    throw new Error('rules.json : aucun achat de capacité au catalogue.')
-  }
-  return Math.min(...capacites.map((a) => a.cout_xp))
-}
-
-/**
- * XP dépensés par les achats. `donsTroques` (D18) dit, pour chaque niveau
- * d'achat de capacité, les dons pris à la place — chacun de ces emplacements
- * se paie au prix du troc et non au prix de sa ligne de catalogue.
- */
-export function depenseXp(
-  achats: Readonly<Record<string, number>> | undefined,
-  donsTroques?: Readonly<Record<string, string[]>>,
-): number {
+export function depenseXp(achats: Readonly<Record<string, number>> | undefined): number {
   if (!achats) return 0
   const catalogue = listeAchats()
   return Object.entries(achats).reduce((somme, [achat, compte]) => {
     const entree = catalogue.find((a) => a.achat === achat)
-    if (!entree) return somme
-    const effet = effetAchat(achat)
-    const troques =
-      effet.type === 'capacite'
-        ? Math.min(compte, (donsTroques?.[String(effet.niveau)] ?? []).length)
-        : 0
-    return somme + entree.cout_xp * (compte - troques) + coutDunDonTroque() * troques
+    return entree ? somme + entree.cout_xp * compte : somme
   }, 0)
 }
 
@@ -200,8 +171,6 @@ export interface ContexteBudget {
   desavOrdre?: string[]
   racisteVar?: string
   achats?: Record<string, number>
-  /** D18 — dons pris à la place d'une capacité achetée : niveau -> ids. */
-  donChoix?: Record<string, string[]>
 }
 
 /** Budget XP unique : XP permanent du joueur + XP des désavantages (A6). */
@@ -210,7 +179,7 @@ export function budgetXp(fiche: ContexteBudget): number {
 }
 
 export function xpRestant(fiche: ContexteBudget): number {
-  return budgetXp(fiche) - depenseXp(fiche.achats, fiche.donChoix)
+  return budgetXp(fiche) - depenseXp(fiche.achats)
 }
 
 /**
@@ -231,7 +200,7 @@ export function validerAchats(fiche: ContexteBudget): string[] {
       refus.push(`« ${achat} » dépasse max_achats (${entree.max_achats})`)
     }
   }
-  if (depenseXp(fiche.achats, fiche.donChoix) > budgetXp(fiche)) {
+  if (depenseXp(fiche.achats) > budgetXp(fiche)) {
     refus.push('dépense au-delà du budget XP')
   }
   return refus

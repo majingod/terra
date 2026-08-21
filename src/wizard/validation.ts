@@ -257,15 +257,8 @@ export function problemesDestin(fiche: FicheCreation): string[] {
   for (const niveau of niveaux) {
     const attendus = compteAchats(fiche.achats, 'capacite', niveau)
     const choisis = fiche.capChoix?.[String(niveau)] ?? []
-    // D18 : un emplacement acheté peut porter un don au lieu d'une capacité.
-    const troques = fiche.donChoix?.[String(niveau)] ?? []
-    if (troques.length > 0 && !prendUnDonAuLieuDUneCapacite(fiche.classe)) {
-      problemes.push(`cette classe ne troque pas ses capacités contre des dons`)
-    }
-    if (choisis.length + troques.length !== attendus) {
-      problemes.push(
-        `capacités de niveau ${niveau} : ${choisis.length + troques.length}/${attendus} choisies`,
-      )
+    if (choisis.length !== attendus) {
+      problemes.push(`capacités de niveau ${niveau} : ${choisis.length}/${attendus} choisies`)
     }
     const bassin = new Set(bassinAchat(fiche, niveau).map((c) => c.id))
     for (const id of choisis) {
@@ -434,10 +427,7 @@ export interface Changement {
 const CAP_CHOIX_VIDE: Record<string, string[]> = { 1: [], 2: [] }
 
 function nbCapChoix(fiche: FicheCreation): number {
-  return [
-    ...Object.values(fiche.capChoix ?? {}),
-    ...Object.values(fiche.donChoix ?? {}),
-  ].reduce((somme, ids) => somme + ids.length, 0)
+  return Object.values(fiche.capChoix ?? {}).reduce((somme, ids) => somme + ids.length, 0)
 }
 
 function nbCapNiveaux(fiche: FicheCreation): number {
@@ -569,7 +559,6 @@ export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Cha
       capChoix: { ...CAP_CHOIX_VIDE },
       // D18 : le troc appartient à l'ancienne classe — il part avec elle.
       donNiveaux: {},
-      donChoix: {},
       capDons: {},
       desavOrdre: (fiche.desavOrdre ?? []).filter((id) => !idsDecoches.has(id)),
     },
@@ -610,7 +599,6 @@ export function changerFaction(fiche: FicheCreation, nouvelleFaction: string): C
       capNiveaux: {},
       capChoix: { ...CAP_CHOIX_VIDE },
       donNiveaux: {},
-      donChoix: {},
       capDons: {},
     }
   }

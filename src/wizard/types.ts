@@ -75,8 +75,6 @@ export interface FicheCreation {
    * stockées — un don rangé ici vient d'un emplacement de capacité.
    */
   donNiveaux?: Record<string, string>
-  /** D18 : le don pris à la place d'une capacité ACHETÉE — niveau -> ids. */
-  donChoix?: Record<string, string[]>
   /**
    * D18 (troc du mage) : la CAPACITÉ prise à la place du don que la table
    * d'évolution donne à l'échelon N — échelon (clé texte) -> id de la

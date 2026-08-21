@@ -77,7 +77,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const langues = [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])].map(
     (id) => listeLangues().find((l) => l.id === id)?.nom ?? id,
   )
-  const depense = depenseXp(fiche.achats, fiche.donChoix)
+  const depense = depenseXp(fiche.achats)
   const comps = fiche.comps ?? []
   const simples = regles.competences.simples
   const artisanats = regles.competences.artisanats.liste

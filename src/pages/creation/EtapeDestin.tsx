@@ -7,7 +7,6 @@
  */
 import {
   compteAchats,
-  coutDunDonTroque,
   depenseXp,
   effetAchat,
   listeAchats,
@@ -19,18 +18,11 @@ import {
 } from '../../rules/heritage'
 import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
-import {
-  consommationDons,
-  droitCompetences,
-  droitDons,
-  listeDons,
-} from '../../rules/talents'
-import { prendUnDonAuLieuDUneCapacite } from '../../rules/troc'
+import { consommationDons, droitCompetences, droitDons } from '../../rules/talents'
 import { bassinAchat, capaciteParId } from '../../wizard/capacites'
-import { libelleTrocDuGuerrier, optionsDeTrocDon } from '../../wizard/troc'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
-import { CarteCapacite, CarteDonTroc } from './SelecteurCapacites'
+import { CarteCapacite } from './SelecteurCapacites'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
 
 interface Props {
@@ -43,9 +35,8 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
   const regles = getRules()
   const plafond = plafondDesavantagesXp()
   const ordre = fiche.desavOrdre ?? []
-  const depense = depenseXp(fiche.achats, fiche.donChoix)
+  const depense = depenseXp(fiche.achats)
   const reste = xpRestant(fiche)
-  const troque = prendUnDonAuLieuDUneCapacite(fiche.classe)
 
   function classeNom(id: string): string {
     return regles.classes_squelette.liste.find((c) => c.id === id)?.nom ?? id
@@ -110,27 +101,14 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
       }
     }
     if (effet.type === 'capacite') {
-      const cle = String(effet.niveau)
-      let choisis = fiche.capChoix?.[cle] ?? []
-      let troques = fiche.donChoix?.[cle] ?? []
-      // D18 : l'emplacement acheté peut porter un don — il se retire d'abord,
-      // puis les capacités, et chaque perte se nomme.
-      while (choisis.length + troques.length > suiteN && troques.length > 0) {
-        const perdu = troques[troques.length - 1]
-        const nomPerdu = listeDons().find((d) => d.id === perdu)?.nom ?? perdu
-        troques = troques.slice(0, -1)
-        impacts.push(`Ton don « ${nomPerdu} » sera retiré.`)
-      }
-      while (choisis.length + troques.length > suiteN) {
+      const choisis = fiche.capChoix?.[String(effet.niveau)] ?? []
+      if (choisis.length > suiteN) {
+        const capChoix = { ...(fiche.capChoix ?? {}) }
         const perdue = choisis[choisis.length - 1]
         const nomPerdue = capaciteParId(fiche.classe, perdue)?.nom ?? perdue
-        choisis = choisis.slice(0, -1)
+        capChoix[String(effet.niveau)] = choisis.slice(0, suiteN)
+        suite = { ...suite, capChoix }
         impacts.push(`Ta capacité « ${nomPerdue} » sera retirée.`)
-      }
-      suite = {
-        ...suite,
-        capChoix: { ...(fiche.capChoix ?? {}), [cle]: choisis },
-        donChoix: { ...(fiche.donChoix ?? {}), [cle]: troques },
       }
     }
     onChangement({ fiche: suite, retraits: impacts })
@@ -140,25 +118,11 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
     const cle = String(niveau)
     const actuels = fiche.capChoix?.[cle] ?? []
     const droit = compteAchats(fiche.achats, 'capacite', niveau)
-    const troques = (fiche.donChoix?.[cle] ?? []).length
     let suite: string[]
     if (actuels.includes(id)) suite = actuels.filter((c) => c !== id)
-    else if (actuels.length + troques < droit) suite = [...actuels, id]
+    else if (actuels.length < droit) suite = [...actuels, id]
     else return
     onMaj({ ...fiche, capChoix: { ...(fiche.capChoix ?? {}), [cle]: suite } })
-  }
-
-  /** D18 — un don DANS un emplacement de capacité acheté (troc du guerrier). */
-  function basculerDonAchete(niveau: number, id: string) {
-    const cle = String(niveau)
-    const actuels = fiche.donChoix?.[cle] ?? []
-    const droit = compteAchats(fiche.achats, 'capacite', niveau)
-    const capacites = (fiche.capChoix?.[cle] ?? []).length
-    let suite: string[]
-    if (actuels.includes(id)) suite = actuels.filter((c) => c !== id)
-    else if (actuels.length + capacites < droit) suite = [...actuels, id]
-    else return
-    onMaj({ ...fiche, donChoix: { ...(fiche.donChoix ?? {}), [cle]: suite } })
   }
 
   return (
@@ -287,9 +251,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                 <div className="mt-1.5">
                   <p className="my-1 text-sm text-muted-foreground">
                     Choisis {n > 1 ? `${n} capacités` : 'la capacité'} de niveau {effet.niveau} (
-                    {(fiche.capChoix?.[String(effet.niveau)] ?? []).length +
-                      (fiche.donChoix?.[String(effet.niveau)] ?? []).length}
-                    /{n}) :
+                    {(fiche.capChoix?.[String(effet.niveau)] ?? []).length}/{n}) :
                   </p>
                   <div className="flex flex-col">
                     {bassinAchat(fiche, effet.niveau).map((capacite) => {
@@ -307,28 +269,6 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
                       )
                     })}
                   </div>
-                  {/* D18 — le troc du guerrier vaut aussi sur un achat XP :
-                      l'emplacement acheté peut porter un don. */}
-                  {troque && (
-                    <div className="mt-1.5">
-                      <p className="my-1 text-sm text-muted-foreground">
-                        {libelleTrocDuGuerrier()} — {coutDunDonTroque()} XP au lieu de{' '}
-                        {achat.cout_xp}.
-                      </p>
-                      <div className="flex flex-col">
-                        {optionsDeTrocDon(fiche, { achat: effet.niveau })
-                          .filter((option) => !option.indisponible)
-                          .map((option) => (
-                            <CarteDonTroc
-                              key={option.don.id}
-                              don={option.don}
-                              choisi={option.choisi}
-                              onChoisir={() => basculerDonAchete(effet.niveau, option.don.id)}
-                            />
-                          ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
               {effet.type === 'carac' && n > 0 && (

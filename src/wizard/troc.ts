@@ -64,9 +64,6 @@ export function prisesDeDon(fiche: FicheCreation): PriseDeDon[] {
   for (const [cle, id] of Object.entries(fiche.donNiveaux ?? {})) {
     prises.push({ id, niveau: Number(cle) })
   }
-  for (const ids of Object.values(fiche.donChoix ?? {})) {
-    for (const id of ids) prises.push({ id })
-  }
   return prises
 }
 
@@ -101,8 +98,12 @@ export function donsDeLaFiche(fiche: FicheCreation): DonDeFiche[] {
 // Troc « une capacité → un don » (guerrier)
 // ---------------------------------------------------------------------------
 
-/** L'emplacement de capacité qu'on regarde : celui d'un niveau, ou d'un achat. */
-export type EmplacementDeCapacite = { niveau: number } | { achat: number }
+/**
+ * L'emplacement de capacité qu'on regarde. D18-bis : ce sont ceux que la
+ * TABLE D'ÉVOLUTION donne, et eux seuls — un achat d'héritage n'en est pas
+ * un (le catalogue porte déjà « +1 Don », moins cher).
+ */
+export type EmplacementDeCapacite = { niveau: number }
 
 export interface OptionDeDon {
   don: Don
@@ -112,11 +113,6 @@ export interface OptionDeDon {
   raison?: string
   /** Le don que CET emplacement porte. */
   choisi: boolean
-}
-
-/** Les dons pris à la place d'une capacité achetée au niveau N. */
-export function donsDeLAchat(fiche: FicheCreation, niveauAchat: number): string[] {
-  return fiche.donChoix?.[String(niveauAchat)] ?? []
 }
 
 /** Les prises de don qui ne viennent PAS de l'emplacement qu'on regarde. */
@@ -129,12 +125,8 @@ function prisesAilleurs(
     for (let i = 0; i < n; i++) prises.push({ id })
   }
   for (const [cle, id] of Object.entries(fiche.donNiveaux ?? {})) {
-    if ('niveau' in emplacement && cle === String(emplacement.niveau)) continue
+    if (cle === String(emplacement.niveau)) continue
     prises.push({ id, niveau: Number(cle) })
-  }
-  for (const [cle, ids] of Object.entries(fiche.donChoix ?? {})) {
-    if ('achat' in emplacement && cle === String(emplacement.achat)) continue
-    for (const id of ids) prises.push({ id })
   }
   return prises
 }
@@ -150,11 +142,7 @@ export function optionsDeTrocDon(
   emplacement: EmplacementDeCapacite,
 ): OptionDeDon[] {
   const ailleurs = prisesAilleurs(fiche, emplacement)
-  const ici = new Set(
-    'niveau' in emplacement
-      ? [fiche.donNiveaux?.[String(emplacement.niveau)]].filter(Boolean)
-      : donsDeLAchat(fiche, emplacement.achat),
-  )
+  const ici = fiche.donNiveaux?.[String(emplacement.niveau)]
   return listeDons().map((don) => {
     const prise = ailleurs.find((p) => p.id === don.id)
     const indisponible = prise !== undefined && !don.cumulable
@@ -162,7 +150,7 @@ export function optionsDeTrocDon(
       don,
       indisponible,
       raison: indisponible ? raisonDonDejaPris(prise?.niveau) : undefined,
-      choisi: ici.has(don.id),
+      choisi: ici === don.id,
     }
   })
 }
