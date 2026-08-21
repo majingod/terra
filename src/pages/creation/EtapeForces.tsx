@@ -11,7 +11,8 @@ import { useState } from 'react'
 import { repartitionAttendue } from '../../rules/caracs'
 import { totalAchats } from '../../rules/heritage'
 import { getRules } from '../../rules/load'
-import { normaliserNiveau, pointsCaracCumules } from '../../rules/niveau'
+import { pointsCaracCumules } from '../../rules/niveau'
+import { niveauCourant } from '../../wizard/historique'
 import { valeurCarac } from '../../rules/stats'
 import {
   pointsCaracAPlacer,
@@ -68,7 +69,7 @@ export default function EtapeForces({ fiche, onMaj }: Props) {
   const regles = getRules()
   const jetons = repartitionAttendue().sort((a, b) => b - a)
   const max = regles.caracteristiques.creation.max
-  const niveau = normaliserNiveau(fiche.niveau)
+  const niveau = niveauCourant(fiche)
   const pointsHeritage = totalAchats(fiche.achats, 'carac')
   const pointsNiveau = pointsCaracCumules(niveau)
   const pointsEnPlus = pointsCaracAPlacer(fiche)

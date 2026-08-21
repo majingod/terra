@@ -24,6 +24,7 @@ import { effetAchat, listeAchats } from '../../../rules/heritage'
 import { niveauMax, niveauxPossibles } from '../../../rules/niveau'
 import { classeSquelette } from '../../../rules/stats'
 import type { FicheCreation } from '../../../wizard/types'
+import { historiqueJusquA } from '../../../wizard/__tests__/aide-fiche-complete'
 import EtapeCapacites, { texteAide } from '../EtapeCapacites'
 import EtapeDestin from '../EtapeDestin'
 import FicheAffichage from '../FicheAffichage'
@@ -80,11 +81,15 @@ function capNiveauxPanaches(niveau: number): Record<string, string> {
   return capNiveaux
 }
 
+/**
+ * D20 : le niveau d'une fiche vient de son HISTORIQUE (montées + 1) —
+ * `niveau` est un champ d'époque, une fiche témoin qui l'écrirait mentirait.
+ */
 function ficheAuNiveau(niveau: number, remplie = true): FicheCreation {
   return {
     faction: classeSquelette(CLASSE)!.faction,
     classe: CLASSE,
-    niveau,
+    historique: historiqueJusquA(niveau),
     capNiveaux: remplie ? capNiveauxPanaches(niveau) : {},
   }
 }
@@ -401,11 +406,16 @@ describe('D16 — l’étape est bien CÂBLÉE dans le wizard', () => {
     const { default: Creer } = await import('../../Creer')
     const { ETAPES } = await import('../../../wizard/validation')
     const { MemoryRouter } = await import('react-router-dom')
+    const { niveauMin } = await import('../../../rules/niveau')
     const index = ETAPES.findIndex((e) => e.id === 'capacites')
+    // ⚠️ GATE MODIFIÉE PAR D20 : un brouillon est TOUJOURS au niveau de
+    // création — on ne naît plus qu'au niveau 1, et on monte après. Ce que
+    // cette gate garde (l'étape est câblée, pas un écran vide) est intact ;
+    // seul le compte d'emplacements suit la nouvelle règle.
     await db.brouillons.put({
       id: 1,
       etape: index + 1,
-      donnees: { fiche: ficheAuNiveau(2, false) },
+      donnees: { fiche: { ...ficheAuNiveau(niveauMin(), false), historique: undefined } },
       updatedAt: 1,
     })
     render(
@@ -416,7 +426,10 @@ describe('D16 — l’étape est bien CÂBLÉE dans le wizard', () => {
     // Le titre de l'étape ET sa pastille dans le stepper portent le même mot.
     expect((await screen.findAllByText('Tes capacités')).length).toBeGreaterThan(0)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Tes capacités')
-    expect(screen.getAllByText(/^Capacité du niveau \d+$/)).toHaveLength(2)
+    const { niveauMin: bas } = await import('../../../rules/niveau')
+    expect(screen.getAllByText(/^Capacité du niveau \d+$/).map((el) => el.textContent)).toEqual([
+      `Capacité du niveau ${bas()}`,
+    ])
     await db.brouillons.clear()
   })
 })

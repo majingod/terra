@@ -10,9 +10,10 @@ import { capacitesDeBase } from '../../../rules/branches'
 import { capacitesEnfantAcquises, classeEnfant, factionEnfant, getVersionKids, normaliserNiveauEnfant, raceEnfant } from '../../../rules/kids'
 import { languesAcquises } from '../../../rules/langues'
 import { getRules, getVersion } from '../../../rules/load'
-import { normaliserNiveau } from '../../../rules/niveau'
+
 import { classeSquelette, raceDe, valeurCarac } from '../../../rules/stats'
 import { nouvellePersonnageVierge, type Personnage } from '../../../db'
+import { niveauCourant } from '../../../wizard/historique'
 import { capacitesTroquees, donsPris } from '../../../wizard/troc'
 import type { FicheCreation } from '../../../wizard/types'
 
@@ -40,7 +41,9 @@ export function personnageDeLaFiche(fiche: FicheCreation): Omit<Personnage, 'id'
       ...Object.values(fiche.capChoix ?? {}).flat(),
       ...capacitesTroquees(fiche),
     ],
-    niveau: normaliserNiveau(fiche.niveau),
+    // D20 : le niveau écrit est celui que l'historique DÉRIVE — jamais un
+    // champ saisi, exactement comme `Creer.enregistrer`.
+    niveau: niveauCourant(fiche),
     langues: [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])],
     createdAt: maintenant,
     updatedAt: maintenant,

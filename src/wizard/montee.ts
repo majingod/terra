@@ -16,21 +16,22 @@
 import { capacitesEnfantAcquises } from '../rules/kids'
 import { refusDons } from '../rules/talents'
 import { gainsMontee, gainsMonteeEnfant } from '../rules/montee'
-import { normaliserNiveau } from '../rules/niveau'
 import { valeurCarac } from '../rules/stats'
 import type { Don } from '../rules/load'
+import { normaliserNiveau } from '../rules/niveau'
 import type { Personnage } from '../db'
 import { prisesAilleurs, optionsDuNiveau, type OptionDeCapacite } from './capacites'
+import { avecMontee, estAncienneFiche, niveauCourant, niveauDerive } from './historique'
 import {
   donsPris,
   optionsDeTrocCapacite,
   optionsDeTrocDon,
   type OptionDeDon,
 } from './troc'
-import type { FicheCreation } from './types'
+import type { CleCarac, FicheCreation } from './types'
 
 /** Les trois clés de caractéristique, dans l'ordre de la répartition. */
-export type CleCarac = 'p' | 'r' | 'e'
+export type { CleCarac }
 
 // ---------------------------------------------------------------------------
 // Libellés — arbitrés mot pour mot (brief D17 ③)
@@ -94,21 +95,28 @@ function ficheDe(personnage: Personnage): FicheCreation {
   return personnage.creation ?? {}
 }
 
-/** Le niveau que porte la fiche du wizard (à défaut, celui du personnage). */
+/**
+ * Le niveau du personnage — D20 : un fait DÉRIVÉ de son historique (montées
+ * + 1). Une fiche d'avant D20 n'en a pas : son seul niveau est celui, archivé,
+ * de l'enregistrement, que plus rien ne fait bouger.
+ */
 export function niveauDeLaFiche(personnage: Personnage): number {
-  return normaliserNiveau(personnage.creation?.niveau ?? personnage.niveau)
+  return niveauDerive(personnage.creation) ?? normaliserNiveau(personnage.niveau)
 }
 
 /**
- * La fiche telle que la montée la ferait : l'échelon atteint devient le
- * niveau du personnage, et la capacité posée (s'il y en a une) occupe son
- * emplacement. C'est elle qu'on montre — et, une fois confirmée, elle qu'on
- * écrit.
+ * La fiche telle que la montée la ferait : l'échelon atteint s'ajoute à
+ * l'historique — c'est de LUI que le niveau se dérive (D20) — et la capacité
+ * posée (s'il y en a une) occupe son emplacement. C'est elle qu'on montre.
+ *
+ * L'aperçu n'est jamais écrit : sa date est celle que l'appelant donne, et
+ * `miseAJourMontee` refait l'entrée avec l'horodatage de la confirmation.
  */
 export function ficheDeLaMontee(
   personnage: Personnage,
   niveauAtteint: number,
   choix: ChoixMontee = {},
+  maintenant = 0,
 ): FicheCreation {
   const fiche = ficheDe(personnage)
   const capNiveaux = { ...(fiche.capNiveaux ?? {}) }
@@ -118,7 +126,13 @@ export function ficheDeLaMontee(
   if (choix.donTroque) donNiveaux[String(niveauAtteint)] = choix.donTroque
   const capDons = { ...(fiche.capDons ?? {}) }
   if (choix.capTroquee) capDons[String(niveauAtteint)] = choix.capTroquee
-  return { ...fiche, niveau: niveauAtteint, capNiveaux, donNiveaux, capDons }
+  return {
+    ...fiche,
+    historique: avecMontee(fiche, niveauAtteint, maintenant),
+    capNiveaux,
+    donNiveaux,
+    capDons,
+  }
 }
 
 /**
@@ -227,6 +241,12 @@ export function miseAJourMontee(
   }
   const gains = gainsMontee(niveauAtteint)
   const fiche = ficheDe(personnage)
+  // D20 : une fiche d'avant l'historique ne monte pas — elle se refait.
+  if (estAncienneFiche(fiche)) {
+    throw new Error(
+      'Montée refusée — cette fiche vient d’une version précédente du jeu : il faut la refaire.',
+    )
+  }
 
   // D18 : l'emplacement de capacité de l'échelon reçoit une capacité ou un don.
   const capNiveaux = { ...(fiche.capNiveaux ?? {}) }
@@ -243,13 +263,18 @@ export function miseAJourMontee(
   }
 
   const extras = { p: 0, r: 0, e: 0, ...(fiche.extras ?? {}) }
+  // D20 : les points que CET échelon donne sont datés dans l'historique, avec
+  // la caractéristique qui les reçoit — c'est ce qui rend le niveau
+  // d'acquisition retrouvable (D19 lot 3).
+  const caracsDeLEchelon: Partial<Record<CleCarac, number>> = {}
   if (gains.caracPoints > 0) {
     extras[choix.carac!] = extras[choix.carac!] + gains.caracPoints
+    caracsDeLEchelon[choix.carac!] = gains.caracPoints
   }
 
   const creation: FicheCreation = {
     ...fiche,
-    niveau: niveauAtteint,
+    historique: avecMontee(fiche, niveauAtteint, maintenant, caracsDeLEchelon),
     capNiveaux,
     donNiveaux,
     capDons,
@@ -264,7 +289,10 @@ export function miseAJourMontee(
     (id): id is string => id !== undefined,
   )
   return {
-    niveau: niveauAtteint,
+    // ⛔ Le niveau écrit sur l'enregistrement est le niveau DÉRIVÉ de
+    // l'historique qu'on vient d'écrire : deux sources qui pourraient
+    // diverger, c'est le trou de D19.
+    niveau: niveauCourant(creation),
     capacites: [...personnage.capacites, ...capacitesGagnees],
     dons: Object.keys(donsPris(creation)),
     caracs: {

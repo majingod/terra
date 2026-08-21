@@ -20,6 +20,7 @@ import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
 import { consommationDons, droitCompetences, droitDons } from '../../rules/talents'
 import { bassinAchat, capaciteParId } from '../../wizard/capacites'
+import { niveauCourant } from '../../wizard/historique'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
 import { CarteCapacite } from './SelecteurCapacites'
@@ -83,13 +84,13 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
     const impacts: string[] = []
     const effet = effetAchat(achat.achat)
     if (effet.type === 'don') {
-      const droit = droitDons(valeurCarac(fiche, 'e'), achats, fiche.niveau)
+      const droit = droitDons(valeurCarac(fiche, 'e'), achats, niveauCourant(fiche))
       if (consommationDons(fiche.dons ?? {}) > droit) {
         impacts.push(`Tu as déjà choisi tes dons : il faudra en retirer 1 à l'étape Talents.`)
       }
     }
     if (effet.type === 'competence') {
-      if ((fiche.comps ?? []).length > droitCompetences(achats, fiche.niveau)) {
+      if ((fiche.comps ?? []).length > droitCompetences(achats, niveauCourant(fiche))) {
         impacts.push(
           `Tu as déjà choisi tes compétences : il faudra en retirer 1 à l'étape Talents.`,
         )

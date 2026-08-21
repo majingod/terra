@@ -24,9 +24,21 @@ interface PastillesProps {
   onAller: (index: number) => void
   /** Barre de progression au-dessus des pastilles (flux du Tome). */
   barre?: boolean
+  /**
+   * Fil FIGÉ (D20) : la fiche est créée, plus rien ne ramène à une étape.
+   * Les pastilles restent lisibles, elles ne se touchent plus.
+   */
+  fige?: boolean
 }
 
-export default function Pastilles({ etapes, valides, etape, onAller, barre }: PastillesProps) {
+export default function Pastilles({
+  etapes,
+  valides,
+  etape,
+  onAller,
+  barre,
+  fige,
+}: PastillesProps) {
   return (
     <nav aria-label="Étapes de création" className="pb-1">
       <div className="flex justify-between px-1 font-sans text-sm text-muted-foreground">
@@ -43,9 +55,11 @@ export default function Pastilles({ etapes, valides, etape, onAller, barre }: Pa
           />
         </div>
       )}
-      <ol className="flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none]">
+      {/* D20 : les pastilles s'ENROULENT. ⛔ Jamais d'`overflow-x` ici — une
+          rangée qui défile cache des pastilles sans le dire. */}
+      <ol className="m-0 flex list-none flex-wrap gap-2 p-0 px-1 py-1">
         {etapes.map((definition, index) => {
-          const accessible = valides.slice(0, index).every(Boolean)
+          const accessible = !fige && valides.slice(0, index).every(Boolean)
           const courante = index === etape
           const faite = valides[index] && index < etape
           return (
@@ -61,7 +75,7 @@ export default function Pastilles({ etapes, valides, etape, onAller, barre }: Pa
                     : faite
                       ? 'border-chart-4/50 bg-card/50 backdrop-blur-sm text-foreground'
                       : 'border-border/50 bg-card/50 backdrop-blur-sm text-muted-foreground'
-                } ${!accessible ? 'opacity-45' : ''}`}
+                } ${!accessible && !fige ? 'opacity-45' : ''}`}
               >
                 <span
                   aria-hidden
@@ -75,7 +89,7 @@ export default function Pastilles({ etapes, valides, etape, onAller, barre }: Pa
                 >
                   {faite ? '✓' : (definition.icone ?? index + 1)}
                 </span>
-                {!accessible && (
+                {!accessible && !fige && (
                   <span role="img" aria-label="verrouillée" className="text-[10px]">
                     🔒
                   </span>

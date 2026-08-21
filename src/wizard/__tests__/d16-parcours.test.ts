@@ -13,12 +13,12 @@ import { classesPourFaction } from '../../rules/stats'
 import {
   ETAPES,
   changerClasse,
-  changerNiveau,
   etapeValide,
   problemesCapacites,
   problemesClasse,
 } from '../validation'
 import type { FicheCreation } from '../types'
+import { historiqueJusquA } from './aide-fiche-complete'
 
 const CLASSE = classesAvecBranches()[0].classe_id
 const VOIES = branchesDe(CLASSE)
@@ -35,8 +35,17 @@ function capNiveaux(niveau: number): Record<string, string> {
   return choix
 }
 
+/**
+ * D20 : le niveau d'une fiche vient de son HISTORIQUE — `niveau` est un champ
+ * d'époque, et une fiche témoin qui l'écrirait mentirait.
+ */
 function fiche(niveau: number): FicheCreation {
-  return { faction: FACTION, classe: CLASSE, niveau, capNiveaux: capNiveaux(niveau) }
+  return {
+    faction: FACTION,
+    classe: CLASSE,
+    historique: historiqueJusquA(niveau),
+    capNiveaux: capNiveaux(niveau),
+  }
 }
 
 describe('D16 — l’étape « Tes capacités » dans le parcours', () => {
@@ -58,7 +67,13 @@ describe('D16 — l’étape « Tes capacités » dans le parcours', () => {
   })
 
   it('« Tes capacités » n’est valide que remplie', () => {
-    expect(etapeValide({ faction: FACTION, classe: CLASSE, niveau: HAUT }, 'capacites')).toBe(false)
+    expect(
+      etapeValide(
+        { faction: FACTION, classe: CLASSE, historique: historiqueJusquA(HAUT) },
+        'capacites',
+      ),
+      'un emplacement vide interdit de quitter l’étape',
+    ).toBe(false)
     expect(etapeValide(fiche(HAUT), 'capacites')).toBe(true)
   })
 
@@ -67,8 +82,8 @@ describe('D16 — l’étape « Tes capacités » dans le parcours', () => {
     const problemes = problemesCapacites({
       faction: FACTION,
       classe: CLASSE,
-      niveau: 1,
-      capNiveaux: { '1': trop.id },
+      historique: historiqueJusquA(BAS),
+      capNiveaux: { [String(BAS)]: trop.id },
     })
     expect(problemes.some((p) => p.includes(trop.nom))).toBe(true)
   })
@@ -89,19 +104,19 @@ describe('D16 — les chemins de retour', () => {
     expect(retraits.filter((r) => r.includes('capacité'))).toEqual([])
   })
 
-  it('baisser le niveau vide les emplacements en trop, chacun nommé', () => {
-    const { fiche: suite, retraits } = changerNiveau(fiche(HAUT), BAS)
-    expect(Object.keys(suite.capNiveaux ?? {})).toEqual([String(BAS)])
-    const perdues = HAUT - BAS
-    expect(retraits.filter((r) => r.includes('emplacement'))).toHaveLength(perdues)
-  })
-
-  it('jumelle : monter de niveau ne retire AUCUNE capacité — il en ouvre', () => {
-    const { fiche: suite, retraits } = changerNiveau(fiche(BAS), HAUT)
-    expect(Object.keys(suite.capNiveaux ?? {})).toEqual([String(BAS)])
-    expect(retraits.filter((r) => r.includes('capacité'))).toEqual([])
-    // Les emplacements ouverts restent à remplir : l'étape n'est pas valide.
-    expect(etapeValide(suite, 'capacites')).toBe(false)
+  /**
+   * ⚠️ GATE MODIFIÉE PAR D20. Les deux chemins de retour « baisser le niveau »
+   * et « monter de niveau » gardaient un niveau SAISI à la création. D20 le
+   * supprime : on naît au niveau 1, on monte ensuite, un échelon à la fois —
+   * `changerNiveau` n'a plus d'objet et a été retiré. Ce qui reste vrai, et
+   * qui est gardé ici : le nombre d'emplacements suit l'historique, et une
+   * fiche à qui il manque un emplacement n'est pas valide.
+   */
+  it('D20 — les emplacements suivent l’historique, jamais un champ saisi', () => {
+    const menteuse: FicheCreation = { ...fiche(BAS), niveau: HAUT }
+    // Un seul emplacement, celui du niveau de création : le champ ne peut rien.
+    expect(problemesCapacites(menteuse)).toEqual([])
+    expect(etapeValide(menteuse, 'capacites')).toBe(true)
   })
 
   it('la validation d’ensemble refuse une fiche dont un emplacement manque', () => {
