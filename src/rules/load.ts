@@ -164,6 +164,12 @@ export interface ClasseSquelette {
   branches: string[]
   code?: string
   echange?: string
+  /**
+   * D18 — le sens du troc de la classe, quand elle en a un : le champ dit
+   * QUOI s'échange contre quoi, la logique n'a donc jamais à connaître un id
+   * de classe. Ses deux valeurs sont nommées dans src/rules/troc.ts.
+   */
+  troc?: string
   focus_requis?: string
   ressource_speciale?: { nom: string; verbatim: string; max?: number }
 }

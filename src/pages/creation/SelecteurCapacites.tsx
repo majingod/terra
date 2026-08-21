@@ -10,9 +10,11 @@
  * qu'on lui donne (`optionsDuNiveau`, qui s'appuie sur `capacitesDisponibles`
  * et l'anti-doublon global).
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { CapaciteDeVoie } from '../../rules/capacites'
+import type { Don } from '../../rules/load'
 import type { OptionDeCapacite } from '../../wizard/capacites'
+import type { OptionDeDon } from '../../wizard/troc'
 import { Badge, TexteRegle } from './ui'
 
 /** Les options d'un emplacement, regroupées par voie, dans l'ordre de l'arbre. */
@@ -85,15 +87,65 @@ export function CarteCapacite({
   )
 }
 
-/** Une capacité déjà prise ailleurs : rayée, sans description, insensible au toucher. */
-function CarteDejaPrise({ nom }: { nom: string }) {
+/**
+ * Une carte indisponible : rayée, sans description, insensible au toucher.
+ * `raison` dit POURQUOI quand ce n'est pas « déjà choisie » — D18 s'en sert
+ * pour le plafond du troc et pour un don non cumulable déjà pris.
+ */
+function CarteIndisponible({ nom, raison }: { nom: string; raison?: string }) {
   return (
     <div className="my-1.5 flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-2.5 opacity-45">
       <b className="font-titre text-[17px] line-through">{nom}</b>
-      <span className="ml-auto flex-none text-[13.5px] italic text-muted-foreground">
-        déjà choisie
+      <span className="ml-auto flex-none text-right text-[13.5px] italic text-muted-foreground">
+        {raison ?? 'déjà choisie'}
       </span>
     </div>
+  )
+}
+
+/**
+ * La carte d'un DON offert dans un emplacement de capacité (D18, troc du
+ * guerrier) : mêmes gestes et même peau que `CarteCapacite` — texte complet,
+ * contour orangé au choix, retoucher désélectionne. Le badge dit « don »
+ * plutôt qu'un échelon : un don n'en a pas.
+ */
+export function CarteDonTroc({
+  don,
+  choisi,
+  onChoisir,
+}: {
+  don: Don
+  choisi: boolean
+  onChoisir: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={choisi}
+      onClick={onChoisir}
+      className={`my-1.5 block min-h-touch w-full rounded-lg border p-2.5 text-left transition-all duration-300 ${
+        choisi
+          ? 'border-2 border-primary bg-primary/[0.08] glow-gold'
+          : 'border-border/50 bg-muted/40'
+      }`}
+    >
+      <span className="flex items-center gap-2">
+        <b className={`font-titre text-[17px] ${choisi ? 'text-gold' : ''}`}>{don.nom}</b>
+        <span className="ml-auto flex flex-none items-center gap-1.5">
+          <Badge>don</Badge>
+          {don.cumulable && <Badge>cumulable</Badge>}
+          {choisi && (
+            <span
+              aria-hidden
+              className="coche-or flex h-6 w-6 flex-none items-center justify-center rounded-full text-[13px] text-primary-foreground"
+            >
+              ✓
+            </span>
+          )}
+        </span>
+      </span>
+      <TexteRegle source={don} />
+    </button>
   )
 }
 
@@ -112,12 +164,15 @@ function AccordeonVoie({
   ouverte,
   onBasculer,
   onChoisir,
+  pastille,
 }: {
   voieNom: string
   options: OptionDeCapacite[]
   ouverte: boolean
   onBasculer: () => void
   onChoisir: (id: string) => void
+  /** Ce que porte la pastille de droite — par défaut, le compte choisissable. */
+  pastille?: ReactNode
 }) {
   const choisissables = options.filter((option) => !option.dejaPrise).length
   const choix = options.find((option) => option.choisie)
@@ -147,14 +202,18 @@ function AccordeonVoie({
           </span>
         )}
         <span className="ml-auto flex-none">
-          <Badge>{choisissables}</Badge>
+          <Badge>{pastille ?? choisissables}</Badge>
         </span>
       </button>
       {ouverte && (
         <div className="border-t border-border/40 px-3 pb-2.5 pt-1">
           {options.map((option) =>
             option.dejaPrise ? (
-              <CarteDejaPrise key={option.capacite.id} nom={option.capacite.nom} />
+              <CarteIndisponible
+                key={option.capacite.id}
+                nom={option.capacite.nom}
+                raison={option.raison}
+              />
             ) : (
               <CarteCapacite
                 key={option.capacite.id}
@@ -171,17 +230,104 @@ function AccordeonVoie({
 }
 
 /**
+ * D18 — l'accordéon de troc : UNE VOIE DE PLUS sous les vraies voies, mêmes
+ * gestes, même pastille de compte. Elle offre des dons au lieu de capacités ;
+ * un don non cumulable déjà pris s'y montre éteint, avec sa raison.
+ */
+function AccordeonTroc({
+  titre,
+  options,
+  ouverte,
+  onBasculer,
+  onChoisir,
+}: {
+  titre: string
+  options: OptionDeDon[]
+  ouverte: boolean
+  onBasculer: () => void
+  onChoisir: (id: string) => void
+}) {
+  const choisissables = options.filter((option) => !option.indisponible).length
+  const choix = options.find((option) => option.choisi)
+  return (
+    <div className="my-2 overflow-hidden rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm">
+      <button
+        type="button"
+        aria-expanded={ouverte}
+        onClick={onBasculer}
+        className="flex min-h-touch w-full items-center gap-2 px-3 py-2.5 text-left"
+      >
+        <span
+          aria-hidden
+          className={`flex-none text-muted-foreground transition-transform duration-200 ${
+            ouverte ? 'rotate-90' : ''
+          }`}
+        >
+          ▸
+        </span>
+        <h4 className="m-0 font-titre text-[15px] font-semibold uppercase tracking-wide text-gold">
+          {titre}
+        </h4>
+        {choix && (
+          <span className="flex min-w-0 items-center gap-1.5 text-[14px] text-muted-foreground">
+            <span aria-hidden className="h-2 w-2 flex-none rounded-full bg-primary" />
+            <span className="truncate">{choix.don.nom}</span>
+          </span>
+        )}
+        <span className="ml-auto flex-none">
+          <Badge>{choisissables}</Badge>
+        </span>
+      </button>
+      {ouverte && (
+        <div className="border-t border-border/40 px-3 pb-2.5 pt-1">
+          {options.map((option) =>
+            option.indisponible ? (
+              <CarteIndisponible
+                key={option.don.id}
+                nom={option.don.nom}
+                raison={option.raison}
+              />
+            ) : (
+              <CarteDonTroc
+                key={option.don.id}
+                don={option.don}
+                choisi={option.choisi}
+                onChoisir={() => onChoisir(option.don.id)}
+              />
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Ce qu'un emplacement offre en troc (D18) — absent quand la classe n'en a pas. */
+export interface TrocDeLEmplacement {
+  titre: string
+  options: OptionDeDon[]
+  onChoisir: (id: string) => void
+}
+
+/**
  * Les trois voies d'un emplacement, en accordéons repliés par défaut. Les
  * voies ouvertes sont un état LOCAL : remonter le composant (une `key` par
  * emplacement) les replie, comme la maquette le demande à chaque changement
  * d'emplacement.
+ *
+ * D18 : quand la classe troque ses capacités contre des dons, `troc` ajoute
+ * une voie de plus SOUS les vraies voies. Le choix reste unique pour
+ * l'emplacement, toutes voies confondues — c'est l'appelant qui le tient,
+ * comme il tenait déjà l'exclusivité entre les trois voies.
  */
 export default function SelecteurCapacites({
   options,
   onChoisir,
+  troc,
 }: {
   options: OptionDeCapacite[]
   onChoisir: (id: string) => void
+  troc?: TrocDeLEmplacement
 }) {
   const [voiesOuvertes, setVoiesOuvertes] = useState<Set<string>>(new Set())
 
@@ -203,6 +349,59 @@ export default function SelecteurCapacites({
           options={groupe.options}
           ouverte={voiesOuvertes.has(groupe.voieId)}
           onBasculer={() => basculerVoie(groupe.voieId)}
+          onChoisir={onChoisir}
+        />
+      ))}
+      {troc && (
+        <AccordeonTroc
+          titre={troc.titre}
+          options={troc.options}
+          ouverte={voiesOuvertes.has(TROC)}
+          onBasculer={() => basculerVoie(TROC)}
+          onChoisir={troc.onChoisir}
+        />
+      )}
+    </>
+  )
+}
+
+/** Clé d'ouverture de la voie de troc — elle n'a pas d'id de voie à elle. */
+const TROC = '\u0000troc'
+
+/**
+ * D18 — le troc du mage : sous les dons, les voies de la classe en
+ * accordéons. Maquette D18 v1 écran B : l'en-tête porte le LIBELLÉ du troc
+ * (« ✦ Troc du mage — une capacité ≤ niv N »), un par voie, et la pastille
+ * porte le nom de la voie. Les capacités au-dessus du plafond s'y montrent
+ * éteintes avec leur raison, plutôt que d'être escamotées.
+ */
+export function SelecteurTrocDeDon({
+  titre,
+  options,
+  onChoisir,
+}: {
+  titre: string
+  options: OptionDeCapacite[]
+  onChoisir: (id: string) => void
+}) {
+  const [voiesOuvertes, setVoiesOuvertes] = useState<Set<string>>(new Set())
+  return (
+    <>
+      {groupesParVoie(options).map((groupe) => (
+        <AccordeonVoie
+          key={groupe.voieId}
+          voieNom={titre}
+          pastille={groupe.voieNom}
+          options={groupe.options}
+          ouverte={voiesOuvertes.has(groupe.voieId)}
+          onBasculer={() =>
+            setVoiesOuvertes((precedent) => {
+              const suite = new Set(precedent)
+              if (suite.has(groupe.voieId)) suite.delete(groupe.voieId)
+              else suite.add(groupe.voieId)
+              return suite
+            })
+          }
           onChoisir={onChoisir}
         />
       ))}

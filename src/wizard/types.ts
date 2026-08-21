@@ -67,6 +67,23 @@ export interface FicheCreation {
    * n'accepte qu'une capacité de niveau ≤ k, jamais deux fois la même.
    */
   capNiveaux?: Record<string, string>
+  /**
+   * D18 (troc du guerrier) : le DON pris à la place de la capacité du niveau
+   * k — niveau (clé texte, comme capNiveaux) -> id du don. Un emplacement
+   * porte l'un ou l'autre, jamais les deux : c'est le même emplacement, avec
+   * un autre contenu. La provenance reste donc lisible dans les données
+   * stockées — un don rangé ici vient d'un emplacement de capacité.
+   */
+  donNiveaux?: Record<string, string>
+  /** D18 : le don pris à la place d'une capacité ACHETÉE — niveau -> ids. */
+  donChoix?: Record<string, string[]>
+  /**
+   * D18 (troc du mage) : la CAPACITÉ prise à la place du don que la table
+   * d'évolution donne à l'échelon N — échelon (clé texte) -> id de la
+   * capacité, de niveau ≤ N. Une capacité rangée ici vient d'un emplacement
+   * de don.
+   */
+  capDons?: Record<string, string>
   nom?: string
   histoire?: string
   reglesVersion?: string

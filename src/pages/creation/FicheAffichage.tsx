@@ -21,8 +21,8 @@ import {
 import { languesAcquises, listeLangues } from '../../rules/langues'
 import { getRules } from '../../rules/load'
 import { classeSquelette, raceDe, statsDe, valeurCarac } from '../../rules/stats'
-import { listeDons } from '../../rules/talents'
 import { capacitesDeLaFiche } from '../../wizard/capacites'
+import { donsDeLaFiche } from '../../wizard/troc'
 import { texteVersionRegles } from '../../wizard/fiche'
 import type { FicheCreation } from '../../wizard/types'
 import { LigneCapacite } from './EtapeCapacites'
@@ -71,13 +71,13 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
   const niveau = normaliserNiveau(fiche.niveau)
   const capacites = capacitesDeLaFiche(fiche)
   const stats = statsDe(fiche)
-  const dons = listeDons()
+  const dons = donsDeLaFiche(fiche)
   const desavantages = listeDesavantages()
   const plafond = plafondDesavantagesXp()
   const langues = [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])].map(
     (id) => listeLangues().find((l) => l.id === id)?.nom ?? id,
   )
-  const depense = depenseXp(fiche.achats)
+  const depense = depenseXp(fiche.achats, fiche.donChoix)
   const comps = fiche.comps ?? []
   const simples = regles.competences.simples
   const artisanats = regles.competences.artisanats.liste
@@ -185,18 +185,16 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
               verbatim={capacite.verbatim}
             />
           ))}
-          {Object.entries(fiche.dons ?? {}).map(([id, n]) => {
-            const don = dons.find((d) => d.id === id)
-            if (!don) return null
-            return (
-              <Acquis
-                key={id}
-                nom={`${don.nom}${n > 1 ? ` ×${n}` : ''}`}
-                badge="don"
-                verbatim={don.verbatim}
-              />
-            )
-          })}
+          {/* D18 : les dons troqués se rangent ici comme les autres — la
+              fiche et l'impression ne font aucune différence artificielle. */}
+          {dons.map(({ don, n }) => (
+            <Acquis
+              key={don.id}
+              nom={`${don.nom}${n > 1 ? ` ×${n}` : ''}`}
+              badge="don"
+              verbatim={don.verbatim}
+            />
+          ))}
           {comps.map((id) => (
             <Acquis key={id} nom={nomComp(id)} badge="compétence" />
           ))}

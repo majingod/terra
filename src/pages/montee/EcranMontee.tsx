@@ -17,6 +17,10 @@ import { getRules } from '../../rules/load'
 import { valeurCarac } from '../../rules/stats'
 import { listeDons } from '../../rules/talents'
 import { gainsMontee } from '../../rules/montee'
+import {
+  prendUnDonAuLieuDUneCapacite,
+  prendUneCapaciteAuLieuDUnDon,
+} from '../../rules/troc'
 import type { Personnage } from '../../db'
 import {
   choixComplet,
@@ -26,11 +30,14 @@ import {
   libelleConfirmer,
   libelleMonter,
   optionsDeLaMontee,
+  optionsDeTrocDeLaMontee,
+  optionsDeTrocDeDonDeLaMontee,
   type ChoixMontee,
   type CleCarac,
 } from '../../wizard/montee'
+import { libelleTrocDuGuerrier, libelleTrocDuMage } from '../../wizard/troc'
 import { CARACS } from '../creation/EtapeForces'
-import SelecteurCapacites from '../creation/SelecteurCapacites'
+import SelecteurCapacites, { SelecteurTrocDeDon } from '../creation/SelecteurCapacites'
 import { CarteDon } from '../creation/SelecteurDons'
 
 /** Une carte de gain : son titre, ce qu'elle demande. */
@@ -75,6 +82,26 @@ export default function EcranMontee({
     setChoix((precedent) => ({
       ...precedent,
       capacite: precedent.capacite === id ? undefined : id,
+      // D18 : l'emplacement porte l'un OU l'autre.
+      donTroque: undefined,
+    }))
+  }
+
+  /** D18 — un don DANS l'emplacement de capacité (troc du guerrier). */
+  function choisirDonTroque(id: string) {
+    setChoix((precedent) => ({
+      ...precedent,
+      capacite: undefined,
+      donTroque: precedent.donTroque === id ? undefined : id,
+    }))
+  }
+
+  /** D18 — une capacité DANS l'emplacement de don (troc du mage). */
+  function choisirCapaciteTroquee(id: string) {
+    setChoix((precedent) => ({
+      ...precedent,
+      don: undefined,
+      capTroquee: precedent.capTroquee === id ? undefined : id,
     }))
   }
 
@@ -129,10 +156,22 @@ export default function EcranMontee({
               key={don.id}
               don={don}
               n={choix.don === don.id ? 1 : 0}
-              plein={choix.don !== undefined || !donPrenable(personnage, don)}
+              plein={
+                choix.don !== undefined ||
+                choix.capTroquee !== undefined ||
+                !donPrenable(personnage, don)
+              }
               onMaj={choisirDon}
             />
           ))}
+          {/* D18 — le troc du mage : sous les dons, les voies de la classe. */}
+          {prendUneCapaciteAuLieuDUnDon(personnage.creation?.classe) && (
+            <SelecteurTrocDeDon
+              titre={libelleTrocDuMage(niveauAtteint)}
+              options={optionsDeTrocDeDonDeLaMontee(personnage, niveauAtteint, choix)}
+              onChoisir={choisirCapaciteTroquee}
+            />
+          )}
         </CarteGain>
       )}
 
@@ -140,6 +179,15 @@ export default function EcranMontee({
         <SelecteurCapacites
           options={optionsDeLaMontee(personnage, niveauAtteint, choix)}
           onChoisir={choisirCapacite}
+          troc={
+            prendUnDonAuLieuDUneCapacite(personnage.creation?.classe)
+              ? {
+                  titre: libelleTrocDuGuerrier(),
+                  options: optionsDeTrocDeLaMontee(personnage, niveauAtteint, choix),
+                  onChoisir: choisirDonTroque,
+                }
+              : undefined
+          }
         />
       </CarteGain>
 

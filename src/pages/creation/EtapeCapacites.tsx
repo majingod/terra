@@ -16,12 +16,15 @@
  */
 import { useState } from 'react'
 import { niveauMax } from '../../rules/niveau'
+import { listeDons } from '../../rules/talents'
+import { prendUnDonAuLieuDUneCapacite } from '../../rules/troc'
 import {
   capaciteParId,
   niveauxDeLaFiche,
   optionsDuNiveau,
   type CapaciteDeFiche,
 } from '../../wizard/capacites'
+import { libelleTrocDuGuerrier, optionsDeTrocDon } from '../../wizard/troc'
 import type { FicheCreation } from '../../wizard/types'
 import SelecteurCapacites from './SelecteurCapacites'
 import { Badge, Note, TexteRegle, Tutoriel } from './ui'
@@ -71,25 +74,48 @@ export function texteAide(niveauDuChoix: number, plafond: number): string {
   return `${premiere} Les capacités de niveau ${suivant} à ${plafond} t'attendent aux prochains niveaux.`
 }
 
+/** Le nom d'un don rangé dans un emplacement de capacité (D18). */
+export function LigneDon({ nom, cumulable }: { nom: string; cumulable?: boolean }) {
+  return (
+    <span className="flex flex-wrap items-baseline gap-x-2">
+      <b className="text-[17px]">{nom}</b>
+      <Badge>don</Badge>
+      {cumulable && <Badge>cumulable</Badge>}
+    </span>
+  )
+}
+
 export default function EtapeCapacites({ fiche, onMaj }: Props) {
   const niveaux = niveauxDeLaFiche(fiche)
-  const premierVide = niveaux.find((niveau) => !fiche.capNiveaux?.[String(niveau)])
+  const troque = prendUnDonAuLieuDUneCapacite(fiche.classe)
+  const premierVide = niveaux.find(
+    (niveau) => !fiche.capNiveaux?.[String(niveau)] && !fiche.donNiveaux?.[String(niveau)],
+  )
   const [ouvertBrut, setOuvert] = useState<number | null>(null)
   const ouvert = ouvertBrut ?? premierVide ?? null
   const plafond = niveauMax()
 
-  /** Retoucher la carte déjà choisie désélectionne — l'emplacement revient vide. */
-  function choisir(niveau: number, id: string) {
-    const actuel = fiche.capNiveaux?.[String(niveau)]
+  /**
+   * Pose un choix dans l'emplacement du niveau k. D18 : l'emplacement porte
+   * une capacité OU un don — poser l'un retire l'autre, et retoucher le choix
+   * courant le désélectionne.
+   */
+  function poser(niveau: number, id: string, don: boolean) {
+    const cle = String(niveau)
+    const actuel = don ? fiche.donNiveaux?.[cle] : fiche.capNiveaux?.[cle]
     const capNiveaux = { ...(fiche.capNiveaux ?? {}) }
-    if (actuel === id) {
-      delete capNiveaux[String(niveau)]
-    } else {
-      capNiveaux[String(niveau)] = id
+    const donNiveaux = { ...(fiche.donNiveaux ?? {}) }
+    delete capNiveaux[cle]
+    delete donNiveaux[cle]
+    if (actuel !== id) {
+      if (don) donNiveaux[cle] = id
+      else capNiveaux[cle] = id
     }
-    onMaj({ ...fiche, capNiveaux })
+    onMaj({ ...fiche, capNiveaux, donNiveaux })
     if (actuel === id) return
-    const suivant = niveaux.find((n) => n !== niveau && !capNiveaux[String(n)])
+    const suivant = niveaux.find(
+      (n) => n !== niveau && !capNiveaux[String(n)] && !donNiveaux[String(n)],
+    )
     setOuvert(suivant ?? null)
   }
 
@@ -107,6 +133,9 @@ export default function EtapeCapacites({ fiche, onMaj }: Props) {
           'Touche une voie pour l’ouvrir et voir ses capacités, texte complet.',
           'Une capacité déjà prise ailleurs est rayée — jamais deux fois la même.',
           'Retoucher la carte choisie la désélectionne ; « Changer » rouvre un emplacement rempli.',
+          ...(troque
+            ? ['Sous les voies, ta classe ouvre une voie de plus : un don à la place de la capacité.']
+            : []),
         ]}
         pourquoi="la voie n'est pas un enclos : elle nomme la capacité, elle ne t'enferme pas."
       />
@@ -114,6 +143,9 @@ export default function EtapeCapacites({ fiche, onMaj }: Props) {
       {niveaux.map((niveau) => {
         const id = fiche.capNiveaux?.[String(niveau)]
         const capacite = id ? capaciteParId(fiche.classe, id) : undefined
+        const donId = fiche.donNiveaux?.[String(niveau)]
+        const don = donId ? listeDons().find((d) => d.id === donId) : undefined
+        const rempli = capacite !== undefined || don !== undefined
         const estOuvert = ouvert === niveau
         return (
           <div key={niveau} className="carte-choix my-2 rounded-lg border border-border/50 bg-card/50 p-3.5 backdrop-blur-sm">
@@ -121,7 +153,7 @@ export default function EtapeCapacites({ fiche, onMaj }: Props) {
               <h3 className="m-0 font-sans text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Capacité du niveau {niveau}
               </h3>
-              {capacite && !estOuvert && (
+              {rempli && !estOuvert && (
                 <button
                   type="button"
                   className="subsel-btn max-w-[8rem] flex-none"
@@ -139,7 +171,14 @@ export default function EtapeCapacites({ fiche, onMaj }: Props) {
               </div>
             )}
 
-            {!capacite && !estOuvert && (
+            {don && !estOuvert && (
+              <div className="mt-1">
+                <LigneDon nom={don.nom} cumulable={don.cumulable} />
+                <TexteRegle source={don} />
+              </div>
+            )}
+
+            {!rempli && !estOuvert && (
               <button
                 type="button"
                 className="subsel-btn mt-2 w-full"
@@ -156,7 +195,16 @@ export default function EtapeCapacites({ fiche, onMaj }: Props) {
                 <SelecteurCapacites
                   key={niveau}
                   options={optionsDuNiveau(fiche, niveau)}
-                  onChoisir={(id) => choisir(niveau, id)}
+                  onChoisir={(id) => poser(niveau, id, false)}
+                  troc={
+                    troque
+                      ? {
+                          titre: libelleTrocDuGuerrier(),
+                          options: optionsDeTrocDon(fiche, { niveau }),
+                          onChoisir: (id) => poser(niveau, id, true),
+                        }
+                      : undefined
+                  }
                 />
                 <Note>{texteAide(niveau, plafond)}</Note>
               </div>

@@ -12,7 +12,6 @@ import { valeurCarac } from '../../rules/stats'
 import {
   artisanatsChoisis,
   artisanatsPour,
-  consommationDons,
   droitCompetences,
   droitDons,
   listeCompetencesSimples,
@@ -21,8 +20,17 @@ import {
 } from '../../rules/talents'
 import { compteAchats } from '../../rules/heritage'
 import { donsCumules, normaliserNiveau } from '../../rules/niveau'
-import { surplusCompetences, surplusDons, type Changement } from '../../wizard/validation'
+import { echelonsDeDon, prendUneCapaciteAuLieuDUnDon } from '../../rules/troc'
+import { prisesAilleurs } from '../../wizard/capacites'
+import {
+  consommationDonsDeLaFiche,
+  surplusCompetences,
+  surplusDons,
+  type Changement,
+} from '../../wizard/validation'
+import { libelleTrocDuMage, optionsDeTrocCapacite } from '../../wizard/troc'
 import type { FicheCreation } from '../../wizard/types'
+import { SelecteurTrocDeDon } from './SelecteurCapacites'
 import { CarteDon } from './SelecteurDons'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, Tutoriel } from './ui'
 
@@ -38,7 +46,9 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
   const dons = fiche.dons ?? {}
   const niveau = normaliserNiveau(fiche.niveau)
   const droit = droitDons(esprit, fiche.achats, niveau)
-  const pris = consommationDons(dons)
+  // D18 : une capacité prise à la place d'un don consomme le même droit.
+  const pris = consommationDonsDeLaFiche(fiche)
+  const troque = prendUneCapaciteAuLieuDUnDon(fiche.classe)
   const comps = fiche.comps ?? []
   const droitComps = droitCompetences(fiche.achats, niveau)
   const artisanats = fiche.trancheAge ? artisanatsPour(fiche.trancheAge) : []
@@ -53,6 +63,19 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
     if (n <= 0) delete suite[id]
     else suite[id] = n
     onMaj({ ...fiche, dons: suite })
+  }
+
+  /**
+   * D18 — troquer le don de l'échelon N contre une capacité de niveau ≤ N.
+   * L'emplacement porte l'un ou l'autre : retoucher la capacité choisie la
+   * retire et rend le don à choisir.
+   */
+  function majTroc(echelon: number, id: string) {
+    const cle = String(echelon)
+    const capDons = { ...(fiche.capDons ?? {}) }
+    if (capDons[cle] === id) delete capDons[cle]
+    else capDons[cle] = id
+    onMaj({ ...fiche, capDons })
   }
 
   function basculerComp(id: string) {
@@ -109,6 +132,22 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
           onMaj={majDon}
         />
       ))}
+
+      {/* D18 — le troc du mage : sous les dons, les voies de la classe en
+          accordéons, un jeu par échelon qui donne un don. */}
+      {troque &&
+        echelonsDeDon(niveau).map((echelon) => (
+          <SelecteurTrocDeDon
+            key={echelon}
+            titre={libelleTrocDuMage(echelon)}
+            options={optionsDeTrocCapacite(
+              fiche,
+              echelon,
+              prisesAilleurs(fiche, { echelonDon: echelon }),
+            )}
+            onChoisir={(id) => majTroc(echelon, id)}
+          />
+        ))}
 
       <h2 className="titre-mini">Tes compétences</h2>
       <p className="my-2 text-base text-muted-foreground">

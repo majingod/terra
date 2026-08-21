@@ -20,7 +20,13 @@ import { normaliserNiveau } from '../rules/niveau'
 import { valeurCarac } from '../rules/stats'
 import type { Don } from '../rules/load'
 import type { Personnage } from '../db'
-import { optionsDuNiveau, type OptionDeCapacite } from './capacites'
+import { prisesAilleurs, optionsDuNiveau, type OptionDeCapacite } from './capacites'
+import {
+  donsPris,
+  optionsDeTrocCapacite,
+  optionsDeTrocDon,
+  type OptionDeDon,
+} from './troc'
 import type { FicheCreation } from './types'
 
 /** Les trois clés de caractéristique, dans l'ordre de la répartition. */
@@ -67,6 +73,16 @@ export interface ChoixMontee {
   don?: string
   /** La caractéristique qui reçoit le(s) point(s) de la ligne de table. */
   carac?: CleCarac
+  /**
+   * D18 — le DON pris à la place de la capacité de l'échelon (troc du
+   * guerrier). Exclusif avec `capacite` : c'est le même emplacement.
+   */
+  donTroque?: string
+  /**
+   * D18 — la CAPACITÉ prise à la place du don de l'échelon (troc du mage),
+   * de niveau ≤ l'échelon atteint. Exclusive avec `don`.
+   */
+  capTroquee?: string
 }
 
 /**
@@ -97,7 +113,12 @@ export function ficheDeLaMontee(
   const fiche = ficheDe(personnage)
   const capNiveaux = { ...(fiche.capNiveaux ?? {}) }
   if (choix.capacite) capNiveaux[String(niveauAtteint)] = choix.capacite
-  return { ...fiche, niveau: niveauAtteint, capNiveaux }
+  // D18 : l'emplacement porte l'un OU l'autre — jamais les deux.
+  const donNiveaux = { ...(fiche.donNiveaux ?? {}) }
+  if (choix.donTroque) donNiveaux[String(niveauAtteint)] = choix.donTroque
+  const capDons = { ...(fiche.capDons ?? {}) }
+  if (choix.capTroquee) capDons[String(niveauAtteint)] = choix.capTroquee
+  return { ...fiche, niveau: niveauAtteint, capNiveaux, donNiveaux, capDons }
 }
 
 /**
@@ -115,12 +136,48 @@ export function optionsDeLaMontee(
 }
 
 /**
+ * D18 — les dons offerts DANS l'emplacement de capacité de l'échelon atteint
+ * (troc du guerrier). Même bassin que la création : tout le catalogue, les
+ * non-cumulables déjà pris éteints avec leur raison.
+ */
+export function optionsDeTrocDeLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee = {},
+): OptionDeDon[] {
+  return optionsDeTrocDon(ficheDeLaMontee(personnage, niveauAtteint, choix), {
+    niveau: niveauAtteint,
+  })
+}
+
+/**
+ * D18 — les capacités offertes DANS l'emplacement de don de l'échelon atteint
+ * (troc du mage) : tout l'arbre de la classe, celles de niveau > l'échelon
+ * éteintes avec leur raison, l'anti-doublon D16 appliqué à travers tout
+ * (niveaux, achats XP, autres échelons troqués).
+ */
+export function optionsDeTrocDeDonDeLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee = {},
+): OptionDeCapacite[] {
+  const fiche = ficheDeLaMontee(personnage, niveauAtteint, choix)
+  return optionsDeTrocCapacite(
+    fiche,
+    niveauAtteint,
+    prisesAilleurs(fiche, { echelonDon: niveauAtteint }),
+  )
+}
+
+/**
  * Ce don peut-il être pris une fois de plus ? La règle n'est pas réécrite :
  * c'est `refusDons` (un don non cumulable ne se prend qu'une fois) appliquée
  * au compte qu'aurait ce don après la montée.
  */
 export function donPrenable(personnage: Personnage, don: Don): boolean {
-  const compte = (personnage.creation?.dons?.[don.id] ?? 0) + 1
+  // D18 : « déjà pris » vaut aussi pour un don rangé dans un emplacement de
+  // capacité troqué — l'anti-doublon des dons ne dépend pas de la porte.
+  const compte = (donsPris(ficheDe(personnage))[don.id] ?? 0) + 1
   return refusDons({ [don.id]: compte }).length === 0
 }
 
@@ -133,8 +190,14 @@ export function choixComplet(niveauAtteint: number, choix: ChoixMontee): boolean
 export function manquesDeLaMontee(niveauAtteint: number, choix: ChoixMontee): string[] {
   const gains = gainsMontee(niveauAtteint)
   const manques: string[] = []
-  if (!choix.capacite) manques.push('capacité non choisie')
-  if (gains.dons > 0 && !choix.don) manques.push('don non choisi')
+  // D18 : l'emplacement de capacité est rempli par une capacité OU un don ;
+  // l'emplacement de don, par un don OU une capacité. Le gain reste dû.
+  if (!choix.capacite && !choix.donTroque) manques.push('capacité non choisie')
+  if (choix.capacite && choix.donTroque) {
+    manques.push('capacité et don dans le même emplacement')
+  }
+  if (gains.dons > 0 && !choix.don && !choix.capTroquee) manques.push('don non choisi')
+  if (choix.don && choix.capTroquee) manques.push('don et capacité dans le même emplacement')
   if (gains.caracPoints > 0 && !choix.carac) manques.push('caractéristique non choisie')
   return manques
 }
@@ -165,11 +228,18 @@ export function miseAJourMontee(
   const gains = gainsMontee(niveauAtteint)
   const fiche = ficheDe(personnage)
 
-  const capNiveaux = { ...(fiche.capNiveaux ?? {}), [String(niveauAtteint)]: choix.capacite! }
+  // D18 : l'emplacement de capacité de l'échelon reçoit une capacité ou un don.
+  const capNiveaux = { ...(fiche.capNiveaux ?? {}) }
+  const donNiveaux = { ...(fiche.donNiveaux ?? {}) }
+  if (choix.capacite) capNiveaux[String(niveauAtteint)] = choix.capacite
+  else donNiveaux[String(niveauAtteint)] = choix.donTroque!
 
+  // …et l'emplacement de don, un don ou une capacité de niveau ≤ l'échelon.
   const dons = { ...(fiche.dons ?? {}) }
+  const capDons = { ...(fiche.capDons ?? {}) }
   if (gains.dons > 0) {
-    dons[choix.don!] = (dons[choix.don!] ?? 0) + gains.dons
+    if (choix.capTroquee) capDons[String(niveauAtteint)] = choix.capTroquee
+    else dons[choix.don!] = (dons[choix.don!] ?? 0) + gains.dons
   }
 
   const extras = { p: 0, r: 0, e: 0, ...(fiche.extras ?? {}) }
@@ -181,14 +251,22 @@ export function miseAJourMontee(
     ...fiche,
     niveau: niveauAtteint,
     capNiveaux,
+    donNiveaux,
+    capDons,
     dons,
     extras,
   }
 
+  // Un don troqué se range comme les dons, une capacité troquée comme les
+  // capacités : la fiche et l'impression ne les distinguent pas. La
+  // provenance, elle, reste lisible dans `creation` (donNiveaux / capDons).
+  const capacitesGagnees = [choix.capacite, choix.capTroquee].filter(
+    (id): id is string => id !== undefined,
+  )
   return {
     niveau: niveauAtteint,
-    capacites: [...personnage.capacites, choix.capacite!],
-    dons: Object.keys(dons),
+    capacites: [...personnage.capacites, ...capacitesGagnees],
+    dons: Object.keys(donsPris(creation)),
     caracs: {
       puissance: valeurCarac(creation, 'p'),
       resistance: valeurCarac(creation, 'r'),

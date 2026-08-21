@@ -73,18 +73,31 @@ export function capacitesDisponibles(
  * niveau, l'emplacement k n'accepte que du niveau ≤ k » : l'un se vérifie sur
  * un ensemble de choix, l'autre se rend à l'écran.
  */
-export function choixValides(niveauPerso: number, choix: readonly ChoixCapacite[]): boolean {
-  return problemesChoix(niveauPerso, choix).length === 0
+export function choixValides(
+  niveauPerso: number,
+  choix: readonly ChoixCapacite[],
+  troques = 0,
+): boolean {
+  return problemesChoix(niveauPerso, choix, troques).length === 0
 }
 
-/** Le même critère, mais qui NOMME ce qui cloche (bandeaux du wizard). */
+/**
+ * Le même critère, mais qui NOMME ce qui cloche (bandeaux du wizard).
+ *
+ * D18 : `troques` compte les emplacements remplis par un DON au lieu d'une
+ * capacité. Un don n'a pas d'échelon — il entre dans n'importe quel
+ * emplacement — donc il occupe les rangs les plus BAS, ceux qu'aucune
+ * capacité ne peut prendre. Le critère trié se décale d'autant : la i-ème
+ * capacité est de niveau ≤ i + troques.
+ */
 export function problemesChoix(
   niveauPerso: number,
   choix: readonly ChoixCapacite[],
+  troques = 0,
 ): string[] {
   const problemes: string[] = []
-  if (choix.length !== niveauPerso) {
-    problemes.push(`capacités : ${choix.length}/${niveauPerso} choisies`)
+  if (choix.length + troques !== niveauPerso) {
+    problemes.push(`capacités : ${choix.length + troques}/${niveauPerso} choisies`)
   }
   const vus = new Set<string>()
   for (const { id } of choix) {
@@ -93,9 +106,10 @@ export function problemesChoix(
   }
   const tries = [...choix].sort((a, b) => a.niveau - b.niveau)
   tries.forEach((choisi, index) => {
-    if (choisi.niveau > index + 1) {
+    const rang = index + 1 + troques
+    if (choisi.niveau > rang) {
       problemes.push(
-        `capacité de niveau ${choisi.niveau} au rang ${index + 1} : elle dépasse son échelon`,
+        `capacité de niveau ${choisi.niveau} au rang ${rang} : elle dépasse son échelon`,
       )
     }
   })
