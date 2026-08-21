@@ -24,11 +24,16 @@ export function niveauxDeLaFiche(fiche: FicheCreation): number[] {
   return niveauxPossibles().filter((valeur) => valeur <= niveau)
 }
 
-/** Les ids déjà pris, choix de niveaux ET achats XP confondus. */
+/**
+ * Les ids déjà pris : choix de niveaux, achats XP — et, D18, les capacités
+ * prises à la place d'un don. L'anti-doublon D16 est global, le troc n'y
+ * ouvre aucune porte dérobée.
+ */
 export function idsDejaPris(fiche: FicheCreation): string[] {
   return [
     ...Object.values(fiche.capNiveaux ?? {}),
     ...Object.values(fiche.capChoix ?? {}).flat(),
+    ...Object.values(fiche.capDons ?? {}),
   ]
 }
 
@@ -37,9 +42,9 @@ export function idsDejaPris(fiche: FicheCreation): string[] {
  * emplacement laisse toujours voir SON propre choix (il s'y montre coché) ;
  * tout le reste, choix de niveaux comme achats XP, en sort.
  */
-function prisesAilleurs(
+export function prisesAilleurs(
   fiche: FicheCreation,
-  emplacement: { niveau?: number; achat?: number },
+  emplacement: { niveau?: number; achat?: number; echelonDon?: number },
 ): string[] {
   const desNiveaux = Object.entries(fiche.capNiveaux ?? {})
     .filter(([cle]) => cle !== String(emplacement.niveau))
@@ -47,7 +52,11 @@ function prisesAilleurs(
   const desAchats = Object.entries(fiche.capChoix ?? {})
     .filter(([cle]) => cle !== String(emplacement.achat))
     .flatMap(([, ids]) => ids)
-  return [...desNiveaux, ...desAchats]
+  // D18 : une capacité prise à la place d'un don compte comme prise.
+  const desTrocs = Object.entries(fiche.capDons ?? {})
+    .filter(([cle]) => cle !== String(emplacement.echelonDon))
+    .map(([, id]) => id)
+  return [...desNiveaux, ...desAchats, ...desTrocs]
 }
 
 /** Le bassin de l'emplacement du niveau k : niveau ≤ k, moins le déjà-pris. */
@@ -77,6 +86,11 @@ export interface OptionDeCapacite {
   capacite: CapaciteDeVoie
   /** Prise ailleurs — à un autre niveau ou en achat XP : rayée, non cliquable. */
   dejaPrise: boolean
+  /**
+   * D18 — pourquoi elle est indisponible, quand ce n'est pas « déjà choisie »
+   * (ex. au-dessus du plafond du troc). Jamais un texte du Tome.
+   */
+  raison?: string
   /** Le choix actuel de CET emplacement. */
   choisie: boolean
 }
@@ -96,12 +110,28 @@ export function optionsDuNiveau(fiche: FicheCreation, niveauDuChoix: number): Op
   }))
 }
 
-/** Les choix de niveaux résolus en capacités (les emplacements vides sautent). */
+/**
+ * Les choix de niveaux résolus en capacités (les emplacements vides sautent,
+ * et D18 : ceux qui portent un don aussi — ils se comptent à part).
+ */
 export function choixDeNiveaux(fiche: FicheCreation): ChoixCapacite[] {
   return niveauxDeLaFiche(fiche).flatMap((niveau) => {
     const capacite = capaciteDeClasseParId(fiche.classe, fiche.capNiveaux?.[String(niveau)] ?? '')
     return capacite ? [{ id: capacite.id, niveau: capacite.niveau }] : []
   })
+}
+
+/**
+ * D18 — les emplacements de niveau qui portent un DON au lieu d'une capacité.
+ * Ils comptent dans le nombre d'emplacements remplis sans porter de niveau :
+ * un don n'a pas d'échelon, il se range partout.
+ */
+export function emplacementsTroques(fiche: FicheCreation): number[] {
+  const niveaux = new Set(niveauxDeLaFiche(fiche).map(String))
+  return Object.keys(fiche.donNiveaux ?? {})
+    .filter((cle) => niveaux.has(cle))
+    .map(Number)
+    .sort((a, b) => a - b)
 }
 
 /** Une capacité de la classe, retrouvée par son id (affichage). */
@@ -127,7 +157,10 @@ export function capacitesDeLaFiche(fiche: FicheCreation): CapaciteDeFiche[] {
   const desAchats = Object.values(fiche.capChoix ?? {})
     .flat()
     .map((id) => ({ id, achatXp: true }))
-  return [...desNiveaux, ...desAchats]
+  // D18 : une capacité prise à la place d'un don se range comme les autres —
+  // la fiche et l'impression ne la distinguent pas.
+  const desTrocs = Object.values(fiche.capDons ?? {}).map((id) => ({ id, achatXp: false }))
+  return [...desNiveaux, ...desAchats, ...desTrocs]
     .flatMap(({ id, achatXp }) => {
       const capacite = capaciteDeClasseParId(fiche.classe, id)
       return capacite ? [{ capacite, achatXp }] : []

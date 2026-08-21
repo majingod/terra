@@ -29,6 +29,7 @@ import { normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
+import { capacitesTroquees, donsPris } from '../wizard/troc'
 import type { FicheCreation } from '../wizard/types'
 import {
   ETAPES,
@@ -178,14 +179,18 @@ export default function Creer() {
         resistance: valeurCarac(fiche, 'r'),
         esprit: valeurCarac(fiche, 'e'),
       },
-      dons: Object.keys(fiche.dons ?? {}),
+      // D18 : un don troqué se range comme les dons — la fiche ne distingue
+      // pas d'où il vient ; `creation` garde la provenance.
+      dons: Object.keys(donsPris(fiche)),
       competences: [...(fiche.comps ?? [])],
       // D16 : les capacités de base de la classe, puis celles que le joueur
-      // a choisies — une par niveau — et celles achetées par XP.
+      // a choisies — une par niveau — et celles achetées par XP. D18 : et
+      // celles prises à la place d'un don.
       capacites: [
         ...capacitesDeBase(fiche.classe ?? '').map((c) => c.id),
         ...Object.values(fiche.capNiveaux ?? {}),
         ...Object.values(fiche.capChoix ?? {}).flat(),
+        ...capacitesTroquees(fiche),
       ],
       niveau,
       langues: [...languesAcquises(fiche.race, fiche.classe), ...(fiche.langChoix ?? [])],
