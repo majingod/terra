@@ -1,7 +1,7 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
   "date": "2026-08-19",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
@@ -777,6 +777,7 @@
      "Gladiateur"
     ],
     "echange": "Le guerrier peut toujours prendre un don au lieu d'une capacité.",
+    "troc": "capacite_vers_don",
     "page": 10
    },
    {
@@ -791,6 +792,7 @@
      "Mystique"
     ],
     "echange": "Le mage peut toujours prendre une capacité au lieu d'un don (de niveau équivalent ou inférieur au don obtenue).",
+    "troc": "don_vers_capacite",
     "focus_requis": "bâton/baguette en main pour Signe ou incantation",
     "page": 11
    },
