@@ -1,7 +1,8 @@
 /**
  * Étape 6 — Talents (maquette A v3) : dons (cartes, cumulables avec
  * « − Retirer / + Reprendre (×n) » dans la carte, estompées quand le droit
- * est épuisé) puis compétences et artisanats (max lu du fichier, section
+ * est épuisé — la carte vit dans `SelecteurDons`, la montée de niveau D17
+ * réutilise la même) puis compétences et artisanats (max lu du fichier, section
  * présente ssi la tranche y a droit — D10). Décocher Érudit avec des
  * langues déjà choisies passe par la fenêtre de répercussions.
  */
@@ -22,6 +23,7 @@ import { compteAchats } from '../../rules/heritage'
 import { donsCumules, normaliserNiveau } from '../../rules/niveau'
 import { surplusCompetences, surplusDons, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
+import { CarteDon } from './SelecteurDons'
 import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, Tutoriel } from './ui'
 
 interface Props {
@@ -98,54 +100,15 @@ export default function EtapeTalents({ fiche, onMaj, onChangement }: Props) {
           Retire {donsEnTrop} don{donsEnTrop > 1 ? 's' : ''} : ton droit a baissé.
         </ErreurNote>
       )}
-      {listeDons().map((don) => {
-        const n = dons[don.id] ?? 0
-        const plein = pris >= droit
-        return (
-          <CarteChoix
-            key={don.id}
-            petite
-            choisi={n > 0}
-            eteinte={plein && n === 0}
-            onChoisir={() => {
-              if (n > 0) majDon(don.id, 0)
-              else if (!plein) majDon(don.id, 1)
-            }}
-          >
-            <h3 className="m-0 mb-1 font-titre text-[17.5px] font-bold text-gold">
-              {don.nom}
-              {don.cumulable && <Badge>cumulable</Badge>}
-              {n > 1 && <Badge variante="gold">×{n}</Badge>}
-            </h3>
-            <TexteRegle source={don} />
-            {don.cumulable && n > 0 && (
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  className="subsel-btn"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    majDon(don.id, n - 1)
-                  }}
-                >
-                  − Retirer
-                </button>
-                <button
-                  type="button"
-                  className="subsel-btn"
-                  disabled={plein}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (!plein) majDon(don.id, n + 1)
-                  }}
-                >
-                  + Reprendre (×{n + 1})
-                </button>
-              </div>
-            )}
-          </CarteChoix>
-        )
-      })}
+      {listeDons().map((don) => (
+        <CarteDon
+          key={don.id}
+          don={don}
+          n={dons[don.id] ?? 0}
+          plein={pris >= droit}
+          onMaj={majDon}
+        />
+      ))}
 
       <h2 className="titre-mini">Tes compétences</h2>
       <p className="my-2 text-base text-muted-foreground">
