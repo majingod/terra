@@ -35,15 +35,24 @@ import {
   consommationDons,
   droitCompetences,
   droitDons,
+  listeDons,
   refusCompetences,
   refusDons,
 } from '../rules/talents'
 import {
+  echelonsDeDon,
+  prendUnDonAuLieuDUneCapacite,
+  prendUneCapaciteAuLieuDUnDon,
+  plafondDuTrocDeDon,
+} from '../rules/troc'
+import {
   bassinAchat,
   capaciteParId,
   choixDeNiveaux,
+  emplacementsTroques,
   niveauxDeLaFiche,
 } from './capacites'
+import { capacitesTroquees, donsPris } from './troc'
 import type { FicheCreation } from './types'
 
 export const ETAPES = [
@@ -136,8 +145,21 @@ export function problemesClasse(fiche: FicheCreation): string[] {
 export function problemesCapacites(fiche: FicheCreation): string[] {
   if (!fiche.classe) return ['classe manquante']
   const problemes: string[] = []
+  const catalogueDons = listeDons()
   for (const niveau of niveauxDeLaFiche(fiche)) {
     const id = fiche.capNiveaux?.[String(niveau)]
+    const donTroque = fiche.donNiveaux?.[String(niveau)]
+    // D18 : un emplacement porte une capacité OU un don, jamais les deux.
+    if (id && donTroque) {
+      problemes.push(`l'emplacement du niveau ${niveau} porte à la fois une capacité et un don`)
+    }
+    if (donTroque) {
+      if (!prendUnDonAuLieuDUneCapacite(fiche.classe)) {
+        problemes.push(`cette classe ne troque pas ses capacités contre des dons`)
+      } else if (!catalogueDons.some((don) => don.id === donTroque)) {
+        problemes.push(`don inconnu à l'emplacement du niveau ${niveau} : ${donTroque}`)
+      }
+    }
     if (!id) continue
     const capacite = capaciteParId(fiche.classe, id)
     if (!capacite) {
@@ -148,13 +170,61 @@ export function problemesCapacites(fiche: FicheCreation): string[] {
       problemes.push(`« ${capacite.nom} » dépasse l'emplacement du niveau ${niveau}`)
     }
   }
-  problemes.push(...problemesChoix(normaliserNiveau(fiche.niveau), choixDeNiveaux(fiche)))
+  problemes.push(
+    ...problemesChoix(
+      normaliserNiveau(fiche.niveau),
+      choixDeNiveaux(fiche),
+      emplacementsTroques(fiche).length,
+    ),
+  )
   const desAchats = new Set(Object.values(fiche.capChoix ?? {}).flat())
   for (const id of Object.values(fiche.capNiveaux ?? {})) {
     if (desAchats.has(id)) {
       const capacite = capaciteParId(fiche.classe, id)
       problemes.push(`« ${capacite?.nom ?? id} » est déjà prise en achat d'héritage`)
     }
+  }
+  problemes.push(...problemesTrocDeDon(fiche))
+  return problemes
+}
+
+/**
+ * D18 — les capacités prises à la place d'un don (troc du mage) : la classe
+ * doit porter ce troc, l'échelon doit être un échelon qui DONNE un don, la
+ * capacité doit être de l'arbre de la classe et de niveau ≤ l'échelon, et
+ * l'anti-doublon D16 vaut à travers tout.
+ */
+function problemesTrocDeDon(fiche: FicheCreation): string[] {
+  const problemes: string[] = []
+  const entrees = Object.entries(fiche.capDons ?? {})
+  if (entrees.length === 0) return problemes
+  if (!prendUneCapaciteAuLieuDUnDon(fiche.classe)) {
+    problemes.push(`cette classe ne troque pas ses dons contre des capacités`)
+    return problemes
+  }
+  const echelons = new Set(echelonsDeDon(fiche.niveau).map(String))
+  const ailleurs = [
+    ...Object.values(fiche.capNiveaux ?? {}),
+    ...Object.values(fiche.capChoix ?? {}).flat(),
+  ]
+  const vues = new Set<string>()
+  for (const [cle, id] of entrees) {
+    if (!echelons.has(cle)) {
+      problemes.push(`l'échelon ${cle} ne donne pas de don : rien à troquer`)
+    }
+    const capacite = capaciteParId(fiche.classe, id)
+    if (!capacite) {
+      problemes.push(`capacité hors de l'arbre de la classe : ${id}`)
+      continue
+    }
+    const plafond = plafondDuTrocDeDon(Number(cle))
+    if (capacite.niveau > plafond) {
+      problemes.push(`« ${capacite.nom} » dépasse le niveau du don obtenu (${plafond})`)
+    }
+    if (vues.has(id) || ailleurs.includes(id)) {
+      problemes.push(`« ${capacite.nom} » est déjà prise ailleurs`)
+    }
+    vues.add(id)
   }
   return problemes
 }
@@ -246,10 +316,12 @@ export function problemesForces(fiche: FicheCreation): string[] {
 export function problemesTalents(fiche: FicheCreation): string[] {
   const problemes: string[] = []
   const esprit = valeurCarac(fiche, 'e')
-  const dons = fiche.dons ?? {}
-  problemes.push(...refusDons(dons))
+  // D18 : la règle « un don non cumulable ne se prend qu'une fois » se juge
+  // sur TOUTES les prises — celles de l'étape des dons et celles des
+  // emplacements de capacité troqués.
+  problemes.push(...refusDons(donsPris(fiche)))
   const droit = droitDons(esprit, fiche.achats, fiche.niveau)
-  const pris = consommationDons(dons)
+  const pris = consommationDonsDeLaFiche(fiche)
   if (pris !== droit) problemes.push(`dons : ${pris}/${droit}`)
   const comps = fiche.comps ?? []
   problemes.push(...refusCompetences(comps, fiche.trancheAge))
@@ -315,9 +387,21 @@ export function etapeAccessible(fiche: FicheCreation, index: number): boolean {
 // Surplus (régime « le joueur retire ») — bandeaux rouges « retire N »
 // ---------------------------------------------------------------------------
 
+/**
+ * Droits de don consommés par la fiche : les dons choisis, plus (D18) les
+ * capacités prises À LA PLACE d'un don — un troc ne crée pas de droit, il
+ * change ce qu'on met dans celui qu'on a.
+ *
+ * Un don pris à la place d'une CAPACITÉ (troc du guerrier) ne compte pas
+ * ici : il occupe un emplacement de capacité, pas un droit de don.
+ */
+export function consommationDonsDeLaFiche(fiche: FicheCreation): number {
+  return consommationDons(fiche.dons ?? {}) + capacitesTroquees(fiche).length
+}
+
 export function surplusDons(fiche: FicheCreation): number {
   const droit = droitDons(valeurCarac(fiche, 'e'), fiche.achats, fiche.niveau)
-  return Math.max(0, consommationDons(fiche.dons ?? {}) - droit)
+  return Math.max(0, consommationDonsDeLaFiche(fiche) - droit)
 }
 
 export function surplusCompetences(fiche: FicheCreation): number {
@@ -347,7 +431,9 @@ function nbCapChoix(fiche: FicheCreation): number {
 }
 
 function nbCapNiveaux(fiche: FicheCreation): number {
-  return Object.keys(fiche.capNiveaux ?? {}).length
+  return (
+    Object.keys(fiche.capNiveaux ?? {}).length + Object.keys(fiche.donNiveaux ?? {}).length
+  )
 }
 
 /**
@@ -357,9 +443,15 @@ function nbCapNiveaux(fiche: FicheCreation): number {
 function retirerLesEmplacementsEnTrop(
   fiche: FicheCreation,
   niveau: number,
-): { capNiveaux: Record<string, string>; retraits: string[] } {
+): {
+  capNiveaux: Record<string, string>
+  donNiveaux: Record<string, string>
+  capDons: Record<string, string>
+  retraits: string[]
+} {
   const gardes = new Set(niveauxDeLaFiche({ ...fiche, niveau }).map(String))
   const capNiveaux: Record<string, string> = {}
+  const donNiveaux: Record<string, string> = {}
   const retraits: string[] = []
   for (const [cle, id] of Object.entries(fiche.capNiveaux ?? {})) {
     if (gardes.has(cle)) {
@@ -371,7 +463,32 @@ function retirerLesEmplacementsEnTrop(
       `Ta capacité « ${capacite?.nom ?? id} » sera retirée : ton niveau n'a plus d'emplacement de niveau ${cle}.`,
     )
   }
-  return { capNiveaux, retraits }
+  // D18 : un emplacement troqué en don part comme les autres, et se nomme.
+  const catalogueDons = listeDons()
+  for (const [cle, id] of Object.entries(fiche.donNiveaux ?? {})) {
+    if (gardes.has(cle)) {
+      donNiveaux[cle] = id
+      continue
+    }
+    const don = catalogueDons.find((d) => d.id === id)
+    retraits.push(
+      `Ton don « ${don?.nom ?? id} » sera retiré : ton niveau n'a plus d'emplacement de niveau ${cle}.`,
+    )
+  }
+  // D18 : l'échelon qui donnait le don troqué peut disparaître lui aussi.
+  const echelons = new Set(echelonsDeDon(niveau).map(String))
+  const capDons: Record<string, string> = {}
+  for (const [cle, id] of Object.entries(fiche.capDons ?? {})) {
+    if (echelons.has(cle)) {
+      capDons[cle] = id
+      continue
+    }
+    const capacite = capaciteParId(fiche.classe, id)
+    retraits.push(
+      `Ta capacité « ${capacite?.nom ?? id} » sera retirée : ton niveau n'a plus de don à l'échelon ${cle}.`,
+    )
+  }
+  return { capNiveaux, donNiveaux, capDons, retraits }
 }
 
 /**
@@ -389,8 +506,11 @@ export function changerNiveau(fiche: FicheCreation, nouveauNiveau: number): Chan
   if (normaliserNiveau(fiche.niveau) === niveau) {
     return { fiche: { ...fiche, niveau }, retraits: [] }
   }
-  const { capNiveaux, retraits } = retirerLesEmplacementsEnTrop(fiche, niveau)
-  const suite: FicheCreation = { ...fiche, niveau, capNiveaux }
+  const { capNiveaux, donNiveaux, capDons, retraits } = retirerLesEmplacementsEnTrop(
+    fiche,
+    niveau,
+  )
+  const suite: FicheCreation = { ...fiche, niveau, capNiveaux, donNiveaux, capDons }
   const donsEnTrop = surplusDons(suite)
   if (donsEnTrop > 0) {
     retraits.push(
@@ -437,6 +557,9 @@ export function changerClasse(fiche: FicheCreation, nouvelleClasse: string): Cha
       classe: nouvelleClasse,
       capNiveaux: {},
       capChoix: { ...CAP_CHOIX_VIDE },
+      // D18 : le troc appartient à l'ancienne classe — il part avec elle.
+      donNiveaux: {},
+      capDons: {},
       desavOrdre: (fiche.desavOrdre ?? []).filter((id) => !idsDecoches.has(id)),
     },
     retraits,
@@ -470,7 +593,14 @@ export function changerFaction(fiche: FicheCreation, nouvelleFaction: string): C
     retraits.push(`Ta classe « ${classe.nom} » sera retirée (réservée à l'autre faction).`)
     if (nbCapNiveaux(fiche) > 0) retraits.push(`Tes capacités seront à rechoisir.`)
     if (nbCapChoix(fiche) > 0) retraits.push(`Tes capacités d'héritage seront à rechoisir.`)
-    suite = { ...suite, classe: undefined, capNiveaux: {}, capChoix: { ...CAP_CHOIX_VIDE } }
+    suite = {
+      ...suite,
+      classe: undefined,
+      capNiveaux: {},
+      capChoix: { ...CAP_CHOIX_VIDE },
+      donNiveaux: {},
+      capDons: {},
+    }
   }
   return { fiche: suite, retraits }
 }
