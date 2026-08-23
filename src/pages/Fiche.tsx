@@ -15,6 +15,11 @@
  * la fiche monte, elle ne se recrée pas. Sous le contenu (et hors zone
  * d'impression) : « Monter au niveau {N+1} », ou, au plafond de la table, la
  * ligne « vois ton MJ ». Le MJ arbitre la quête ; l'app ne garde rien.
+ *
+ * t012 : « Imprimer / PDF » ne lance plus l'impression de CET écran — il mène
+ * à la feuille pleine page (`pages/impression`), la même que le papier du
+ * terrain, pré-remplie. La planche ≤11, qui n'a pas de feuille papier 12+,
+ * garde l'impression simple de son propre affichage.
  */
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -165,11 +170,20 @@ export default function Fiche() {
       )}
 
       <div className="pas-a-imprimer flex flex-col gap-3">
-        {personnage.creation && (
-          <button onClick={() => window.print()} className="btn-secondaire">
-            Imprimer / PDF
-          </button>
-        )}
+        {/* t012 : l'action Imprimer mène à la VRAIE feuille — la même
+            pleine page que le papier, pré-remplie. Le flux ≤11 garde
+            l'impression simple de sa planche : les deux corpus ne se
+            mélangent pas ici plus qu'ailleurs. */}
+        {personnage.creation &&
+          (enfant ? (
+            <button onClick={() => window.print()} className="btn-secondaire">
+              Imprimer / PDF
+            </button>
+          ) : (
+            <Link to={`/fiche/${personnage.id}/impression`} className="btn-secondaire text-center">
+              Imprimer / PDF
+            </Link>
+          ))}
         <button onClick={() => exporterPersonnageJSON(personnage)} className="btn-secondaire">
           Exporter en JSON
         </button>
