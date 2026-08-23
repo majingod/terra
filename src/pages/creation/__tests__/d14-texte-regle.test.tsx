@@ -2,7 +2,7 @@
  * D14 — les coquilles se corrigent À L'AFFICHAGE ; le verbatim sous gate
  * reste intact. Le composant rend `affichage ?? verbatim`, et depuis
  * rules.json 1.1.0 les corrections vivent DANS LES DONNÉES : ce fichier
- * mesure les deux moitiés — le mécanisme, et les 17 corrections qui
+ * mesure les deux moitiés — le mécanisme, et les 18 corrections qui
  * l'empruntent — plus le ménage qu'elles ont permis (plus aucune correction
  * codée en dur dans src/).
  */
@@ -78,13 +78,13 @@ describe('D14 — composant d’affichage de texte de règle', () => {
     expect(source.verbatim).toBe('Original.')
   })
 
-  it('les_17_corrections_d_affichage_existent_et_different_du_verbatim', () => {
+  it('les_18_corrections_d_affichage_existent_et_different_du_verbatim', () => {
     // Témoin de données (rouge sur 1.0.3, qui n'en portait aucune) : les
     // corrections vivent dans le fichier, et chacune dit vraiment autre chose
     // que son verbatim — sinon le champ serait décoratif.
-    expect(compterAffichages(rules)).toBe(17)
+    expect(compterAffichages(rules)).toBe(18)
     const paires = relever(rules)
-    expect(paires).toHaveLength(17)
+    expect(paires).toHaveLength(18)
     for (const { chemin, verbatim, affichage } of paires) {
       expect(affichage, chemin).not.toBe(verbatim)
       expect(affichage.trim().length, chemin).toBeGreaterThan(0)
