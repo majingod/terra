@@ -89,6 +89,23 @@ const TOUTE = 'toute'
  */
 const RANGEES_CUMUL = 5
 
+/**
+ * L'en-tête d'une voie : « Choix du Barbare », mais « Choix de l’Élémentaliste ».
+ *
+ * C'est une règle de GRAMMAIRE, appliquée partout de la même façon : jamais
+ * un cas particulier par classe, jamais une liste de noms. Les accents
+ * tombent avant le test — « É » est une voyelle comme « E ».
+ *
+ * Le h muet n'est pas traité : aucune voie du corpus ne commence par un h, et
+ * la lettre seule ne dit pas s'il est muet (« de l'homme ») ou aspiré (« du
+ * hasard »). Le jour où une voie en portera un, c'est un arbitrage, pas une
+ * règle qu'on devine.
+ */
+function enTeteDeVoie(nom: string): string {
+  const premiere = nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0)
+  return /[aeiouy]/i.test(premiere) ? `Choix de l’${nom}` : `Choix du ${nom}`
+}
+
 /** Le libellé imprimé d'un achat d'héritage : l'étiquette de la feuille + le corpus. */
 function libelleAchat(cout: number, achat: string): string {
   return `Coût ${cout} XP : ${achat}`
@@ -330,7 +347,7 @@ export default function FeuilleImpression({ fiche, nomDuJoueur }: Props) {
                   <th className="vide" />
                   {branches.map((branche) => (
                     <th key={branche.id} data-voie={branche.id}>
-                      Choix du {branche.nom}
+                      {enTeteDeVoie(branche.nom)}
                     </th>
                   ))}
                 </tr>

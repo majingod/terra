@@ -28,8 +28,17 @@ const IL_Y_A_UN_BUILD = existsSync(SW)
  * 571,81 KiB — plus les trois PNG du manifeste ajoutés par ce lot.
  */
 const ENTREES_ATTENDUES = 19
-/** Plafond du brief. */
-const PLAFOND_KIB = 640
+/**
+ * Plafond du brief.
+ *
+ * t012 — le gabarit d'impression coûte ~18 KiB, plafond relevé par
+ * l'organisateur, 2026-08-23. La feuille pleine page des 8 classes
+ * (`src/pages/impression/`) entre au bundle : 627,82 → 646,00 KiB, à jeu
+ * d'URL et compte d'entrées INCHANGÉS (19 entrées / 17 URL). Le plafond
+ * passe de 640 à 700 KiB pour rouvrir de la marge — c'est un arbitrage de
+ * l'organisateur, jamais une décision du lot.
+ */
+const PLAFOND_KIB = 700
 
 /** Le jeu d'URL précachées, empreintes de contenu retirées. */
 const URLS_ATTENDUES = [

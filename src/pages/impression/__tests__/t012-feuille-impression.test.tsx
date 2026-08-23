@@ -58,6 +58,17 @@ function marques(html: string, attribut: string): string[] {
   return [...new Set([...html.matchAll(new RegExp(`${attribut}="([^"]*)"`, 'g'))].map((m) => m[1]))]
 }
 
+/**
+ * L'en-tête attendu d'une voie. Écrit ici À PART du composant, en repartant
+ * de la règle de grammaire elle-même : « de l’ » devant une voyelle, « du »
+ * devant une consonne. Si le composant cesse d'élider, ou élide de travers,
+ * les deux ne concordent plus.
+ */
+function enTeteAttendu(nom: string): string {
+  const sansAccent = nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return /^[aeiouy]/i.test(sansAccent) ? `Choix de l’${nom}` : `Choix du ${nom}`
+}
+
 /** Le nombre d'éléments qui portent la classe « acquis » — le Surligné. */
 function compteAcquis(html: string): number {
   return [...html.matchAll(/class="([^"]*)"/g)].filter((m) =>
@@ -97,7 +108,11 @@ describe('t012 — la feuille imprimée, pour les 8 classes', () => {
       const voies = branchesDe(classeId)
       expect(voies).toHaveLength(3)
       expect(marques(html, 'data-voie')).toHaveLength(3)
-      for (const voie of voies) expect(texte).toContain(`Choix du ${voie.nom}`)
+      for (const voie of voies) expect(texte).toContain(enTeteAttendu(voie.nom))
+      // Aucun en-tête ne colle « du » devant une voyelle, ni « de l’ » devant
+      // une consonne : la règle vaut dans les deux sens.
+      expect(texte).not.toMatch(/Choix du [AEIOUYÀÂÉÈÊÎÔÛÙ]/)
+      expect(texte).not.toMatch(/Choix de l’[^AEIOUYÀÂÉÈÊÎÔÛÙ]/)
 
       const capacites = voies.flatMap((v) => v.capacites)
       expect(capacites).toHaveLength(15)
@@ -166,6 +181,22 @@ describe('t012 — la feuille imprimée, pour les 8 classes', () => {
       expect(competence).toBeDefined()
       expect(occurrences[0]!.toLowerCase()).toBe(competence!.nom.toLowerCase())
     })
+  })
+
+  it('les en-têtes de voies élident : la règle est exercée dans les deux sens', () => {
+    const voies = CLASSES.flatMap((c) => branchesDe(c.id))
+    const parVoyelle = voies.filter((v) => enTeteAttendu(v.nom).startsWith('Choix de l’'))
+    const parConsonne = voies.filter((v) => enTeteAttendu(v.nom).startsWith('Choix du '))
+    // Dénominateur : 24 voies, et le corpus en porte des deux sortes — sans
+    // ça, la gate ① passerait sans jamais éprouver l'élision.
+    expect(parVoyelle.length + parConsonne.length).toBe(voies.length)
+    expect(parVoyelle.length).toBeGreaterThan(0)
+    expect(parConsonne.length).toBeGreaterThan(0)
+
+    // Témoins tirés du corpus au moment du test, rendus pour de vrai.
+    const tousLesRendus = CLASSES.map((c) => texteBrut(rendu(ficheExemple(c.id)))).join(' ')
+    for (const voie of parVoyelle) expect(tousLesRendus).toContain(`Choix de l’${voie.nom}`)
+    for (const voie of parConsonne) expect(tousLesRendus).toContain(`Choix du ${voie.nom}`)
   })
 
   it('⑧ D14 : aucun texte de règle n’est rendu hors de la couche d’affichage', () => {
