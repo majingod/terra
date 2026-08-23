@@ -25,6 +25,7 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, type Personnage } from '../db'
+import { supprimerFicheDefinitivement } from '../db/suppression'
 import { niveauMaxEnfant, normaliserNiveauEnfant } from '../rules/kids'
 import { niveauAtteignable, niveauAtteignableEnfant } from '../rules/montee'
 import { niveauMax } from '../rules/niveau'
@@ -86,7 +87,9 @@ export default function Fiche() {
         personnage={personnage}
         onExporter={() => exporterPersonnageJSON(personnage)}
         onSupprimer={() => {
-          void db.personnages.delete(personnage.id as number).then(() => naviguer('/'))
+          // D23 : l'effacement passe par le SEUL module qui le porte
+          // (`db/suppression`) — ici comme depuis l'accueil.
+          void supprimerFicheDefinitivement(personnage.id as number).then(() => naviguer('/'))
         }}
       />
     )
