@@ -68,14 +68,18 @@ export interface Personnage {
   /** Fiche complète produite par le wizard t004. */
   creation?: FicheCreation
   /**
-   * Horodatage (ms) du retrait de la liste principale. Absent = fiche active.
+   * Héritage pré-D23 : l'horodatage (ms) du retrait dans l'ancienne corbeille.
+   *
+   * D23 a fait disparaître la corbeille, et D26 son contenu : plus rien n'écrit
+   * ce champ, et toute fiche qui le porte est balayée au chargement de
+   * l'accueil (`db/suppression`), qui retire la clé et remet la fiche dans la
+   * liste. Le champ RESTE déclaré — le balayage doit pouvoir le lire, et une
+   * fiche jamais rouverte depuis peut encore le porter en base.
    *
    * Champ **non indexé** : Dexie ne stocke dans `.stores()` que les index, pas
-   * la forme des enregistrements. L'ajouter n'exige donc AUCUNE montée de
-   * version, et D7 (export obligatoire avant migration) n'est pas rouvert.
-   * Le tri et le filtrage se font en mémoire, sur 30 à 50 fiches.
-   *
-   * Une fiche retirée n'est jamais effacée : elle reste dans `personnages`.
+   * la forme des enregistrements. Ni son arrivée ni son abandon n'exigent de
+   * montée de version — D7 (export obligatoire avant migration) n'est pas
+   * rouvert par ce lot.
    */
   retireeLe?: number
 }
