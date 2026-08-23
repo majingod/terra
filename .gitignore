@@ -11,3 +11,6 @@ dist-ssr
 
 # Archives (jamais de zip dans le dépôt)
 *.zip
+
+# Aperçus de feuilles (sortie de recette, régénérables) — jamais dans dist/
+apercus

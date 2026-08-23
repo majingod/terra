@@ -1,0 +1,144 @@
+/**
+ * La géométrie de la feuille imprimée, reprise TELLE QUELLE de la maquette
+ * validée par l'organisateur (MAQUETTE_REPRO_GUERRIER_v2_1.html) : page fixe
+ * de 196 mm, colonnes 71 % / 29 %, bandes de titres blanc sur noir, grille
+ * des voies à 5 rangées de 18 mm, style « Surligné » de l'acquis.
+ *
+ * Les mêmes octets servent deux sorties — le composant React (qui importe ce
+ * fichier) et les 8 aperçus autonomes de `npm run apercus:feuilles` (qui le
+ * lisent sur disque et l'inlinent). Une seule maison de la vérité pour la
+ * géométrie, comme rules.json en est une pour le contenu.
+ *
+ * ⛔ `print-color-adjust: exact` sur TOUT : sans lui les bandes noires et le
+ * fond des acquis disparaissent à l'impression — c'est arrivé sur le papier.
+ *
+ * ⛔ Aucune media query de re-flow : la page ne se replie jamais. À l'écran
+ * elle se met à l'échelle D'UN BLOC (transform: scale), elle ne se réorganise
+ * pas. Ce qui est à l'écran EST la page, réduite.
+ *
+ * ⛔ Tout est préfixé par `.tm-feuille` : ces règles ne touchent aucun autre
+ * écran de l'app, même chargées avec la feuille de style globale.
+ */
+.tm-feuille,.tm-feuille *{box-sizing:border-box;margin:0;padding:0;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.tm-feuille{width:196mm;background:#fff;color:#000;padding:1.5mm;
+  font-family:Arial,Helvetica,sans-serif;border:1px solid #bbb}
+.tm-feuille table{border-collapse:collapse}
+.tm-feuille .b{font-weight:bold}
+.tm-feuille .u{text-decoration:underline}
+.tm-feuille .mini{font-size:6pt}
+
+/* Surligné : fond gris + barre noire à gauche + case cochée. */
+.tm-feuille .acquis{background:#dcdcdc !important;box-shadow:inset 1.6mm 0 0 #000}
+.tm-feuille .case{display:inline-block;width:3.6mm;height:3.6mm;border:0.45mm solid #000;
+  background:#fff;vertical-align:-0.5mm;margin-right:1mm;text-align:center;
+  line-height:2.9mm;font-size:2.8mm;font-weight:bold}
+.tm-feuille .acquis .case::after,.tm-feuille .case.x::after{content:"✓"}
+
+/* Identité. */
+.tm-feuille .classe-tete{text-align:center;font-size:8pt;font-weight:bold;letter-spacing:1px}
+.tm-feuille .ident{display:flex;gap:5mm;padding:0 1mm;font-size:8pt}
+.tm-feuille .ident .ch{text-align:center}
+.tm-feuille .ident .l{border-bottom:0.5mm solid #000;font-weight:bold;font-size:11pt;
+  min-height:6mm;padding:0 1mm}
+.tm-feuille .ident .e{font-weight:bold;font-size:7.5pt}
+
+/* Corps : deux colonnes, jamais repliées. */
+.tm-feuille .corps{display:flex;gap:1.5mm;margin-top:1mm;align-items:flex-start;
+  page-break-inside:avoid}
+.tm-feuille .gauche{width:71%}
+.tm-feuille .droite{width:29%}
+
+/* Caractéristiques, PV/PM, Lutte. */
+.tm-feuille .stat-zone{display:flex;gap:2mm}
+.tm-feuille .carac{width:48%}
+.tm-feuille .carac-titre{display:flex;align-items:flex-start;gap:1.5mm}
+.tm-feuille .carac-titre .noir{background:#000 !important;color:#fff !important;font-weight:bold;
+  font-size:11pt;padding:0.3mm 2mm;border-radius:2mm}
+.tm-feuille .carac-titre .n{font-size:6pt;font-weight:bold;line-height:1.1;padding-top:0.5mm}
+.tm-feuille table.tcarac,.tm-feuille table.tpv{width:100%}
+.tm-feuille .tcarac td,.tm-feuille .tpv td{text-align:center;font-size:8pt;height:5.5mm}
+.tm-feuille .tcarac td.bx,.tm-feuille .tpv td.bx{border:0.35mm solid #000;min-width:7mm}
+.tm-feuille .tcarac td.lbl,.tm-feuille .tpv td.lbl{text-align:left;font-weight:bold;
+  white-space:nowrap;background:#000 !important;color:#fff !important;padding:0 1.5mm}
+.tm-feuille .tcarac td.lbl{font-size:10pt}
+.tm-feuille .tpv td.lbl{font-size:10.5pt}
+.tm-feuille .tpv td.lbl small{font-size:6pt;font-weight:normal}
+.tm-feuille .tpv .pb{font-size:11pt;font-weight:bold}
+.tm-feuille .pvbloc{width:52%;border:0.55mm solid #000;padding:0.5mm 1mm}
+
+/* Bande « Capacité de base » — elle grandit en hauteur au besoin. */
+.tm-feuille .base{display:flex;border:0.55mm solid #000;margin-top:1mm}
+.tm-feuille .base .et{background:#000 !important;color:#fff !important;font-weight:bold;
+  font-size:9pt;line-height:1.15;display:flex;align-items:center;text-align:center;padding:1mm 2mm}
+.tm-feuille .base .tx{padding:1mm 2mm;font-size:9pt;flex:1}
+.tm-feuille .base .tx > div + div{margin-top:0.8mm}
+
+/* Grille des voies. */
+.tm-feuille table.voies{width:100%;margin-top:1mm}
+.tm-feuille .voies th{border:0.45mm solid #000;font-size:10pt;padding:0.8mm;text-align:center}
+.tm-feuille .voies th.vide{border:none}
+.tm-feuille .voies td{border:0.45mm solid #000;font-size:9.2pt;padding:1.2mm 1.6mm;
+  vertical-align:top;width:31.5%;height:18mm}
+.tm-feuille .voies td.niv{width:6mm;text-align:center;font-weight:bold;font-size:9pt;
+  vertical-align:middle;padding:0;line-height:1.25}
+.tm-feuille .voies .nom{font-weight:bold;text-decoration:underline}
+
+/* XP et héritage. */
+.tm-feuille .bas{display:flex;gap:2mm;margin-top:1.2mm}
+.tm-feuille .xp{width:24%}
+.tm-feuille .xp .bloc{display:flex;border:0.55mm solid #000;margin-bottom:1mm}
+.tm-feuille .xp .et{background:#000 !important;color:#fff !important;padding:0.8mm 1.5mm;
+  font-weight:bold;font-size:10.5pt;flex:1}
+.tm-feuille .xp .et small{display:block;font-weight:normal;font-size:6pt}
+.tm-feuille .xp .v{width:9mm;display:flex;align-items:center;justify-content:center;
+  font-size:10pt;font-weight:bold;border-left:0.55mm solid #000}
+.tm-feuille .heritage{flex:1}
+.tm-feuille .hgrille{display:flex;flex-wrap:wrap;gap:0.6mm 1.5mm;margin-top:0.8mm}
+.tm-feuille .achat{border:0.35mm solid #000;background:#efefef;padding:0.5mm 1.2mm;
+  font-size:7.4pt;width:calc(50% - 0.75mm)}
+
+/* Colonne de droite. */
+.tm-feuille h4{background:#000 !important;color:#fff !important;text-align:center;font-size:12pt;
+  letter-spacing:0.5mm;padding:0.3mm;font-weight:bold}
+.tm-feuille h4 small{font-size:6.5pt;font-weight:bold;margin-left:2mm}
+.tm-feuille h4.espace{margin-top:1mm}
+.tm-feuille table.trace{width:100%}
+.tm-feuille .trace td{border:0.4mm solid #000;font-size:7.3pt;padding:0.4mm 1mm}
+.tm-feuille .trace td.rn{font-weight:bold;text-align:center;vertical-align:middle;
+  width:13mm;font-size:8.8pt}
+.tm-feuille table.tdons{width:100%}
+.tm-feuille .tdons td{border:0.4mm solid #000;font-size:6.9pt;padding:0.35mm 0.8mm;
+  background:#f2f2f2}
+.tm-feuille .tdons td.dn{font-weight:bold;text-align:center;vertical-align:middle;
+  width:15mm;font-size:8.2pt;background:none}
+.tm-feuille .tdons td.ck{width:4.5mm;text-align:center;vertical-align:middle;padding:0;
+  background:none}
+.tm-feuille .tdons tr.acquis td{background:#dcdcdc !important}
+.tm-feuille .cumul{display:flex;gap:1.2mm;margin-top:0.6mm}
+.tm-feuille table.tp{width:100%;flex:1}
+.tm-feuille .tp td{border:0.4mm solid #000;font-size:7.6pt;text-align:center;padding:0.4mm}
+.tm-feuille .tp td.dn{font-weight:bold}
+.tm-feuille .tp td.ck{width:4.5mm;padding:0}
+.tm-feuille .encart{border:0.55mm solid #000;margin-top:1mm;font-size:7.3pt}
+.tm-feuille .encart .et{background:#000 !important;color:#fff !important;font-weight:bold;
+  text-align:center;font-size:8.5pt;letter-spacing:0.4mm}
+.tm-feuille .encart .tx{padding:0.5mm 1mm}
+.tm-feuille .encart .v{text-align:center;font-size:10pt;font-weight:bold;padding:0.4mm}
+.tm-feuille .listes{display:flex;gap:1.2mm;margin-top:1mm}
+.tm-feuille .liste{flex:1}
+.tm-feuille .liste h4{font-size:10.5pt}
+.tm-feuille .liste table{width:100%}
+.tm-feuille .liste td{border:0.4mm solid #000;font-size:7.8pt;height:4.6mm;padding:0 1mm}
+.tm-feuille .liste td.ck{width:4.5mm;text-align:center;padding:0}
+.tm-feuille .liste tr.off td{background:#9a9a9a !important;color:#333}
+.tm-feuille .notef{font-size:7pt;border:0.3mm solid #000;padding:0.3mm 0.8mm;margin-top:0.4mm}
+
+/* Aperçu à l'écran : la page ne se replie pas, elle se réduit d'un bloc. */
+.tm-apercu{overflow:hidden}
+.tm-apercu > div{transform-origin:top left}
+@media print{
+  .tm-feuille{border:none;width:auto;padding:0}
+  .tm-apercu{overflow:visible;height:auto !important}
+  .tm-apercu > div{transform:none !important}
+}
