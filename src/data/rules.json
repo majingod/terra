@@ -13,7 +13,20 @@
   "corrections_v101": "v1.0.1 : 28 verbatims du lot 1, apostrophes ASCII remplacées par les caractères littéraux du Tome (U+2018/U+2019), relocalisés depuis tome_extraits.json. Aucun mot changé.",
   "corrections_v102": "v1.0.2 : 29e écart, competences.artisanats.verbatim_interdiction (Tome p.17), même cause, même remède. Manqué en v1.0.1 parce que mon critère cherchait la clé « verbatim » exacte au lieu de toute clé de verbatim — le critère est élargi.",
   "corrections_v103": "v1.0.3 : evolution.table corrigée. La v1.0.2 portait « 1 don par échelon » (dons cumulés = N au niveau N) — erreur de transcription de t003, relevée le 2026-08-19 par lecture zoomée de l’image p.5 du Tome. La table réelle donne +1 don aux niveaux 1, 3 et 5 et +1 point de caractéristique aux niveaux 2 et 4. Lecture de la table, inchangée : chaque ligne donne ce que l’échelon AJOUTE — `dons` = dons neufs, `carac_points` = points de caractéristique à placer librement, `competence` = compétences neuves. Aucun autre champ du fichier n’est touché.",
-  "champs_sous_gate": "Toute clé dont le nom CONTIENT « verbatim », sauf deux exceptions nommées : meta.normalisation_verbatim (méta-texte) et age_et_gates.seuil.verbatim_fred (citation d'arbitrage hors Tome)."
+  "champs_sous_gate": "Toute clé dont le nom CONTIENT « verbatim », sauf deux exceptions nommées : meta.normalisation_verbatim (méta-texte) et age_et_gates.seuil.verbatim_fred (citation d'arbitrage hors Tome).",
+  "couverture_tome": "Jumelle de la gate de fidélité (t012). La gate de fidélité prouve que chaque texte sous gate de ce fichier se retrouve mot pour mot dans le Tome ; elle ne dit RIEN des manques. Celle-ci prouve l’inverse, page par page : pour chaque page listée dans couverture_pages, au moins « plancher » pour cent des groupes de 5 mots consécutifs de la page du Tome doivent se retrouver dans ce fichier. Les zones volontairement non transcrites se déclarent par un marqueur de coupe, jamais par une liste de lignes écrite à la main.",
+  "couverture_pages": [
+   {
+    "page": 17,
+    "plancher": 55
+   },
+   {
+    "page": 18,
+    "plancher": 62,
+    "coupe_a": "RESSOURCES ET VALEUR",
+    "raison_coupe": "Les 4 tables du chapitre 4 (Ressources, Substances alchimiques, Objets du Forgeron, Runes) ne sont pas transcrites : arbitrage A11 en attente."
+   }
+  ]
  },
  "caracteristiques": {
   "source": {
@@ -445,33 +458,38 @@
    "page": 17,
    "section": "Chapitre 4 : Les compétences"
   },
+  "intro": "Les compétences représentent les métiers que peut avoir un personnage correspondant à un système d’économie. Pour ceux que la complexité de ce système n’intéresse pas, il est fortement conseillé de prendre l’une des plus simples. Les compétences sont classées en ordre complexité.",
   "regle_niv1": "1 compétence au niveau 1 (table p.5). A5 tranché : cette compétence PEUT être un artisanat pour un joueur de 12 ans et plus ; jamais pour un enfant de 11 ans et moins.",
   "simples": [
    {
     "id": "erudit",
     "nom": "Érudit",
     "base": "Le personnage choisit 1 langue supplémentaire et apprend à lire. S'il n'est pas illettré (plus de 1 d'esprit), il obtient 2 langues supplémentaires.",
-    "avance": "Le personnage peut, à chaque GN, demander une information à un MJ."
+    "avance": "Le personnage peut, à chaque GN, demander une information à un MJ.",
+    "description": "Le personnage a été bien éduqué"
    },
    {
     "id": "riche",
     "nom": "Riche",
     "base": "Le personnage commence avec 1 Po comme argent de départ.",
-    "avance": "Le personnage obtient 2 Pa par GN et 2 Pa de plus chaque fois qu'il accomplit une quête."
+    "avance": "Le personnage obtient 2 Pa par GN et 2 Pa de plus chaque fois qu'il accomplit une quête.",
+    "description": "Le personnage vient d’une famille aisée."
    },
    {
     "id": "herboriste",
     "nom": "Herboriste",
     "materiel": "Serpe, Bol et Mortier",
-    "base": "Le personnage peut allez récolter jusqu'à 5 Alchimites par GN dans le jardin.",
-    "avance": "1 fois par GN, un évènement aura lieu au jardin dans lequel une créature pourra être vaincue et tout herboriste survivant peut récolter 1 Arcanite sur la créature (le maximum d'Arcanite récupéré dépend de la créature)."
+    "base": "Le personnage peut allez récolter jusqu'à 5 Alchimites par GN dans le jardin. (Dans la zone du jardin, des cordes pleines de nœuds seront attachées à des plantes. L’herboriste doit rapporter la corde complètement détachée et intacte à un MJ).",
+    "avance": "1 fois par GN, un évènement aura lieu au jardin dans lequel une créature pourra être vaincue et tout herboriste survivant peut récolter 1 Arcanite sur la créature (le maximum d'Arcanite récupéré dépend de la créature).",
+    "description": "Le personnage sait cultiver la végétation à son profit."
    },
    {
     "id": "mineur",
     "nom": "Mineur",
     "materiel": "Pioche et/ou pelle.",
-    "base": "Le personnage peut allez récolter jusqu'à 15 Pc par GN dans la mine.",
-    "avance": "1 fois par GN, un évènement aura lieu de la mine dans lequel une créature pourra être vaincu et tout mineur survivant peut récolter 1 métal rare (dépendamment de la créature, Adamantium, Aurorium ou Mythril)."
+    "base": "Le personnage peut allez récolter jusqu'à 15 Pc par GN dans la mine. (Dans la zone de la mine sera laissé des pierres multicolores, chaque mineur aura sa couleur d’attribué ne pouvant rapporte que celle-ci au MJ en échange de Pc.)",
+    "avance": "1 fois par GN, un évènement aura lieu de la mine dans lequel une créature pourra être vaincu et tout mineur survivant peut récolter 1 métal rare (dépendamment de la créature, Adamantium, Aurorium ou Mythril).",
+    "description": "Le personnage peut prélever les richesses de la pierre."
    }
   ],
   "artisanats": {
@@ -484,7 +502,6 @@
    },
    "verbatim_interdiction": "Les artisanats sont des professions plus complexe, limité à 1 par personnage même si celui-ci possède plus d’une compétence. Ils sont INTERDITS AUX ENFANTS.",
    "max_par_personnage": 1,
-   "interdit_mineurs": null,
    "application_app": "Gate par tranche d'âge : voir bloc age_et_gates. ⛔ Ne PAS utiliser un marqueur « mineur » — corrigé le 2026-08-17.",
    "liste": [
     {
@@ -506,7 +523,8 @@
        "verbatim": "Le personnage peut une fois par jour échanger de la monnaie contre des ressources, ou vice versa, auprès d’un MJ."
       }
      ],
-     "restriction": "LE MARCHAND NE PEUT PAS PORTÉ PLUS D'UNE RUNE ARME ET UNE RUNE D'AMULETTE MAGIQUE, COMME LES AUTRES."
+     "restriction": "LE MARCHAND NE PEUT PAS PORTÉ PLUS D'UNE RUNE ARME ET UNE RUNE D'AMULETTE MAGIQUE, COMME LES AUTRES.",
+     "description": "Le personnage possède des contacts à l’étranger."
     },
     {
      "id": "alchimiste",
@@ -515,7 +533,7 @@
      "capacites": [
       {
        "nom": "Cuisinier",
-       "verbatim": "Le personnage peut durant le GN offrir jusqu’à 3 repas décorum offrant +1 PV et +1 Mana pendant 1heure. Les bénéficiaires doivent être différents."
+       "verbatim": "Le personnage peut durant le GN offrir jusqu’à 3 repas décorum offrant +1 PV et +1 Mana pendant 1heure. Les bénéficiaires doivent être différents. Ils peuvent être en même temps ou pas, mais seulement 3 bénéficiaires au total."
       },
       {
        "nom": "Premier-Soins",
@@ -525,7 +543,8 @@
        "nom": "Alchimie",
        "verbatim": "Le personnage peut concevoir une substance alchimique avec de l’Alchimite. La substance doit être contenue dans un flacon transparent et le liquide doit avoir la couleur associée et être buvable."
       }
-     ]
+     ],
+     "description": "Le personnage peut créer des substances alchimiques consumables."
     },
     {
      "id": "forgeron",
@@ -538,13 +557,14 @@
       },
       {
        "nom": "Ajustement",
-       "verbatim": "Le forgeron peut conférer à 3 armures un ajustement sur mesure, conférant pour le GN +1 bloc OU réduire de 1 le malus de mana de l’armure. Si l’armure est réparée autrement que par le forgeron, elle perd se bonus."
+       "verbatim": "Le forgeron peut conférer à 3 armures un ajustement sur mesure, conférant pour le GN +1 bloc OU réduire de 1 le malus de mana de l’armure. Si l’armure est réparée autrement que par le forgeron, elle perd se bonus. Le forgeron ne peut entretenir et maintenir que 3 armures ainsi à la fois."
       },
       {
        "nom": "Forge",
        "verbatim": "Peut concevoir des Armes, Armures et bouclier en Métal rare. Construire un objet demande de dérouler un ressort (fournis par l’animation)."
       }
-     ]
+     ],
+     "description": "Le personnage est un artisan du métal."
     },
     {
      "id": "runiste",
@@ -564,11 +584,27 @@
        "verbatim": "Peux concevoir des runes d’Armes ou Amulette magiques à partir d’Arcanite. Fabriquer demande la transcription d’une phrase runique (fournis par l’animation)."
       }
      ],
-     "alias_possible": "A2 tranché : « Arcaniste » (p.17, p.19) = erreur de texte. L'app affiche « Runiste » partout."
+     "alias_possible": "A2 tranché : « Arcaniste » (p.17, p.19) = erreur de texte. L'app affiche « Runiste » partout.",
+     "description": "Le personnage est capable de créer des runes magiques enchantent les objets de leur porteur."
     }
    ],
    "note_ateliers_p17": "p.17 dit « alchimistes, forgeron et arcaniste » → lire « runiste » (A2). p.17 dit « tavernier, herboriste et mineurs » → lire « marchand » (A1).",
-   "interdit_tranche": "≤11"
+   "interdit_tranche": "≤11",
+   "ateliers": {
+    "source": {
+     "page": 17,
+     "section": "Ateliers"
+    },
+    "verbatim": "Chaque faction dispose d’un atelier qui doit au début du scénario être remis en état (Ceci coûte 5 Pa de matériel) au Rang 1. Si l’atelier venait être détruit, le même coût serait nécessaire pour le remettre en état. Un atelier rang 1 permet aux alchimistes, forgeron et arcaniste d’y utiliser leurs avantages de base. L’atelier peut ensuite être amélioré afin de découvrir des nouvelles recettes.",
+    "affichage": "Chaque faction dispose d’un atelier qui doit au début du scénario être remis en état (Ceci coûte 5 Pa de matériel) au Rang 1. Si l’atelier venait à être détruit, le même coût serait nécessaire pour le remettre en état. Un atelier rang 1 permet aux alchimistes, forgerons et runistes d’y utiliser leurs avantages de base. L’atelier peut ensuite être amélioré afin de découvrir de nouvelles recettes.",
+    "poste_de_traite": {
+     "verbatim": "Poste de traite. Une fois l’atelier améliorer au rang 2 il sera possible de construire un poste de traite, conférant des avantages aux métiers d’érudit, riches et marchands."
+    },
+    "laboratoire": {
+     "verbatim": "Laboratoire. Une fois l’atelier améliorer au rang 2 il sera possible de construire un laboratoire conférant des avantages aux métiers de tavernier, herboriste et mineurs."
+    },
+    "application_app": "AFFICHER seulement. L’app n’accorde jamais un avantage avancé — c’est le rang de l’atelier de faction qui l’ouvre, hors app (D24 ⑤-bis). Ambiguïtés A8/A9/A10 non tranchées."
+   }
   }
  },
  "heritage": {

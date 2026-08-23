@@ -23,7 +23,7 @@ import { getVersion } from '../rules/load'
 const DONNEES = join(dirname(fileURLToPath(import.meta.url)), '..', 'data')
 
 const EMPREINTES: Record<string, string> = {
-  'rules.json': 'c2b202a036300cc4edba660b64b0a13eab355c33c3078cb5a8cb958aafef86dd',
+  'rules.json': 'b4c75ba4073b880127e95b07d9174824bcf0a0b21f0e85fc896b8ea67dbd8b78',
   'rules_kids.json': '65030c85386649edffd55cdfb795cb3ffb0ad1ab32074c180040236d26d68424',
 }
 
