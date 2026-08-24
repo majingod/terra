@@ -1,0 +1,17 @@
+/**
+ * La police de la FEUILLE IMPRIMÉE, embarquée (D27-ter).
+ *
+ * La feuille était réglée pour Arial ; Android n'a pas Arial et substitue la
+ * police du système (Roboto, Samsung Sans…), plus large : la page A4 débordait
+ * sur 2 ou 3 pages chez l'organisateur alors que la gate d'impression passait
+ * ici avec Liberation Sans (métriques d'Arial). Embarquer la police supprime
+ * l'inconnue : ce que la gate mesure est ce que l'appareil imprime.
+ *
+ * `font-display: block` : jamais de repli silencieux vers la police système
+ * pendant le chargement — l'impression attend `document.fonts.ready`.
+ * Les deux woff2 (≈ 9 KiB chacun) entrent au precache comme les autres polices.
+ */
+@font-face{font-family:TerraSans;font-style:normal;font-weight:400;font-display:block;
+  src:url(./polices/TerraSans-Regular.woff2) format("woff2")}
+@font-face{font-family:TerraSans;font-style:normal;font-weight:700;font-display:block;
+  src:url(./polices/TerraSans-Bold.woff2) format("woff2")}

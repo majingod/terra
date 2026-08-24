@@ -54,7 +54,14 @@ try {
   // Le composant importe sa feuille de style ; en SSR, Vite ne l'injecte pas.
   // L'aperçu autonome l'inline donc depuis LA MÊME source sur disque.
   const { CSS_PAGE } = await vite.ssrLoadModule('/src/pages/impression/css.ts')
-  const css = CSS_PAGE + readFileSync(join(RACINE, 'src/pages/impression/feuille.css'), 'utf8')
+  // La police embarquée (D27-ter) : même déclaration que dans l'app, mais avec
+  // des chemins absolus — l'aperçu vit hors du bundle, Vite ne résout rien.
+  const polices = readFileSync(join(RACINE, 'src/pages/impression/polices.css'), 'utf8').replace(
+    /url\(\.\/polices\//g,
+    `url(file://${join(RACINE, 'src/pages/impression/polices')}/`,
+  )
+  const css =
+    CSS_PAGE + polices + readFileSync(join(RACINE, 'src/pages/impression/feuille.css'), 'utf8')
   const { classesSquelette } = await vite.ssrLoadModule('/src/rules/stats.ts')
   const { ficheExemple } = await vite.ssrLoadModule('/src/pages/impression/exemples.ts')
   const { default: FeuilleImpression } = await vite.ssrLoadModule(

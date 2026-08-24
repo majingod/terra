@@ -73,6 +73,8 @@ describe('D23 · G10 — le precache reste sous le plafond', () => {
 
   it.runIf(IL_Y_A_UN_BUILD)('⛔ aucun fichier n’est entré ni sorti du bundle', () => {
     // Un lot de logique ne change pas le JEU de ce qui part sur l'appareil.
-    expect(urlsPrecachees().length).toBe(17)
+    // D27-ter (t014) : +2 woff2 TerraSans (police embarquée de la feuille),
+    // −1 woff2 Cinzel 900 (zéro usage) → 17 → 18.
+    expect(urlsPrecachees().length).toBe(18)
   })
 })
