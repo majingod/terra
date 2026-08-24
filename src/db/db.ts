@@ -6,8 +6,14 @@
  * ce fichier, obligatoire à CHAQUE montée de version.
  *
  * Données volontairement absentes du modèle : aucune date de naissance, aucun
- * âge exact, aucun vrai nom. La seule donnée d'âge est une tranche
- * ('≤11' | '12+'), le minimum qui fait fonctionner la gate D10.
+ * âge exact. La seule donnée d'âge est une tranche ('≤11' | '12+'), le minimum
+ * qui fait fonctionner la gate D10.
+ *
+ * D25 : le SEUL vrai nom que l'app stocke est `nomDuJoueur` — saisi
+ * volontairement par le joueur, toujours optionnel, vivant sur l'appareil, sur
+ * la feuille imprimée et dans l'export JSON. ⛔ Jamais en ligne, et jamais dans
+ * le dépôt : celui-ci est PUBLIC, et une gate balaye `src/` pour qu'aucun vrai
+ * nom — surtout d'enfant — n'y entre par une fixture ou un test.
  */
 import Dexie, { type EntityTable, type Transaction } from 'dexie'
 import type { TrancheAge } from '../rules/age'

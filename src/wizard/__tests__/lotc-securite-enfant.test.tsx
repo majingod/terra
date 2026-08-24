@@ -5,7 +5,8 @@
  * - aucun artisanat pour la tranche enfant, les quatre pour l'autre, sur les
  *   mêmes données — et pas d'étape compétences dans le flux enfant ;
  * - le flux ne demande ni date de naissance ni âge exact : la tranche est le
- *   SEUL champ d'âge, et le seul champ libre est le nom du personnage ;
+ *   SEUL champ d'âge, et les seuls champs libres sont les DEUX noms — celui du
+ *   personnage, et (D25) le vrai nom du joueur, optionnel ;
  * - aucun écran ne porte le marqueur d'époque (reconstruit ici pour ne pas
  *   exister littéralement dans ce fichier).
  */
@@ -94,13 +95,32 @@ describe('Lot C — le flux enfant ne demande ni date de naissance ni âge exact
     }
   })
 
-  it('jumelle : le seul champ libre du flux est le nom du PERSONNAGE', () => {
+  /**
+   * ⚠️ SPEC DE TEST MODIFIÉE PAR D25, ET RAPPORTÉE.
+   *
+   * Ce lot comptait UN seul champ libre dans le flux ≤11 (le nom du
+   * personnage). D25 en ajoute un second — le vrai nom du joueur, optionnel —
+   * et l'ajoute explicitement aux DEUX wizards. Les deux exigences ne peuvent
+   * pas tenir ensemble : le compte devait bouger, et c'est l'arbitrage qui l'a
+   * fait bouger, pas ce fichier.
+   *
+   * La jumelle ne s'affaiblit PAS pour autant : elle reste un compte EXACT, et
+   * chacun des deux champs est nommé et rattaché à son libellé. Un troisième
+   * champ libre — celui-là non arbitré — la fait toujours rougir.
+   */
+  it('jumelle : les seuls champs libres du flux sont les DEUX noms', () => {
     const container = rendreLeFluxEnfant()
     const champs = [...container.querySelectorAll('input, select, textarea')]
-    expect(champs).toHaveLength(1)
-    expect(champs[0].id).toBe('inom-enfant')
-    const etiquette = container.querySelector('label[for="inom-enfant"]')
-    expect(etiquette?.textContent).toMatch(/nom de ton personnage/i)
+    expect(champs).toHaveLength(2)
+    expect(champs.map((c) => c.id)).toEqual(['inom-enfant', 'inom-joueur-enfant'])
+
+    const duPersonnage = container.querySelector('label[for="inom-enfant"]')
+    expect(duPersonnage?.textContent).toMatch(/nom de ton personnage/i)
+
+    // D25 : celui du joueur se présente comme optionnel, dans son libellé même.
+    const duJoueur = container.querySelector('label[for="inom-joueur-enfant"]')
+    expect(duJoueur?.textContent).toMatch(/ton nom à toi \(le joueur/i)
+    expect(duJoueur?.textContent).toMatch(/optionnel/i)
   })
 
   it('jumelle : la fiche enfant ne porte aucun champ d’âge autre que la tranche', () => {

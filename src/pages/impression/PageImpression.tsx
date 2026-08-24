@@ -9,6 +9,9 @@
  *
  * ⛔ Les contrôles vivent hors de la zone imprimée (`pas-a-imprimer`, comme
  * partout ailleurs dans l'app) : le rendu imprimé ne porte aucun bouton.
+ *
+ * D25 : la feuille porte le vrai nom du joueur quand la fiche en a un. C'est
+ * cette page qui le lui passe — la prop existait déjà, la case aussi.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -84,7 +87,10 @@ export default function PageImpression() {
   return (
     <div className="flex flex-col gap-4">
       <ApercuALEchelle>
-        <FeuilleImpression fiche={fiche} />
+        {/* D25 : le vrai nom du joueur descend de l'enregistrement (jamais de
+            `creation`) jusqu'à la case « Nom du joueur » de la feuille. Absent,
+            la case s'imprime vide — le comportement d'avant lui, au crayon. */}
+        <FeuilleImpression fiche={fiche} nomDuJoueur={personnage.nomDuJoueur} />
       </ApercuALEchelle>
       <div className="pas-a-imprimer flex flex-col gap-3">
         <button type="button" onClick={() => window.print()} className="btn-secondaire">

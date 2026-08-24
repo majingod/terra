@@ -20,6 +20,12 @@
  * à la feuille pleine page (`pages/impression`), la même que le papier du
  * terrain, pré-remplie. La planche ≤11, qui n'a pas de feuille papier 12+,
  * garde l'impression simple de son propre affichage.
+ *
+ * D25 : le vrai nom du JOUEUR se lit et s'édite ici, sur cette page — la même
+ * pour les ≤11 et les 12+. Toujours optionnel : vide, la fiche est exactement
+ * celle d'avant, et la case de la feuille se remplit au crayon. Les contrôles
+ * de saisie vivent hors de la zone imprimée, comme partout ailleurs ; la ligne
+ * « joué par … », elle, fait partie de la fiche et s'imprime avec elle.
  */
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -36,6 +42,7 @@ import {
   niveauDeLaFiche,
   type ChoixMontee,
 } from '../wizard/montee'
+import { normaliserNomDuJoueur } from '../wizard/nomDuJoueur'
 import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportImport'
 import AncienneFiche from './AncienneFiche'
 import FicheAffichage from './creation/FicheAffichage'
@@ -43,6 +50,80 @@ import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
 import BoutonMontee from './montee/BoutonMontee'
 import EcranMontee from './montee/EcranMontee'
 import EcranMonteeEnfant from './montee/EcranMonteeEnfant'
+
+/**
+ * D25 — « joué par X » sur la fiche, ou le bouton qui ouvre la saisie.
+ *
+ * Rempli : une ligne discrète, et un tap dessus rouvre l'édition. Vide : un
+ * bouton en pointillé — une invitation, jamais une exigence. Dans les deux cas
+ * l'input porte un libellé et « OK » s'atteint au clavier : cette page se tient
+ * debout sur un téléphone comme au lecteur d'écran.
+ */
+function NomDuJoueur({
+  nom,
+  onEnregistrer,
+}: {
+  nom?: string
+  onEnregistrer: (saisie: string) => void
+}) {
+  const [edition, setEdition] = useState(false)
+  const [saisie, setSaisie] = useState('')
+
+  function ouvrir() {
+    setSaisie(nom ?? '')
+    setEdition(true)
+  }
+
+  function valider() {
+    onEnregistrer(saisie)
+    setEdition(false)
+  }
+
+  if (edition) {
+    return (
+      <div className="pas-a-imprimer flex items-center gap-2">
+        <input
+          type="text"
+          aria-label="Ton vrai nom"
+          placeholder="Ton vrai nom"
+          value={saisie}
+          onChange={(e) => setSaisie(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') valider()
+          }}
+          className="min-w-0 flex-1 rounded-lg border-[1.5px] border-border/50 bg-input p-2 font-corps text-[16.5px] text-foreground focus:border-primary focus:outline-none"
+          autoComplete="off"
+          maxLength={40}
+        />
+        <button
+          type="button"
+          onClick={valider}
+          className="min-h-touch rounded-lg border-[1.5px] border-border/50 px-4 font-semibold text-secondary-foreground"
+        >
+          OK
+        </button>
+      </div>
+    )
+  }
+
+  if (nom) {
+    return (
+      <button type="button" onClick={ouvrir} className="text-left text-muted-foreground">
+        joué par <span className="font-semibold text-secondary-foreground">{nom}</span>
+      </button>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={ouvrir}
+      className="pas-a-imprimer self-start rounded-lg border border-dashed border-border/50 px-3 py-2 text-sm text-muted-foreground"
+    >
+      + Ton nom (le joueur)
+    </button>
+  )
+}
 
 export default function Fiche() {
   const { id } = useParams()
@@ -106,6 +187,19 @@ export default function Fiche() {
     : niveauAtteignable(niveauCourant)
   const plafond = enfant ? niveauMaxEnfant() : niveauMax()
 
+  /**
+   * D25 — le seul champ, et l'horodatage que porte toute modification de fiche.
+   * Une saisie vide (ou faite de blancs) RETIRE la clé : Dexie supprime le
+   * chemin quand la valeur est `undefined`, et le magasin ne garde donc jamais
+   * un `''` qu'on ne saurait plus distinguer d'un champ jamais rempli.
+   */
+  async function enregistrerNomDuJoueur(saisie: string) {
+    await db.personnages.update(personnage!.id as number, {
+      nomDuJoueur: normaliserNomDuJoueur(saisie),
+      updatedAt: Date.now(),
+    })
+  }
+
   /** D7 : une SEULE mise à jour — niveau, capacité, don ou caractéristique. */
   async function confirmer(maj: Partial<Personnage>) {
     await db.personnages.update(personnage!.id as number, maj)
@@ -136,6 +230,13 @@ export default function Fiche() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* D25 — à qui est cette feuille. Une seule page pour les ≤11 et les
+          12+, donc un seul endroit où ce nom se lit et s'édite. */}
+      <NomDuJoueur
+        nom={personnage.nomDuJoueur}
+        onEnregistrer={(saisie) => void enregistrerNomDuJoueur(saisie)}
+      />
+
       {personnage.creation?.enfant ? (
         // Fiche du flux ≤11 : elle se lit du corpus de la planche, jamais du Tome.
         <FicheEnfantAffichage fiche={personnage.creation} />
