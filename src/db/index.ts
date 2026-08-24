@@ -68,6 +68,21 @@ export interface Personnage {
   /** Fiche complète produite par le wizard t004. */
   creation?: FicheCreation
   /**
+   * D25 — le VRAI nom du joueur, la seule donnée nominative de l'app.
+   *
+   * Toujours optionnel : jamais exigé, jamais pré-rempli. Absent, tout reste
+   * comme avant lui — la case « Nom du joueur » de la feuille s'imprime vide,
+   * à remplir au crayon. Présent, il vit sur l'appareil, s'affiche sur la
+   * fiche, s'imprime dans sa case et part dans l'export JSON. ⛔ Jamais en
+   * ligne, jamais dans le dépôt.
+   *
+   * Une chaîne vide ne se stocke pas : c'est la clé qui est absente
+   * (`wizard/nomDuJoueur`). Champ **non indexé** — Dexie ne range dans
+   * `.stores()` que les index, pas la forme des enregistrements : son arrivée
+   * n'exige aucune montée de version, D7 n'est pas rouvert par ce lot.
+   */
+  nomDuJoueur?: string
+  /**
    * Héritage pré-D23 : l'horodatage (ms) du retrait dans l'ancienne corbeille.
    *
    * D23 a fait disparaître la corbeille, et D26 son contenu : plus rien n'écrit

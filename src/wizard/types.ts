@@ -52,12 +52,23 @@ export interface FicheEnfant {
   classe?: string
   /** Niveau de départ (1-5 de la table enfant) — défaut : niveau min. */
   niveau?: number
-  /** Nom du PERSONNAGE — jamais le vrai nom du joueur. */
+  /**
+   * Nom du PERSONNAGE — celui du jeu. Le vrai nom du joueur, lui, ne vit pas
+   * ici : depuis D25 il a son propre champ sur la fiche (`nomDuJoueur`),
+   * optionnel, et les deux ne se confondent jamais.
+   */
   nom?: string
 }
 
 export interface FicheCreation {
   trancheAge?: TrancheAge
+  /**
+   * D25 — le VRAI nom du joueur, saisi à l'étape Nom (les DEUX flux : ≤11 et
+   * 12+). Toujours optionnel, jamais exigé, jamais pré-rempli ; vide, la clé
+   * est absente, pas `''` (`wizard/nomDuJoueur`). Il se recopie tel quel sur
+   * l'enregistrement à l'enregistrement de la fiche.
+   */
+  nomDuJoueur?: string
   faction?: string
   race?: string
   /** Bonus au choix de l'Humain (libellé lu du fichier). */

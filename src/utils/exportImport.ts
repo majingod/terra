@@ -13,6 +13,7 @@
  */
 import { getVersion } from '../rules/load'
 import { estAncienneFiche } from '../wizard/historique'
+import { champNomDuJoueur, sansNomDuJoueur } from '../wizard/nomDuJoueur'
 import { db, type Personnage } from '../db'
 
 /**
@@ -77,7 +78,14 @@ export async function importerPersonnageJSON(fichier: File): Promise<void> {
     updatedAt: Date.now(),
     trancheAge: reste.trancheAge,
     reglesVersion: reste.reglesVersion,
-    creation: reste.creation,
+    // D25 : un fichier qui porterait le nom sous `creation` n'y réinstalle pas
+    // une seconde copie — sur l'enregistrement, le nom a un seul domicile.
+    creation: reste.creation && sansNomDuJoueur(reste.creation),
+    // ⚠️ D25 : l'import RECONSTRUIT la fiche champ par champ. Sans cette
+    // ligne, le vrai nom du joueur serait silencieusement perdu à l'import —
+    // l'export, lui, sérialise l'enregistrement entier et n'a rien à faire.
+    // Absent ou vide dans le fichier → clé ABSENTE ici, jamais `''`.
+    ...champNomDuJoueur(reste.nomDuJoueur),
   }
 
   await db.personnages.add(personnage)
