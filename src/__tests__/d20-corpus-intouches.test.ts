@@ -11,6 +11,8 @@
  * moment-là qu'on décide si le changement était voulu.
  *
  * (Les empreintes sont celles de `main` au départ du lot — 71609cd.)
+ * D24 : `rules_kids.json` passe en 1.1.0 (métier + langues, arbitrage Fred
+ * t010) — empreinte mise à jour ; `rules.json` reste intouché.
  */
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -24,7 +26,7 @@ const DONNEES = join(dirname(fileURLToPath(import.meta.url)), '..', 'data')
 
 const EMPREINTES: Record<string, string> = {
   'rules.json': 'b4c75ba4073b880127e95b07d9174824bcf0a0b21f0e85fc896b8ea67dbd8b78',
-  'rules_kids.json': '65030c85386649edffd55cdfb795cb3ffb0ad1ab32074c180040236d26d68424',
+  'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
 }
 
 function empreinte(fichier: string): string {
@@ -59,7 +61,7 @@ describe('D20 ⑧ — ⚠️ ≤11 : leur historique se déduit du niveau seul',
   })
 
   it('le corpus enfant garde sa version et sa table', () => {
-    expect(getVersionKids()).toBe('1.0.0')
+    expect(getVersionKids()).toBe('1.1.0')
     expect(niveauxPossiblesEnfant().length).toBeGreaterThan(0)
   })
 })
