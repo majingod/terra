@@ -97,8 +97,8 @@ describe('Gate de fidélité — verbatim vs Tome V1.2', () => {
     expect(sousGate.length).toBeGreaterThan(0)
   })
 
-  it('couvre 190 champs sous gate', () => {
-    expect(sousGate).toHaveLength(190)
+  it('couvre 196 champs sous gate', () => {
+    expect(sousGate).toHaveLength(196)
   })
 
   it("n'exempte que les deux exceptions nommées dans meta.champs_sous_gate", () => {

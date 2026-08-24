@@ -24,7 +24,7 @@ import { niveauCourant } from '../../wizard/historique'
 import { surplusPointsCarac, type Changement } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
 import { CarteCapacite } from './SelecteurCapacites'
-import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel } from './ui'
+import { Badge, CarteChoix, ErreurNote, Note, TexteRegle, TitreCarte, Tutoriel, texteAffiche } from './ui'
 
 interface Props {
   fiche: FicheCreation
@@ -229,7 +229,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
         className="w-full rounded-lg border-[1.5px] border-border/50 bg-input p-3 font-corps text-[16.5px] text-foreground focus:border-primary focus:outline-none"
       />
       <p className="mt-1 text-sm text-muted-foreground">
-        {regles.heritage.xp_permanent} À confirmer avec un MJ à l'accueil.
+        {texteAffiche(regles.heritage.xp_permanent)} À confirmer avec un MJ à l'accueil.
       </p>
 
       {listeAchats().map((achat) => {
@@ -246,7 +246,7 @@ export default function EtapeDestin({ fiche, onMaj, onChangement }: Props) {
               <Badge variante="xp">{achat.cout_xp} XP</Badge>
               {achat.max_achats !== undefined && <Badge>max {achat.max_achats}</Badge>}
               {achat.restriction && (
-                <p className="my-0.5 text-sm text-muted-foreground">{achat.restriction}</p>
+                <p className="my-0.5 text-sm text-muted-foreground">{texteAffiche(achat.restriction)}</p>
               )}
               {effet.type === 'capacite' && n > 0 && (
                 <div className="mt-1.5">

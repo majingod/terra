@@ -225,7 +225,7 @@ export function textesRendusHorsComposant(code: string): string[] {
 }
 
 describe('D13 — zéro texte de règle en dur', () => {
-  it('dénominateur : 866 textes dans rules.json, 282 assez longs pour être balayés', () => {
+  it('dénominateur : 879 textes dans rules.json, 295 assez longs pour être balayés', () => {
     // Les 584 autres font moins de 40 caractères normalisés (ids, noms,
     // libellés courts) : aucune fenêtre ne s'y forme, ils ne sont PAS balayés.
     // 1.1.0 a ajouté 17 champs « affichage » : tous assez longs pour être
@@ -236,8 +236,12 @@ describe('D13 — zéro texte de règle en dur', () => {
     // t012 transcrit le chapitre 4 au complet : 851 → 866. Douze des quinze
     // textes neufs sont assez longs pour former une fenêtre (270 → 282), les
     // trois autres non (581 → 584).
-    expect(TOUS).toHaveLength(866)
-    expect(BALAYES).toHaveLength(282)
+    // t014 (audit ch.5, 1.2.1) : 4 chaînes plates de heritage deviennent des
+    // objets { verbatim, affichage } et p.20 est transcrite au complet : 17
+    // textes neufs, 4 retirés, tous assez longs → 866 → 879, 282 → 295,
+    // trop-courts constants.
+    expect(TOUS).toHaveLength(879)
+    expect(BALAYES).toHaveLength(295)
     expect(TROP_COURTS).toBe(584)
     expect(Object.keys(SOURCES).length).toBeGreaterThan(30)
   })
