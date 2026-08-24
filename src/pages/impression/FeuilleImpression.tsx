@@ -38,6 +38,7 @@ import { donsPris } from '../../wizard/troc'
 import type { CleCarac, FicheCreation } from '../../wizard/types'
 import { texteAffiche, type SourceDeTexte } from '../creation/ui'
 import { CSS_PAGE } from './css'
+import './polices.css'
 import './feuille.css'
 
 /**
@@ -102,7 +103,7 @@ const RANGEES_CUMUL = 5
  * règle qu'on devine.
  */
 function enTeteDeVoie(nom: string): string {
-  const premiere = nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').charAt(0)
+  const premiere = nom.normalize('NFD').replace(/[̀-ͯ]/g, '').charAt(0)
   return /[aeiouy]/i.test(premiere) ? `Choix de l’${nom}` : `Choix du ${nom}`
 }
 

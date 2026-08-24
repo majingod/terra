@@ -51,6 +51,19 @@ function ApercuALEchelle({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * D27-ter — la feuille s'imprime avec SA police embarquée (TerraSans), jamais
+ * avec la police du système en attendant qu'elle charge : on ouvre le dialogue
+ * d'impression seulement quand `document.fonts` est prêt. Sans cette attente,
+ * Chrome peut figer la page avec la police de repli, plus large, et la feuille
+ * déborde sur 2-3 pages (vu sur la tablette de l'organisateur).
+ * jsdom n'a pas `document.fonts` : on imprime tout de suite.
+ */
+export async function imprimerQuandLesPolicesSontLa(): Promise<void> {
+  await (document.fonts?.ready ?? Promise.resolve())
+  window.print()
+}
+
 export default function PageImpression() {
   const { id } = useParams()
   // `?? null` : sans lui, `undefined` voudrait dire deux choses — la requête
@@ -66,7 +79,7 @@ export default function PageImpression() {
   const fiche = personnage?.creation
   const imprimable = Boolean(fiche && !fiche.enfant && fiche.classe)
   useEffect(() => {
-    if (imprimable) window.print()
+    if (imprimable) void imprimerQuandLesPolicesSontLa()
   }, [imprimable])
 
   if (personnage === undefined) return <p className="text-muted-foreground">Chargement…</p>
@@ -93,7 +106,11 @@ export default function PageImpression() {
         <FeuilleImpression fiche={fiche} nomDuJoueur={personnage.nomDuJoueur} />
       </ApercuALEchelle>
       <div className="pas-a-imprimer flex flex-col gap-3">
-        <button type="button" onClick={() => window.print()} className="btn-secondaire">
+        <button
+          type="button"
+          onClick={() => void imprimerQuandLesPolicesSontLa()}
+          className="btn-secondaire"
+        >
           🖨 Imprimer / Enregistrer en PDF
         </button>
         <Link to={`/fiche/${personnage.id}`} className="btn-secondaire text-center">
