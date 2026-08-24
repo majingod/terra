@@ -34,8 +34,9 @@ import { getRules, getVersion } from '../rules/load'
 import { niveauAtteignable } from '../rules/montee'
 import { normaliserNiveau } from '../rules/niveau'
 import { languesAcquises } from '../rules/langues'
+import { languesAcquisesEnfant } from '../rules/langues_kids'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
-import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
+import { choixEnfant, etapesActivesEnfant, etapesValidesEnfant } from '../wizard/enfant'
 import { entreeDeCreation, niveauCourant } from '../wizard/historique'
 import { miseAJourMontee, type ChoixMontee } from '../wizard/montee'
 import { champNomDuJoueur, sansNomDuJoueur } from '../wizard/nomDuJoueur'
@@ -65,6 +66,8 @@ import EtapeTerminee from './creation/EtapeTerminee'
 import EtapeCampEnfant from './creation/enfant/EtapeCampEnfant'
 import EtapeClasseEnfant from './creation/enfant/EtapeClasseEnfant'
 import EtapeFicheEnfant from './creation/enfant/EtapeFicheEnfant'
+import EtapeLanguesEnfant from './creation/enfant/EtapeLanguesEnfant'
+import EtapeMetierEnfant from './creation/enfant/EtapeMetierEnfant'
 import EtapeNiveauEnfant from './creation/enfant/EtapeNiveauEnfant'
 import EtapeNomEnfant from './creation/enfant/EtapeNomEnfant'
 import Fenetre from './creation/Fenetre'
@@ -130,7 +133,7 @@ export default function Creer() {
   // Le flux actif se lit de la seule donnée d'âge existante : la tranche.
   const enfant = fiche.trancheAge === trancheEnfant()
   const etapes: readonly { id: string; nom: string; icone?: string }[] = enfant
-    ? ETAPES_ENFANT
+    ? etapesActivesEnfant(fiche)
     : ETAPES
   const valides = enfant ? etapesValidesEnfant(fiche) : etapesValides(fiche)
   const etape = Math.min(Math.max(etapeBrute, 0), etapes.length - 1)
@@ -303,8 +306,12 @@ export default function Creer() {
       faction: factionEnfant(choix.faction)?.nom ?? '',
       race: raceEnfant().nom,
       classe: classeEnfant(choix.classe)?.nom ?? '',
+      // D24 : la classe enfant se stocke en NOM ci-dessus — c'est l'id
+      // (`choix.classe`) qui sert à dériver le Druidique, pas ce nom.
+      competences: choix.competence ? [choix.competence] : [],
       capacites: capacitesEnfantAcquises(choix.classe, niveau).map((c) => c.id),
       niveau,
+      langues: [...languesAcquisesEnfant(choix.classe), ...(choix.langues ?? [])],
       createdAt: now,
       updatedAt: now,
       trancheAge: fiche.trancheAge,
@@ -424,6 +431,10 @@ export default function Creer() {
             <EtapeNiveauEnfant fiche={fiche} onChangement={appliquerChangement} />
           )}
           {etapeId === 'classe' && <EtapeClasseEnfant fiche={fiche} onMaj={maj} />}
+          {etapeId === 'metier' && (
+            <EtapeMetierEnfant fiche={fiche} onChangement={appliquerChangement} />
+          )}
+          {etapeId === 'langues-enfant' && <EtapeLanguesEnfant fiche={fiche} onMaj={maj} />}
           {etapeId === 'nom' && <EtapeNomEnfant fiche={fiche} onMaj={maj} />}
           {etapeId === 'fiche' && <EtapeFicheEnfant fiche={fiche} />}
         </>

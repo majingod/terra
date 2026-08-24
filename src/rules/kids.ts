@@ -54,6 +54,31 @@ export interface LigneEvolutionEnfant {
   degats?: number
 }
 
+/**
+ * D24 — une compétence de niveau 1, l'une des quatre de la planche (voir
+ * `competences.liste` du corpus enfant). `structure`
+ * (rules_kids.competences.structure) dit comment les champs se combinent :
+ * `affichage` quand il existe remplace `description`+`base`.
+ */
+export interface CompetenceEnfant {
+  id: string
+  nom: string
+  nom_affichage?: string
+  materiel?: string
+  base: string
+  avance: string
+  description: string
+  affichage?: string
+}
+
+/** Une langue de la planche enfant — mêmes ids que rules.json, corpus distinct. */
+export interface LangueEnfant {
+  id: string
+  nom: string
+  restriction?: string
+  note_11?: string
+}
+
 export interface RulesKids {
   meta: MetaKids
   stats_communes: {
@@ -68,6 +93,23 @@ export interface RulesKids {
   regle_maison: { nom: string; affichage: string }
   factions: { regle_choix: string; liste: FactionEnfant[] }
   classes: { liste: ClasseEnfant[] }
+  competences: {
+    source: string
+    regle: string
+    materiel_note: string
+    avance_note: string
+    structure: string
+    liste: CompetenceEnfant[]
+  }
+  langues: {
+    source: string
+    depart: string[]
+    depart_note: string
+    erudit: { supplementaires: number; note: string }
+    pigeables: string[]
+    regle_declaration: string
+    liste: LangueEnfant[]
+  }
 }
 
 /** Conformité vérifiée à la compilation (comme pour rules.json). */
@@ -110,6 +152,18 @@ export function raceEnfant(): { nom: string; note: string } {
 
 export function regleMaisonEnfant(): { nom: string; affichage: string } {
   return getRulesKids().regle_maison
+}
+
+// ---------------------------------------------------------------------------
+// Métier — D24 : une compétence de niveau 1, choisie parmi les quatre
+// ---------------------------------------------------------------------------
+
+export function competencesEnfant(): CompetenceEnfant[] {
+  return getRulesKids().competences.liste
+}
+
+export function competenceEnfant(competenceId?: string): CompetenceEnfant | undefined {
+  return competencesEnfant().find((competence) => competence.id === competenceId)
 }
 
 // ---------------------------------------------------------------------------

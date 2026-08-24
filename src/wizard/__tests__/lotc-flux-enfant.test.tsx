@@ -14,7 +14,7 @@ import { db } from '../../db'
 import { classesEnfant, factionsEnfant, getVersionKids } from '../../rules/kids'
 import { getRules } from '../../rules/load'
 import Creer from '../../pages/Creer'
-import { ETAPES_ENFANT } from '../enfant'
+import { ETAPES_ENFANT, etapesActivesEnfant } from '../enfant'
 
 const SEUIL = getRules().age_et_gates.seuil
 const FACTION = factionsEnfant()[0]
@@ -71,15 +71,35 @@ describe('Lot C — parcours de création ≤11', () => {
 
     choisir(new RegExp(SEUIL.enfant))
 
-    // Le stepper montre EXACTEMENT les étapes du flux enfant.
+    // Le stepper montre EXACTEMENT les étapes ACTIVES du flux enfant — sans
+    // métier choisi, « Langues » (D24, conditionnelle à Érudit) n'y figure pas.
     const etapes = screen
       .getByRole('navigation', { name: /étapes de création/i })
       .querySelectorAll('li')
     expect([...etapes].map((li) => li.textContent?.replace(/[^A-Za-zÀ-ÿ]/g, ''))).toEqual(
-      ETAPES_ENFANT.map((e) => e.nom.replace(/[^A-Za-zÀ-ÿ]/g, '')),
+      etapesActivesEnfant({ enfant: {} }).map((e) => e.nom.replace(/[^A-Za-zÀ-ÿ]/g, '')),
     )
-    // Aucune étape compétences / artisanats / talents / langues.
-    expect(ETAPES_ENFANT.map((e) => e.id)).toEqual(['age', 'camp', 'niveau', 'classe', 'nom', 'fiche'])
+    // Aucune étape artisanats / talents / destin / forces.
+    expect(ETAPES_ENFANT.map((e) => e.id)).toEqual([
+      'age',
+      'camp',
+      'niveau',
+      'classe',
+      'metier',
+      'langues-enfant',
+      'nom',
+      'fiche',
+    ])
+    // Sans Érudit, « langues-enfant » ne fait pas partie des étapes actives.
+    expect(etapesActivesEnfant({ enfant: {} }).map((e) => e.id)).toEqual([
+      'age',
+      'camp',
+      'niveau',
+      'classe',
+      'metier',
+      'nom',
+      'fiche',
+    ])
 
     continuer()
     await screen.findByText('Choisis ton camp')
@@ -92,6 +112,11 @@ describe('Lot C — parcours de création ≤11', () => {
     continuer()
     await screen.findByText('Ta classe')
     choisir(new RegExp(CLASSE.nom))
+
+    continuer()
+    await screen.findByText('Ton métier')
+    // Riche, pas Érudit : ce parcours n'exerce pas l'étape Langues (D24, testée à part).
+    choisir(/Riche/)
 
     continuer()
     await screen.findByText('Le nom de ton personnage')
@@ -116,6 +141,9 @@ describe('Lot C — parcours de création ≤11', () => {
     expect(personnage.niveau).toBe(1)
     expect(personnage.reglesVersion).toBe(getVersionKids())
     expect(personnage.creation?.enfant).toBeTruthy()
+    // D24 : le métier choisi s'enregistre, et Riche ne donne aucune langue en plus du Commun.
+    expect(personnage.competences).toEqual(['riche'])
+    expect(personnage.langues).toEqual(['commun'])
   })
 
   it('jumelle : taper l’icône d’une étape franchie y ramène', async () => {

@@ -58,6 +58,14 @@ export interface FicheEnfant {
    * optionnel, et les deux ne se confondent jamais.
    */
   nom?: string
+  /** D24 — la compétence de niveau 1 choisie (id), l'une des quatre de rules_kids.competences.liste. */
+  competence?: string
+  /**
+   * D24 — les 2 langues choisies avec Érudit. Jamais le Commun ni le
+   * Druidique, qui s'acquièrent d'office (rules/langues_kids.ts). Absent ou
+   * vide hors Érudit.
+   */
+  langues?: string[]
 }
 
 export interface FicheCreation {

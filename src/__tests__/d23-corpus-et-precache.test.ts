@@ -22,10 +22,14 @@ const DIST = join(RACINE, 'dist')
 const SW = join(DIST, 'sw.js')
 const IL_Y_A_UN_BUILD = existsSync(SW)
 
-/** Les trois corpus, aux empreintes du départ du lot (origin/main = 5324088). */
+/**
+ * Les trois corpus, aux empreintes du départ du lot (origin/main = 5324088).
+ * D24 met à jour `rules_kids.json` (1.0.0 → 1.1.0, métier + langues) : ce
+ * lot-ci n'est pas un lot de logique pure, c'est l'arbitrage attendu.
+ */
 const EMPREINTES: Record<string, string> = {
   'rules.json': 'b4c75ba4073b880127e95b07d9174824bcf0a0b21f0e85fc896b8ea67dbd8b78',
-  'rules_kids.json': '65030c85386649edffd55cdfb795cb3ffb0ad1ab32074c180040236d26d68424',
+  'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
   'tome_extraits.json': '24f4f45838f318f609bc8b701511b0f872defbefd841a41bd11ac1b103ec9462',
 }
 
