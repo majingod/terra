@@ -92,7 +92,7 @@ export interface AvantageHeritage {
   achat: string
   cout_xp: number
   max_achats?: number
-  restriction?: string
+  restriction?: { verbatim: string; affichage?: string }
 }
 
 export interface Capacite {
@@ -217,10 +217,12 @@ export interface Rules {
     }
   }
   heritage: {
-    regle_generale: string
-    xp_permanent: string
-    xp_temporaire: string
+    intro: { verbatim: string }
+    regle_generale: { verbatim: string }
+    xp_permanent: { verbatim: string; affichage?: string }
+    xp_temporaire: { verbatim: string; affichage?: string }
     desavantages: {
+      intro: { verbatim: string; affichage?: string }
       regle_plafond: { verbatim: string; application_wizard: string }
       liste: Desavantage[]
     }

@@ -24,10 +24,12 @@
  * ── Témoins mesurés (pas des assertions à figer) ────────────────────────────
  *   p.17 : 284/452 = 62,8 %   plancher 55
  *   p.18 : 337/502 = 67,1 %   plancher 62   (page coupée à « RESSOURCES ET VALEUR »)
+ *   p.20 : 379/640 = 59,2 %   plancher 55   (t014, corpus 1.2.1)
  *
  * ── Preuve que la jumelle sert à quelque chose (corpus d'avant t012) ────────
  *   p.17 :  96/452 = 21,2 %  <  plancher 55   → ROUGE
  *   p.18 : 296/502 = 59,0 %  <  plancher 62   → ROUGE
+ *   p.20 : 300/640 = 46,9 %  <  plancher 55   → ROUGE  (corpus 1.2.0, mesuré t014)
  */
 import { describe, expect, it } from 'vitest'
 import rules from '../../data/rules.json'

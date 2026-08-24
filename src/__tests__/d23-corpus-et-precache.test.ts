@@ -28,7 +28,7 @@ const IL_Y_A_UN_BUILD = existsSync(SW)
  * lot-ci n'est pas un lot de logique pure, c'est l'arbitrage attendu.
  */
 const EMPREINTES: Record<string, string> = {
-  'rules.json': 'b4c75ba4073b880127e95b07d9174824bcf0a0b21f0e85fc896b8ea67dbd8b78',
+  'rules.json': '49dcf0308d87e3a031731ec158ab9459cdc3e913839945048fff394c55f2874b',
   'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
   'tome_extraits.json': '24f4f45838f318f609bc8b701511b0f872defbefd841a41bd11ac1b103ec9462',
 }
