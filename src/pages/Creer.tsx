@@ -38,6 +38,7 @@ import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import { choixEnfant, ETAPES_ENFANT, etapesValidesEnfant } from '../wizard/enfant'
 import { entreeDeCreation, niveauCourant } from '../wizard/historique'
 import { miseAJourMontee, type ChoixMontee } from '../wizard/montee'
+import { champNomDuJoueur, sansNomDuJoueur } from '../wizard/nomDuJoueur'
 import { capacitesTroquees, donsPris } from '../wizard/troc'
 import type { FicheCreation } from '../wizard/types'
 import {
@@ -241,7 +242,13 @@ export default function Creer() {
       updatedAt: now,
       trancheAge: fiche.trancheAge,
       reglesVersion: getVersion(),
-      creation: complet,
+      // D25 : `creation` recopie la fiche du wizard — mais PAS le nom du
+      // joueur, qui n'a qu'un seul domicile sur l'enregistrement (sinon
+      // l'effacer depuis la fiche n'en retirerait qu'une copie sur deux).
+      creation: sansNomDuJoueur(complet),
+      // D25 : le vrai nom du joueur, trimé — et RIEN du tout quand la saisie
+      // est vide. C'est ici qu'il quitte le wizard pour l'enregistrement.
+      ...champNomDuJoueur(fiche.nomDuJoueur),
     })
     await db.brouillons.delete(ID_BROUILLON)
 
@@ -302,7 +309,11 @@ export default function Creer() {
       updatedAt: now,
       trancheAge: fiche.trancheAge,
       reglesVersion: getVersionKids(),
-      creation: complet,
+      // D25 : un seul domicile pour le nom, ici comme dans le flux 12+.
+      creation: sansNomDuJoueur(complet),
+      // D25 : le champ vaut pour les ≤11 comme pour les 12+ — à l'écran et à
+      // l'export. (D27-bis : eux n'ont pas de feuille imprimée.)
+      ...champNomDuJoueur(fiche.nomDuJoueur),
     })
     await db.brouillons.delete(ID_BROUILLON)
     setEnregistree(true)

@@ -1,7 +1,13 @@
 /**
- * Flux ≤11 — étape Nom. Le nom du PERSONNAGE, jamais le vrai nom du joueur.
- * C'est le seul champ libre de tout le flux enfant : ni date de naissance,
- * ni âge exact, ni histoire à écrire.
+ * Flux ≤11 — étape Nom : le nom du PERSONNAGE, et depuis D25 le vrai nom du
+ * JOUEUR, optionnel.
+ *
+ * Les deux ne se confondent jamais. Le nom du personnage est celui du jeu ;
+ * celui du joueur sert à retrouver sa fiche quand une famille en a plusieurs.
+ * D27-bis : les ≤11 n'ont pas de feuille imprimée — pour eux le champ vaut à
+ * l'écran et à l'export, et l'aide ne parle donc pas d'impression.
+ *
+ * Ni date de naissance ni âge exact ici, pas plus qu'ailleurs dans le flux.
  */
 import { avecChoixEnfant, choixEnfant } from '../../../wizard/enfant'
 import type { FicheCreation } from '../../../wizard/types'
@@ -22,7 +28,7 @@ export default function EtapeNomEnfant({ fiche, onMaj }: Props) {
       <Tutoriel
         etapeId="enfant-nom"
         gestes={['Écris le nom de ton personnage.', 'Puis passe à ta fiche.']}
-        pourquoi="c’est le nom de ton personnage dans le jeu — jamais ton vrai nom."
+        pourquoi="deux noms : celui de ton personnage pour le jeu, et le tien pour retrouver ta fiche. Ton vrai nom reste sur cet appareil — jamais en ligne."
       />
       <label className="my-2 block text-[17px] font-semibold" htmlFor="inom-enfant">
         Nom de ton personnage
@@ -37,7 +43,27 @@ export default function EtapeNomEnfant({ fiche, onMaj }: Props) {
         autoComplete="off"
       />
       <p className="mt-1 text-sm text-muted-foreground">
-        Le nom de ton <b>personnage</b> — jamais ton vrai nom.
+        Le nom de ton <b>personnage</b> — celui que les autres joueurs connaissent.
+      </p>
+      {/* D25 — le vrai nom du joueur vit sur la fiche elle-même
+          (`nomDuJoueur`), jamais sous les choix de la planche enfant : c'est le
+          MÊME champ que dans le flux 12+. */}
+      <label className="my-2 block text-[17px] font-semibold" htmlFor="inom-joueur-enfant">
+        Ton nom à toi (le joueur —{' '}
+        <span className="font-normal text-muted-foreground">optionnel</span>)
+      </label>
+      <input
+        id="inom-joueur-enfant"
+        type="text"
+        value={fiche.nomDuJoueur ?? ''}
+        onChange={(e) => onMaj({ ...fiche, nomDuJoueur: e.target.value })}
+        className={CHAMP}
+        placeholder="Ex. le vrai nom, ou laisse vide"
+        autoComplete="off"
+        maxLength={40}
+      />
+      <p className="mt-1 text-sm text-muted-foreground">
+        Pratique quand une famille a plusieurs fiches. Tu peux aussi le laisser vide.
       </p>
     </section>
   )

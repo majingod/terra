@@ -114,9 +114,14 @@ function libelleAchat(cout: number, achat: string): string {
 interface Props {
   fiche: FicheCreation
   /**
-   * Le vrai nom du joueur. ⚠️ AUCUN champ de la fiche ne le porte aujourd'hui
-   * (D10 : l'app ne stocke aucun vrai nom) — la case s'imprime donc vide, à
-   * remplir au crayon, tant que l'organisateur n'a pas tranché où ce nom vit.
+   * Le vrai nom du joueur — D25, le SEUL vrai nom que l'app stocke. Il est
+   * saisi volontairement, toujours optionnel, et vit sur l'appareil, sur cette
+   * feuille et dans l'export JSON ; ⛔ jamais en ligne, jamais dans le dépôt.
+   *
+   * Absent, la case s'imprime vide et se remplit au crayon, comme avant lui.
+   * Présent, il se rend sur UNE SEULE ligne, ellipse au-delà : la feuille est
+   * une A4 qui ne se replie pas, et un nom long ne casse pas sa géométrie (le
+   * `maxLength` de la saisie est la première garde, celle-ci la seconde).
    */
   nomDuJoueur?: string
 }
@@ -174,7 +179,7 @@ export default function FeuilleImpression({ fiche, nomDuJoueur }: Props) {
 
         <div className="ident">
           <div className="ch" style={{ flex: 1.4 }}>
-            <div className="l">{nomDuJoueur}</div>
+            <div className="l une-ligne">{nomDuJoueur}</div>
             <div className="e">Nom du joueur</div>
           </div>
           <div className="ch" style={{ flex: 1.5 }}>

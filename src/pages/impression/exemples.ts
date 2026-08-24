@@ -3,8 +3,10 @@
  * gates du lot.
  *
  * ⛔ Aucun vrai nom : le dépôt est public. Le nom du personnage est
- * manifestement fictif et se DÉDUIT du nom de la classe ; le nom du joueur
- * reste vide (aucun champ de la fiche ne le porte — voir FeuilleImpression).
+ * manifestement fictif et se DÉDUIT du nom de la classe ; le nom du joueur,
+ * lui, reste VIDE — D25 lui a donné un champ (`nomDuJoueur`), et ce module ne
+ * le remplit jamais : les aperçus gardent la case vide, à remplir au crayon.
+ * Une gate du lot le vérifie.
  *
  * D5 : rien n'est recopié du Tome. Les capacités, les achats, la race et le
  * niveau se déduisent du corpus par les fonctions du métier — la fabrique

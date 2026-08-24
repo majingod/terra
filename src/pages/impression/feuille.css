@@ -42,6 +42,9 @@
 .tm-feuille .ident .l{border-bottom:0.5mm solid #000;font-weight:bold;font-size:11pt;
   min-height:6mm;padding:0 1mm}
 .tm-feuille .ident .e{font-weight:bold;font-size:7.5pt}
+/* D25 — le nom du joueur tient sur UNE ligne, ellipse au-delà : la page A4 ne
+   se replie jamais, et un nom long ne doit pas la faire grandir d'un cran. */
+.tm-feuille .ident .l.une-ligne{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Corps : deux colonnes, jamais repliées. */
 .tm-feuille .corps{display:flex;gap:1.5mm;margin-top:1mm;align-items:flex-start;
