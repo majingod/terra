@@ -1,7 +1,7 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
   "date": "2026-08-19",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
@@ -25,8 +25,13 @@
     "plancher": 62,
     "coupe_a": "RESSOURCES ET VALEUR",
     "raison_coupe": "Les 4 tables du chapitre 4 (Ressources, Substances alchimiques, Objets du Forgeron, Runes) ne sont pas transcrites : arbitrage A11 en attente."
+   },
+   {
+    "page": 20,
+    "plancher": 55
    }
-  ]
+  ],
+  "corrections_v121": "v1.2.1 (t014, audit ch.5) : p.20 transcrite au complet — intro du chapitre, paragraphe d'XP d'héritage en entier, intro des désavantages — en objets { verbatim } sous gate ; 2 apostrophes ASCII (30e écart, clés hors gate) relocalisées depuis le témoin ; 11 corrections d'affichage D14 (xp_permanent, xp_temporaire, intro des désavantages, Boiteux, Borgne ou Myope, Muet, Fragile, Honorable, Peureux, Raciste, restriction du Don) ; p.20 ajoutée à couverture_pages (plancher 55 : 46,9 % sur v1.2.0 → rouge, 59,2 % ici). Aucun chiffre, aucun id, aucun verbatim existant modifié."
  },
  "caracteristiques": {
   "source": {
@@ -612,10 +617,25 @@
    "page": 20,
    "section": "Chapitre 5 : L'Héritage"
   },
-  "regle_generale": "Que ce soit l'XP permanent ou temporaire, le joueur ne peut les utiliser qu'à la création du personnage.",
-  "xp_permanent": "Chaque joueur reçoit 1 XP permanent pour chaque GN auquel il participe et 1 supplémentaire pour chaque final de saison. Ce type d'expérience appartient au joueur et non au personnage. Ces XP sont récupérés lorsque le joueur créer un nouveau personnage.",
-  "xp_temporaire": "Chaque personnage peut commencer avec des désavantages et handicapes lui conférant des XP exclusivement pour ce personnage à sa création.",
+  "intro": {
+   "verbatim": "Certains personnages sont nés plus chanceux que d’autres alors que d’autres sont nés malchanceux et ont dû apprendre à compenser leur héritage maudit."
+  },
+  "regle_generale": {
+   "verbatim": "Avec l’XP d’héritage le joueur peut acheter des avantages à son personnage. Il existe 2 types d’XP. Que ce soit l’XP permanent ou temporaire, le joueur ne peut les utiliser qu’à la création du personnage."
+  },
+  "xp_permanent": {
+   "verbatim": "Chaque joueur reçoit 1 XP permanent pour chaque GN auquel il participe et 1 supplémentaire pour chaque final de saison. Ce type d’expérience appartient au joueur et non au personnage. Ces XP sont récupérés lorsque le joueur créer un nouveau personnage.",
+   "affichage": "Chaque joueur reçoit 1 XP permanent pour chaque GN auquel il participe et 1 supplémentaire pour chaque final de saison. Ce type d’expérience appartient au joueur et non au personnage. Ces XP sont récupérés lorsque le joueur crée un nouveau personnage."
+  },
+  "xp_temporaire": {
+   "verbatim": "Chaque personnage peut commencer avec des désavantages et handicapes lui conférant des XP exclusivement pour ce personnage à sa création.",
+   "affichage": "Chaque personnage peut commencer avec des désavantages et handicaps lui conférant des XP exclusivement pour ce personnage à sa création."
+  },
   "desavantages": {
+   "intro": {
+    "verbatim": "Un personnage peut être créé avec des désavantages qu’il ait subis à sa naissance ou durant son background. Ces attributs confèrent des bonus d’XP d’héritage symbolisant l’effort que le personnage a appris à accomplir pour compétitionner avec les autres.",
+    "affichage": "Un personnage peut être créé avec des désavantages qu’il a subis à sa naissance ou durant son background. Ces attributs confèrent des bonus d’XP d’héritage symbolisant l’effort que le personnage a appris à accomplir pour compétitionner avec les autres."
+   },
    "regle_plafond": {
     "verbatim": "Seuls 3 désavantages confèrent de l’XP.",
     "application_wizard": "A6 tranché : le wizard laisse cocher plus de 3 désavantages (RP libre) mais ne compte l'XP que des 3 premiers cochés, avec message explicite à l'écran."
@@ -645,13 +665,15 @@
      "id": "boiteux",
      "nom": "Boiteux",
      "xp": 2,
-     "verbatim": "Votre jambe manque de force et vous êtes incapable de vous déplacer correctement avec celle-ci. Cette blessure ou maladie vous empêche de courir et vous devez vous déplacer avec une cane ou bâton."
+     "verbatim": "Votre jambe manque de force et vous êtes incapable de vous déplacer correctement avec celle-ci. Cette blessure ou maladie vous empêche de courir et vous devez vous déplacer avec une cane ou bâton.",
+     "affichage": "Votre jambe manque de force et vous êtes incapable de vous déplacer correctement avec celle-ci. Cette blessure ou maladie vous empêche de courir et vous devez vous déplacer avec une canne ou bâton."
     },
     {
      "id": "borgne_ou_myope",
      "nom": "Borgne ou Myope",
      "xp": 1,
-     "verbatim": "Vous avez besoin de lunette, il vous manque 1 œil ou bien celui-ci ne fonctionne plus (dois alors porter un cache-œil)."
+     "verbatim": "Vous avez besoin de lunette, il vous manque 1 œil ou bien celui-ci ne fonctionne plus (dois alors porter un cache-œil).",
+     "affichage": "Vous avez besoin de lunettes, il vous manque 1 œil ou bien celui-ci ne fonctionne plus (doit alors porter un cache-œil)."
     },
     {
      "id": "bossu",
@@ -663,19 +685,22 @@
      "id": "muet",
      "nom": "Muet",
      "xp": 3,
-     "verbatim": "Vous êtes incapable de parler. Ce désavantage peut aussi bien être une perte de voix totale qu'une perte partielle qui permet uniquement quelque grognement."
+     "verbatim": "Vous êtes incapable de parler. Ce désavantage peut aussi bien être une perte de voix totale qu'une perte partielle qui permet uniquement quelque grognement.",
+     "affichage": "Vous êtes incapable de parler. Ce désavantage peut aussi bien être une perte de voix totale qu'une perte partielle qui permet uniquement quelques grognements."
     },
     {
      "id": "fragile",
      "nom": "Fragile",
      "xp": 3,
-     "verbatim": "Votre personnage n’est pas habitué à la douleur et vous ferez un RP exagérer à la moindre blessure."
+     "verbatim": "Votre personnage n’est pas habitué à la douleur et vous ferez un RP exagérer à la moindre blessure.",
+     "affichage": "Votre personnage n’est pas habitué à la douleur et vous ferez un RP exagéré à la moindre blessure."
     },
     {
      "id": "honorable",
      "nom": "Honorable",
      "xp": 1,
      "verbatim": "Votre personnage ne peut pas mentir ou combattre de manière déloyale. (Interdit aux paladins et chevalier de la mort).",
+     "affichage": "Votre personnage ne peut pas mentir ou combattre de manière déloyale. (Interdit aux paladins et chevaliers de la mort).",
      "interdit_classes": [
       "paladin",
       "chevalier_de_la_mort"
@@ -706,13 +731,15 @@
      "id": "peureux",
      "nom": "Peureux",
      "xp": 2,
-     "verbatim": "Votre personnage évite le combat et ne participeras que si le risque de ne pas participer est plus grand que de fuir."
+     "verbatim": "Votre personnage évite le combat et ne participeras que si le risque de ne pas participer est plus grand que de fuir.",
+     "affichage": "Votre personnage évite le combat et ne participera que si le risque de ne pas participer est plus grand que de fuir."
     },
     {
      "id": "raciste",
      "nom": "Raciste",
      "xp": 1,
      "verbatim": "Votre personnage refuse de faire confiance, alliance ou toléré la présence d’une race (de personnage). +1XP si c’est une race de sa faction (devra travailler avec, mais difficilement).",
+     "affichage": "Votre personnage refuse de faire confiance, alliance ou tolérer la présence d’une race (de personnage). +1 XP si c’est une race de sa faction (devra travailler avec, mais difficilement).",
      "variante_xp": 2
     }
    ]
@@ -765,7 +792,10 @@
      "achat": "+1 Don",
      "cout_xp": 2,
      "max_achats": 3,
-     "restriction": "ne peux pas être échangé contre une capacité si magicien"
+     "restriction": {
+      "verbatim": "ne peux pas être échangé contre une capacité si magicien",
+      "affichage": "ne peut pas être échangé contre une capacité si magicien"
+     }
     }
    ]
   }

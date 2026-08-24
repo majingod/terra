@@ -155,7 +155,7 @@ describe('D18-bis ② — l’interdit du mage se lit dans les données', () => 
     // Le critère, pas la liste : on lit le champ, on ne recopie pas la phrase.
     expect(ACHAT_DON.restriction, `« ${ACHAT_DON.achat} » ne porte aucune restriction`)
       .toBeTruthy()
-    expect(ACHAT_DON.restriction!.length).toBeGreaterThan(0)
+    expect(ACHAT_DON.restriction!.verbatim.length).toBeGreaterThan(0)
   })
 
   it('aucun don acheté n’est troquable : le troc ne connaît que les niveaux', () => {
