@@ -18,11 +18,26 @@
  *
  * ⛔ Tout est préfixé par `.tm-feuille` : ces règles ne touchent aucun autre
  * écran de l'app, même chargées avec la feuille de style globale.
+ *
+ * D27-ter (t014) : la police est EMBARQUÉE (`polices.css`, TerraSans =
+ * métriques d'Arial) — la géométrie ne dépend plus de l'appareil. Le corps ne
+ * porte plus `page-break-inside: avoid` : si un jour la page déborde, on veut
+ * 2 pages avec l'en-tête attaché, pas 3 avec l'en-tête orphelin. Races 7,1 pt
+ * et rangées des listes 4 mm : du jeu sur les grandes classes au lieu
+ * de 2 — Chrome arrondit ses lignes au pixel, il lui faut cette marge.
+ *
+ * ⛔ LETTRE, pas A4 (`css.ts`) : au Québec le papier fait 215,9 × 279,4 mm —
+ * 17,6 mm plus court qu'une A4. Les rangées des voies font ~30 mm (le texte
+ * des capacités les commande, pas `height:18mm`) : la hauteur se règle par la
+ * taille du texte. Réglages t014 mesurés en Lettre : voies 8,8 pt, races
+ * 6,8 pt, dons 6,7 pt, listes 4 mm, bandeaux 11,5 pt → 8 mm de jeu sur les
+ * grandes classes, et la feuille tient encore en 1 page si la police de
+ * repli (Roboto) devait servir.
  */
 .tm-feuille,.tm-feuille *{box-sizing:border-box;margin:0;padding:0;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tm-feuille{width:196mm;background:#fff;color:#000;padding:1.5mm;
-  font-family:Arial,Helvetica,sans-serif;border:1px solid #bbb}
+  font-family:TerraSans,Arial,Helvetica,sans-serif;border:1px solid #bbb}
 .tm-feuille table{border-collapse:collapse}
 .tm-feuille .b{font-weight:bold}
 .tm-feuille .u{text-decoration:underline}
@@ -47,8 +62,7 @@
 .tm-feuille .ident .l.une-ligne{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Corps : deux colonnes, jamais repliées. */
-.tm-feuille .corps{display:flex;gap:1.5mm;margin-top:1mm;align-items:flex-start;
-  page-break-inside:avoid}
+.tm-feuille .corps{display:flex;gap:1.5mm;margin-top:1mm;align-items:flex-start}
 .tm-feuille .gauche{width:71%}
 .tm-feuille .droite{width:29%}
 
@@ -81,7 +95,7 @@
 .tm-feuille table.voies{width:100%;margin-top:1mm}
 .tm-feuille .voies th{border:0.45mm solid #000;font-size:10pt;padding:0.8mm;text-align:center}
 .tm-feuille .voies th.vide{border:none}
-.tm-feuille .voies td{border:0.45mm solid #000;font-size:9.2pt;padding:1.2mm 1.6mm;
+.tm-feuille .voies td{border:0.45mm solid #000;font-size:8.8pt;padding:1mm 1.4mm;
   vertical-align:top;width:31.5%;height:18mm}
 .tm-feuille .voies td.niv{width:6mm;text-align:center;font-weight:bold;font-size:9pt;
   vertical-align:middle;padding:0;line-height:1.25}
@@ -102,16 +116,16 @@
   font-size:7.4pt;width:calc(50% - 0.75mm)}
 
 /* Colonne de droite. */
-.tm-feuille h4{background:#000 !important;color:#fff !important;text-align:center;font-size:12pt;
+.tm-feuille h4{background:#000 !important;color:#fff !important;text-align:center;font-size:11.5pt;
   letter-spacing:0.5mm;padding:0.3mm;font-weight:bold}
 .tm-feuille h4 small{font-size:6.5pt;font-weight:bold;margin-left:2mm}
 .tm-feuille h4.espace{margin-top:1mm}
 .tm-feuille table.trace{width:100%}
-.tm-feuille .trace td{border:0.4mm solid #000;font-size:7.3pt;padding:0.4mm 1mm}
+.tm-feuille .trace td{border:0.4mm solid #000;font-size:6.8pt;padding:0.4mm 1mm}
 .tm-feuille .trace td.rn{font-weight:bold;text-align:center;vertical-align:middle;
   width:13mm;font-size:8.8pt}
 .tm-feuille table.tdons{width:100%}
-.tm-feuille .tdons td{border:0.4mm solid #000;font-size:6.9pt;padding:0.35mm 0.8mm;
+.tm-feuille .tdons td{border:0.4mm solid #000;font-size:6.7pt;padding:0.35mm 0.8mm;
   background:#f2f2f2}
 .tm-feuille .tdons td.dn{font-weight:bold;text-align:center;vertical-align:middle;
   width:15mm;font-size:8.2pt;background:none}
@@ -132,7 +146,7 @@
 .tm-feuille .liste{flex:1}
 .tm-feuille .liste h4{font-size:10.5pt}
 .tm-feuille .liste table{width:100%}
-.tm-feuille .liste td{border:0.4mm solid #000;font-size:7.8pt;height:4.6mm;padding:0 1mm}
+.tm-feuille .liste td{border:0.4mm solid #000;font-size:7.8pt;height:4mm;padding:0 1mm}
 .tm-feuille .liste td.ck{width:4.5mm;text-align:center;padding:0}
 .tm-feuille .liste tr.off td{background:#9a9a9a !important;color:#333}
 .tm-feuille .notef{font-size:7pt;border:0.3mm solid #000;padding:0.3mm 0.8mm;margin-top:0.4mm}

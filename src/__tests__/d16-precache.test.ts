@@ -27,7 +27,7 @@ const IL_Y_A_UN_BUILD = existsSync(SW)
  * Mesuré au commit de départ du lot « icônes PNG » (671c5f7) : 16 entrées,
  * 571,81 KiB — plus les trois PNG du manifeste ajoutés par ce lot.
  */
-const ENTREES_ATTENDUES = 19
+const ENTREES_ATTENDUES = 20
 /**
  * Plafond du brief.
  *
@@ -37,15 +37,20 @@ const ENTREES_ATTENDUES = 19
  * d'URL et compte d'entrées INCHANGÉS (19 entrées / 17 URL). Le plafond
  * passe de 640 à 700 KiB pour rouvrir de la marge — c'est un arbitrage de
  * l'organisateur, jamais une décision du lot.
+ *
+ * D27-ter (t014) : la feuille embarque sa police — +2 woff2 TerraSans (≈ 9 KiB
+ * chacun), −1 woff2 Cinzel 900 (zéro usage) : 19 → 20 entrées, 17 → 18 URL,
+ * 664,58 → 668,40 KiB sur disque.
  */
 const PLAFOND_KIB = 700
 
 /** Le jeu d'URL précachées, empreintes de contenu retirées. */
 const URLS_ATTENDUES = [
+  'assets/TerraSans-Bold.woff2',
+  'assets/TerraSans-Regular.woff2',
   'assets/cinzel-latin-400-normal.woff2',
   'assets/cinzel-latin-600-normal.woff2',
   'assets/cinzel-latin-700-normal.woff2',
-  'assets/cinzel-latin-900-normal.woff2',
   'assets/crimson-text-latin-400-italic.woff2',
   'assets/crimson-text-latin-400-normal.woff2',
   'assets/crimson-text-latin-600-normal.woff2',

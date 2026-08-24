@@ -38,6 +38,7 @@ import { donsPris } from '../../wizard/troc'
 import type { CleCarac, FicheCreation } from '../../wizard/types'
 import { texteAffiche, type SourceDeTexte } from '../creation/ui'
 import { CSS_PAGE } from './css'
+import './polices.css'
 import './feuille.css'
 
 /**
