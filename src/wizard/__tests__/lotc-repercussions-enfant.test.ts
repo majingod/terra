@@ -15,7 +15,7 @@ const CLASSE = classesEnfant()[0]
 function ficheAuNiveau(niveau: number): FicheCreation {
   return {
     trancheAge: trancheEnfant(),
-    enfant: { faction: 'sanctum', classe: CLASSE.id, niveau, nom: 'Témoin' },
+    enfant: { faction: 'sanctum', classe: CLASSE.id, niveau, nom: 'Témoin', competence: 'riche' },
   }
 }
 

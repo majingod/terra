@@ -2,37 +2,49 @@
  * Flux de création ≤11 ans — étapes, validation, répercussions.
  *
  * Il s'embranche à l'étape tranche d'âge EXISTANTE du wizard : camp →
- * niveau → classe → nom du personnage → fiche. Aucune étape compétences ni
- * artisanats : la gate vient de la tranche (`trancheEnfant()`, lue de
- * rules.json), jamais d'un marqueur posé sur le joueur.
+ * niveau → classe → métier → (langues, si Érudit) → nom du personnage →
+ * fiche. Aucun artisanat n'y figure jamais (A5) : les artisanats du Tome
+ * restent hors de portée des ≤11, la gate vient de la tranche
+ * (`trancheEnfant()`, lue de rules.json), jamais d'un marqueur posé sur le
+ * joueur. D24 ouvre en revanche UNE compétence de niveau 1 à cette tranche.
  *
  * Les règles lues ici viennent TOUTES de rules_kids.json (la planche), et
  * d'aucune autre autorité. La fenêtre de répercussions est celle du 12+ :
  * mêmes régimes, aucun troisième inventé — ici c'est « l'impossible se
  * retire tout seul et la fenêtre le nomme », parce qu'une baisse de niveau
- * reprend des capacités et des bonus que la planche donne d'office.
+ * reprend des capacités et des bonus que la planche donne d'office, et que
+ * quitter Érudit reprend les langues qu'il avait données.
  */
 import {
   capacitesEnfantAcquises,
   classeEnfant,
   classesEnfant,
+  competenceEnfant,
   factionEnfant,
   niveauxPossiblesEnfant,
   normaliserNiveauEnfant,
   tableEvolutionEnfant,
 } from '../rules/kids'
+import { droitLanguesEnfant, languesPigeablesEnfant } from '../rules/langues_kids'
 import type { FicheCreation, FicheEnfant } from './types'
 import { trancheEnfant, type Changement } from './validation'
 
 /**
  * Étapes du flux enfant. Chacune porte son icône : le stepper les affiche
  * nommées, et taper une icône ramène à son étape (exigences ① et ③).
+ *
+ * D24 : `langues-enfant` est CONDITIONNELLE — voir `etapesActivesEnfant`.
+ * Cette liste reste le graphe complet (elle sert aussi de source aux
+ * validateurs) ; ce qui se rend et se navigue vient toujours de la version
+ * filtrée pour la fiche en cours.
  */
 export const ETAPES_ENFANT = [
   { id: 'age', nom: 'Âge', icone: '👋' },
   { id: 'camp', nom: 'Camp', icone: '🛡️' },
   { id: 'niveau', nom: 'Niveau', icone: '⭐' },
   { id: 'classe', nom: 'Classe', icone: '⚔️' },
+  { id: 'metier', nom: 'Métier', icone: '🛠️' },
+  { id: 'langues-enfant', nom: 'Langues', icone: '🗣️' },
   { id: 'nom', nom: 'Nom', icone: '✍️' },
   { id: 'fiche', nom: 'Fiche', icone: '📜' },
 ] as const
@@ -47,6 +59,17 @@ export function choixEnfant(fiche: FicheCreation): FicheEnfant {
 /** Remplace les choix enfant sans toucher au reste de la fiche. */
 export function avecChoixEnfant(fiche: FicheCreation, choix: FicheEnfant): FicheCreation {
   return { ...fiche, enfant: { ...choixEnfant(fiche), ...choix } }
+}
+
+/**
+ * D24 — les étapes RÉELLEMENT actives pour cette fiche : `langues-enfant`
+ * n'existe que si le métier choisi est Érudit. Le fil, le stepper et la
+ * validité de la fiche se calculent tous sur cette liste, jamais sur le
+ * graphe brut `ETAPES_ENFANT`.
+ */
+export function etapesActivesEnfant(fiche: FicheCreation) {
+  const avecLangues = choixEnfant(fiche).competence === 'erudit'
+  return ETAPES_ENFANT.filter((etape) => avecLangues || etape.id !== 'langues-enfant')
 }
 
 // ---------------------------------------------------------------------------
@@ -82,11 +105,27 @@ export function problemesNomEnfant(fiche: FicheCreation): string[] {
   return []
 }
 
+/** D24 — un métier parmi les quatre de la planche. */
+export function problemesMetierEnfant(fiche: FicheCreation): string[] {
+  if (!competenceEnfant(choixEnfant(fiche).competence)) return ['métier non choisi']
+  return []
+}
+
+/** D24 — exactement le droit de langues (2 avec Érudit) ; l'étape n'existe que dans ce cas. */
+export function problemesLanguesEnfant(fiche: FicheCreation): string[] {
+  const choix = choixEnfant(fiche)
+  const droit = droitLanguesEnfant(choix.competence)
+  if ((choix.langues ?? []).length !== droit) return ['langues incomplètes']
+  return []
+}
+
 const VALIDATEURS_ENFANT: Record<EtapeEnfantId, (fiche: FicheCreation) => string[]> = {
   age: problemesAgeEnfant,
   camp: problemesCampEnfant,
   niveau: problemesNiveauEnfant,
   classe: problemesClasseEnfant,
+  metier: problemesMetierEnfant,
+  'langues-enfant': problemesLanguesEnfant,
   nom: problemesNomEnfant,
   fiche: () => [],
 }
@@ -99,9 +138,9 @@ export function etapeValideEnfant(fiche: FicheCreation, etape: EtapeEnfantId): b
   return problemesEtapeEnfant(fiche, etape).length === 0
 }
 
-/** La fiche (dernière étape) est valide ssi toutes les précédentes le sont. */
+/** La fiche (dernière étape) est valide ssi toutes les précédentes (actives) le sont. */
 export function etapesValidesEnfant(fiche: FicheCreation): boolean[] {
-  const valides = ETAPES_ENFANT.map((etape) => etapeValideEnfant(fiche, etape.id))
+  const valides = etapesActivesEnfant(fiche).map((etape) => etapeValideEnfant(fiche, etape.id))
   valides[valides.length - 1] = valides.slice(0, -1).every(Boolean)
   return valides
 }
@@ -143,4 +182,27 @@ export function changerNiveauEnfant(fiche: FicheCreation, nouveauNiveau: number)
 /** Classes proposées : toutes, dans n'importe quelle faction (choix libre). */
 export function classesProposeesEnfant() {
   return classesEnfant()
+}
+
+function nomDeLangueEnfant(id: string): string {
+  return languesPigeablesEnfant().find((langue) => langue.id === id)?.nom ?? id
+}
+
+/**
+ * Changement de métier. Choisir un métier différent n'a de répercussion que
+ * lorsqu'on QUITTE Érudit avec des langues déjà choisies : la fenêtre les
+ * nomme avant de les vider. Rejoindre Érudit, ou changer entre deux métiers
+ * sans Érudit, s'applique tout de suite.
+ */
+export function changerMetierEnfant(fiche: FicheCreation, competenceId: string): Changement {
+  const choix = choixEnfant(fiche)
+  const langues = choix.langues ?? []
+  const suite = avecChoixEnfant(fiche, {
+    competence: competenceId,
+    langues: competenceId === 'erudit' ? choix.langues : undefined,
+  })
+  if (choix.competence !== 'erudit' || competenceId === 'erudit' || langues.length === 0) {
+    return { fiche: suite, retraits: [] }
+  }
+  return { fiche: suite, retraits: [`Langues : ${langues.map(nomDeLangueEnfant).join(', ')}`] }
 }

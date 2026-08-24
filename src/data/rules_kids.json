@@ -1,14 +1,15 @@
 {
   "meta": {
     "fichier": "rules_kids.json",
-    "version": "1.0.0",
-    "date": "2026-08-19",
+    "version": "1.1.0",
+    "date": "2026-08-23",
     "tranche": "≤11",
     "autorite": "La planche de cartes des règles simplifiées. Corpus DISTINCT du Tome : jamais mélangé à rules.json, jamais lu par le flux 12+.",
     "transcription": "Transcrit de l'image de la planche par Claude-projet ; corrections d'affichage arbitrées par Fred (t006).",
     "structure": "verbatim = texte de la planche, intact · affichage = correction validée. Quand affichage est absent, le verbatim est déjà le texte à montrer.",
     "regle_maison_source": "Arbitrage Fred, 2026-08-19.",
-    "textes_faction_source": "Textes enfants validés par Fred, 2026-08-19 — écrits pour cette tranche, absents de la planche."
+    "textes_faction_source": "Textes enfants validés par Fred, 2026-08-19 — écrits pour cette tranche, absents de la planche.",
+    "lot_d24_source": "Compétences de niveau 1 et langues : arbitrage D24 (Fred, t010, 2026-08-22). Textes base/avance/materiel/description et restrictions de langues copiés à l'octet du corpus 12+ (rules.json v1.2.0, Tome V1.2) — sauf l'affichage ≤11 d'Érudit, validé par Fred. Restrictions de langues identiques aux 12+ (D24 ③-bis)."
   },
   "stats_communes": {
     "pv": 3,
@@ -160,6 +161,75 @@
             "affichage": "1 fois par heure : rappelle un mort à la vie au maximum de ses PV."
           }
         ]
+      }
+    ]
+  },
+  "competences": {
+    "source": "Arbitrage D24 (Fred, 2026-08-22) : la compétence de niveau 1 s'ouvre aux ≤11 — Érudit, Riche, Herboriste, Mineur. Les artisanats du Tome (Marchand, Alchimiste, Forgeron, Runiste) restent interdits aux 11 ans et moins (A5).",
+    "regle": "1 compétence au niveau 1, à choisir parmi les 4.",
+    "materiel_note": "Le matériel se suggère, ne s'exige jamais — les règles sont plus souples pour les enfants (D24 ④).",
+    "avance_note": "L'avantage avancé s'ouvre à l'atelier de faction rang 2. L'app l'affiche, ne l'accorde jamais (D24 ⑤).",
+    "structure": "affichage (quand présent) = texte ≤11 validé par Fred, montré à la place de description+base. Sinon, les textes 12+ s'affichent tels quels.",
+    "liste": [
+      {
+        "id": "erudit",
+        "nom": "Érudit",
+        "base": "Le personnage choisit 1 langue supplémentaire et apprend à lire. S'il n'est pas illettré (plus de 1 d'esprit), il obtient 2 langues supplémentaires.",
+        "avance": "Le personnage peut, à chaque GN, demander une information à un MJ.",
+        "description": "Le personnage a été bien éduqué",
+        "affichage": "Ton personnage a été bien éduqué. Il sait lire, et en plus du Commun il parle 2 autres langues de ton choix."
+      },
+      {
+        "id": "riche",
+        "nom": "Riche",
+        "base": "Le personnage commence avec 1 Po comme argent de départ.",
+        "avance": "Le personnage obtient 2 Pa par GN et 2 Pa de plus chaque fois qu'il accomplit une quête.",
+        "description": "Le personnage vient d’une famille aisée."
+      },
+      {
+        "id": "herboriste",
+        "nom": "Herboriste",
+        "materiel": "Serpe, Bol et Mortier",
+        "base": "Le personnage peut allez récolter jusqu'à 5 Alchimites par GN dans le jardin. (Dans la zone du jardin, des cordes pleines de nœuds seront attachées à des plantes. L’herboriste doit rapporter la corde complètement détachée et intacte à un MJ).",
+        "avance": "1 fois par GN, un évènement aura lieu au jardin dans lequel une créature pourra être vaincue et tout herboriste survivant peut récolter 1 Arcanite sur la créature (le maximum d'Arcanite récupéré dépend de la créature).",
+        "description": "Le personnage sait cultiver la végétation à son profit."
+      },
+      {
+        "id": "mineur",
+        "nom": "Mineur",
+        "nom_affichage": "Mineur (la mine)",
+        "materiel": "Pioche et/ou pelle.",
+        "base": "Le personnage peut allez récolter jusqu'à 15 Pc par GN dans la mine. (Dans la zone de la mine sera laissé des pierres multicolores, chaque mineur aura sa couleur d’attribué ne pouvant rapporte que celle-ci au MJ en échange de Pc.)",
+        "avance": "1 fois par GN, un évènement aura lieu de la mine dans lequel une créature pourra être vaincu et tout mineur survivant peut récolter 1 métal rare (dépendamment de la créature, Adamantium, Aurorium ou Mythril).",
+        "description": "Le personnage peut prélever les richesses de la pierre."
+      }
+    ]
+  },
+  "langues": {
+    "source": "Arbitrage D24 ③ et ③-bis (Fred, 2026-08-22). Restrictions identiques aux 12+ ; textes de restriction copiés à l'octet de rules.json v1.2.0.",
+    "depart": [ "commun" ],
+    "depart_note": "Tout enfant part avec le Commun — race fixe Humain, mêmes langues de départ que l'Humain 12+.",
+    "erudit": { "supplementaires": 2, "note": "Toujours 2 — un ≤11 n'a pas de caractéristique Esprit, il n'est donc jamais illettré (D24 ③)." },
+    "pigeables": [ "nain", "elfe", "orc", "runique", "abyssal" ],
+    "regle_declaration": "Lorsque le personnage parle une langue autre que le commun, il doit commencer sa phrase en déclarant quelle langue il parle.",
+    "liste": [
+      { "id": "commun", "nom": "Commun" },
+      { "id": "nain", "nom": "Nain" },
+      { "id": "elfe", "nom": "Elfe" },
+      { "id": "orc", "nom": "Orc" },
+      { "id": "runique", "nom": "Runique" },
+      { "id": "abyssal", "nom": "Abyssal" },
+      {
+        "id": "druidique",
+        "nom": "Druidique",
+        "restriction": "Langage secret des druides, seuls les druides y ont accès et le possèdent dès le début.",
+        "note_11": "Un enfant Druide le possède dès le début — ce n'est jamais un choix. Les autres classes enfant n'y ont pas accès."
+      },
+      {
+        "id": "des_morts",
+        "nom": "Langue des morts",
+        "restriction": "Langage des morts-vivants : Uniquement accessible aux sorciers et chevaliers de la mort, mais ne commence pas avec.",
+        "note_11": "Ni Sorcier ni Chevalier de la mort n'existent chez les enfants — jamais accessible à un ≤11."
       }
     ]
   }

@@ -1,13 +1,16 @@
 /**
  * Fiche ≤11 (planche enfant) : Identité, Statistiques, « Ce que tu sais
  * faire » (seulement l'acquis — les pouvoirs au-dessus du niveau ne sont pas
- * listés), la règle maison, et la version du corpus enfant lue du fichier.
+ * listés), D24 « Ton métier » et « Tes langues » (absentes sur une fiche
+ * d'avant le lot, sans `competence`), la règle maison, et la version du
+ * corpus enfant lue du fichier.
  *
  * Tous les textes passent par TexteRegle (`affichage ?? verbatim`, D14).
  */
 import {
   capacitesEnfantAcquises,
   classeEnfant,
+  competenceEnfant,
   factionEnfant,
   getVersionKids,
   normaliserNiveauEnfant,
@@ -15,6 +18,7 @@ import {
   regleMaisonEnfant,
   statsEnfant,
 } from '../../../rules/kids'
+import { languesAcquisesEnfant, languesPigeablesEnfant } from '../../../rules/langues_kids'
 import { choixEnfant } from '../../../wizard/enfant'
 import type { FicheCreation } from '../../../wizard/types'
 import { Badge, TexteRegle } from '../ui'
@@ -36,6 +40,13 @@ export default function FicheEnfantAffichage({ fiche }: { fiche: FicheCreation }
   const stats = statsEnfant(choix.classe, niveau)
   const capacites = capacitesEnfantAcquises(choix.classe, niveau)
   const regleMaison = regleMaisonEnfant()
+  // D24 — absent sur une fiche d'avant le lot : la section entière s'efface,
+  // rien ne casse, rien ne s'invente à sa place.
+  const competence = competenceEnfant(choix.competence)
+  const languesAcquises = languesAcquisesEnfant(choix.classe)
+  const languesChoisies = (choix.langues ?? []).map(
+    (id) => languesPigeablesEnfant().find((langue) => langue.id === id)?.nom ?? id,
+  )
 
   const tuiles: Array<[string, number, string]> = stats
     ? [
@@ -102,6 +113,41 @@ export default function FicheEnfantAffichage({ fiche }: { fiche: FicheCreation }
               <TexteRegle source={capacite} />
             </div>
           ))}
+        </Sheet>
+      )}
+
+      {competence && (
+        <Sheet titre="Ton métier">
+          <p className="my-1 text-[17px] font-semibold">
+            {competence.nom_affichage ?? competence.nom}
+          </p>
+          {competence.affichage ? (
+            <TexteRegle source={{ affichage: competence.affichage }} />
+          ) : (
+            <>
+              <TexteRegle source={{ verbatim: competence.description }} />
+              <TexteRegle source={{ verbatim: competence.base }} />
+            </>
+          )}
+          {competence.materiel && (
+            <Badge>{`🎒 Apporte si tu peux : ${competence.materiel} — pas grave si tu n'en as pas.`}</Badge>
+          )}
+          <details className="mt-1.5 border-t border-border/30 pt-1.5">
+            <summary className="cursor-pointer text-sm text-secondary-foreground">
+              🔒 Avantage avancé — à l'atelier de faction rang 2
+            </summary>
+            <TexteRegle source={{ verbatim: competence.avance }} />
+          </details>
+        </Sheet>
+      )}
+
+      {competence && (
+        <Sheet titre="Tes langues">
+          <p className="my-1 text-[17px]">
+            Commun
+            {languesAcquises.includes('druidique') ? ' · (Druidique)' : ''}
+            {languesChoisies.length > 0 ? ` · ${languesChoisies.join(', ')}` : ''}
+          </p>
         </Sheet>
       )}
 

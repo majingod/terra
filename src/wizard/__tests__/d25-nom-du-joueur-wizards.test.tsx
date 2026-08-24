@@ -28,7 +28,7 @@ import { classesEnfant, factionsEnfant, niveauxPossiblesEnfant } from '../../rul
 import { niveauMin } from '../../rules/niveau'
 import Creer from '../../pages/Creer'
 import { AUTRE_NOM_JOUEUR_FICTIF, NOM_JOUEUR_FICTIF } from '../../__tests__/aide-noms-joueur'
-import { ETAPES_ENFANT } from '../enfant'
+import { etapesActivesEnfant } from '../enfant'
 import { ETAPES, trancheEnfant } from '../validation'
 import { ficheComplete } from './aide-fiche-complete'
 
@@ -38,7 +38,12 @@ const BAS = niveauMin()
 
 /** L'étape « Nom » de chaque flux — lue de la liste d'étapes, jamais comptée à la main. */
 const ETAPE_NOM = ETAPES.findIndex((e) => e.id === 'nom')
-const ETAPE_NOM_ENFANT = ETAPES_ENFANT.findIndex((e) => e.id === 'nom')
+/**
+ * D24 : `langues-enfant` est conditionnelle — l'index de « Nom » se lit donc
+ * des étapes ACTIVES pour une fiche sans métier choisi (celle que
+ * `semerBrouillonEnfant` sème plus bas), pas du graphe brut.
+ */
+const ETAPE_NOM_ENFANT = etapesActivesEnfant({ enfant: {} }).findIndex((e) => e.id === 'nom')
 
 beforeAll(() => {
   // jsdom n'implémente ni l'un ni l'autre ; le wizard s'en sert au clic.
@@ -89,7 +94,7 @@ async function semerBrouillonAdulte() {
   })
 }
 
-/** Le même, côté planche ≤11 : camp, niveau et classe faits, posé sur Nom. */
+/** Le même, côté planche ≤11 : camp, niveau, classe et métier faits, posé sur Nom. */
 async function semerBrouillonEnfant() {
   const fiche = {
     trancheAge: trancheEnfant(),
@@ -97,6 +102,9 @@ async function semerBrouillonEnfant() {
       faction: factionsEnfant()[0].id,
       classe: classesEnfant()[0].id,
       niveau: niveauxPossiblesEnfant()[0],
+      // D24 : Riche, pas Érudit — ce test porte sur le nom du joueur, pas sur
+      // l'étape Langues (testée à part).
+      competence: 'riche',
       nom: 'Brume',
     },
   }
