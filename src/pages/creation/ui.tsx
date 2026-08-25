@@ -209,11 +209,35 @@ export function texteAffiche(source: SourceDeTexte): string {
  * affiche `affichage ?? verbatim`. Aucune correction n'est codée ici : elles
  * vivent toutes dans les champs `affichage` des données (rules.json 1.1.0).
  */
-export function TexteRegle({ source, gras }: { source: SourceDeTexte; gras?: string }) {
+export function TexteRegle({
+  source,
+  gras,
+  etiquette,
+  classe,
+  enfants,
+}: {
+  source: SourceDeTexte
+  gras?: string
+  /**
+   * Étiquette rendue TELLE QUELLE en gras — celles que le Tome écrit
+   * lui-même (« Mana. », « Fouiller une personne : ») et celles que l'écran
+   * pose (« Avantage de base : »). `gras`, lui, ajoute son propre point.
+   */
+  etiquette?: string
+  /** Peau du paragraphe. Sans elle, celle du wizard, inchangée. */
+  classe?: string
+  /**
+   * Le texte DÉJÀ découpé, quand l'écran doit y glisser un lien croisé. Ce
+   * découpage part toujours de `texteAffiche(source)` : D14 s'applique en
+   * amont, et `source` reste la source de vérité du paragraphe.
+   */
+  enfants?: ReactNode
+}) {
   return (
-    <p className="my-1 text-[15px] italic text-secondary-foreground">
+    <p className={classe ?? 'my-1 text-[15px] italic text-secondary-foreground'}>
       {gras && <b className="not-italic">{gras}. </b>}
-      {texteAffiche(source)}
+      {etiquette && <b className="not-italic">{etiquette} </b>}
+      {enfants ?? texteAffiche(source)}
     </p>
   )
 }

@@ -194,6 +194,136 @@
   .tableau-regles .cellule-nom {
     @apply whitespace-nowrap font-titre text-[16.5px] font-bold text-gold;
   }
+
+  /* --- Encyclopédie D9-ter (maquette v3.1) ------------------------------- */
+  /* La taille du texte est posée sur le conteneur (3 crans) : tout ce qui est
+     à l'intérieur hérite, rien n'est figé en pixels. */
+  /* Le manuel est dense : interligne resserré, comme la maquette v3.1. */
+  .encyclo-page {
+    line-height: 1.5;
+  }
+  .encyclo-entete {
+    @apply sticky top-0 z-10 -mx-4 mb-2 border-b border-border/50 bg-background/95 px-4
+      pb-2 pt-1 backdrop-blur-sm;
+  }
+  .champ-recherche {
+    @apply min-h-11 w-full rounded-xl border border-border bg-input px-3 py-2 font-corps
+      text-[16px] text-foreground placeholder:text-muted-foreground;
+  }
+  .chips-barre {
+    @apply -mx-4 flex gap-2 overflow-x-auto px-4 pb-1;
+  }
+  .chip-compte {
+    @apply ml-1 font-sans text-[11.5px] text-muted-foreground;
+  }
+  .chip-on .chip-compte {
+    @apply text-gold;
+  }
+  .groupe-tete {
+    @apply mb-1 mt-5 flex items-baseline gap-2;
+  }
+  .groupe-titre {
+    @apply flex-1 font-titre text-[16px] font-semibold text-gold;
+  }
+  .btn-mini {
+    @apply min-h-11 rounded-lg border border-border bg-input px-3 py-1 font-sans text-[12px]
+      text-muted-foreground;
+  }
+  /* La cible d'un lien croisé se pose SOUS les en-têtes collants. */
+  .acc {
+    @apply my-2 overflow-hidden rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm;
+    scroll-margin-top: 172px;
+  }
+  .acc-sous {
+    @apply bg-popover/60;
+  }
+  .acc-tete {
+    @apply flex min-h-touch cursor-pointer list-none flex-wrap items-center gap-1 py-2 pl-3.5
+      pr-24 font-titre font-semibold text-foreground;
+  }
+  .acc-tete::-webkit-details-marker {
+    display: none;
+  }
+  .acc[open] > .acc-tete {
+    @apply border-b border-border/60 text-gold;
+  }
+  .acc-corps {
+    @apply px-3.5 pb-3 pt-1;
+  }
+  .acc-signe {
+    @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-corps text-xl
+      text-gold;
+  }
+  .etoile {
+    @apply absolute right-9 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center
+      rounded-full text-[17px] text-muted-foreground;
+  }
+  .etoile-on {
+    @apply text-gold;
+  }
+  .etoile-carte {
+    @apply float-right flex h-11 w-11 items-center justify-center rounded-full text-[17px]
+      text-muted-foreground;
+  }
+  .regle-encyclo {
+    @apply my-2 text-secondary-foreground;
+  }
+  .regle-lore {
+    @apply my-2 italic text-muted-foreground;
+  }
+  .sous-titre-encyclo {
+    @apply mt-3 block font-titre text-[13.5px] tracking-wide text-gold;
+  }
+  .def-ligne {
+    @apply border-b border-border/40 py-1.5 last:border-b-0;
+  }
+  .def-nom {
+    @apply font-titre text-[14px] tracking-wide text-gold;
+  }
+  .carte-objet {
+    @apply my-2 rounded-lg border border-border/50 bg-popover/55 px-3 py-2.5;
+    scroll-margin-top: 172px;
+  }
+  .nom-objet {
+    @apply font-titre text-[15.5px] font-semibold text-gold;
+  }
+  .rangee-pastilles {
+    @apply my-1.5 flex flex-wrap gap-1;
+  }
+  .badge-rouge {
+    @apply border-destructive/40 bg-destructive/15 text-destructive-foreground;
+  }
+  .badge-sanctum {
+    @apply border-sanctum/30 bg-sanctum/20 text-sanctum-texte;
+  }
+  .badge-legion {
+    @apply border-legion/30 bg-legion/20 text-legion-texte;
+  }
+  .lien-croise {
+    @apply text-gold underline decoration-dotted underline-offset-4;
+  }
+  .btn-haut {
+    @apply fixed bottom-24 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full
+      border border-gold/50 bg-card text-xl text-gold backdrop-blur-sm;
+  }
+  .rien-ne-correspond {
+    @apply py-6 text-center text-muted-foreground;
+  }
+  /* La cible d'un lien croisé s'annonce brièvement, puis se tait. */
+  .surligne {
+    animation: surligne-encyclo 1.4s ease-out;
+  }
+}
+
+@keyframes surligne-encyclo {
+  from {
+    outline: 2px solid oklch(var(--gold));
+    outline-offset: 2px;
+  }
+  to {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
