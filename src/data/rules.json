@@ -1,9 +1,9 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
-  "date": "2026-08-19",
+  "date": "2026-08-24",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
   "corrections_vs_lot1": "Codes du Chevalier de la mort et du Paladin complétés (3 lignes chacun ; lot1 n'en portait qu'une — trouvaille t003).",
   "source": "Tome des règles V1.2 (PDF projet) + Aide-mémoire (vérification croisée)",
@@ -17,21 +17,193 @@
   "couverture_tome": "Jumelle de la gate de fidélité (t012). La gate de fidélité prouve que chaque texte sous gate de ce fichier se retrouve mot pour mot dans le Tome ; elle ne dit RIEN des manques. Celle-ci prouve l’inverse, page par page : pour chaque page listée dans couverture_pages, au moins « plancher » pour cent des groupes de 5 mots consécutifs de la page du Tome doivent se retrouver dans ce fichier. Les zones volontairement non transcrites se déclarent par un marqueur de coupe, jamais par une liste de lignes écrite à la main.",
   "couverture_pages": [
    {
+    "page": 2,
+    "plancher": 85
+   },
+   {
+    "page": 3,
+    "plancher": 86
+   },
+   {
+    "page": 4,
+    "plancher": 77
+   },
+   {
+    "page": 5,
+    "plancher": 63
+   },
+   {
+    "page": 6,
+    "plancher": 55
+   },
+   {
+    "page": 7,
+    "plancher": 58
+   },
+   {
+    "page": 8,
+    "plancher": 64
+   },
+   {
     "page": 17,
     "plancher": 55
    },
    {
     "page": 18,
-    "plancher": 62,
-    "coupe_a": "RESSOURCES ET VALEUR",
-    "raison_coupe": "Les 4 tables du chapitre 4 (Ressources, Substances alchimiques, Objets du Forgeron, Runes) ne sont pas transcrites : arbitrage A11 en attente."
+    "plancher": 56
+   },
+   {
+    "page": 19,
+    "plancher": 29
    },
    {
     "page": 20,
     "plancher": 55
    }
   ],
-  "corrections_v121": "v1.2.1 (t014, audit ch.5) : p.20 transcrite au complet — intro du chapitre, paragraphe d'XP d'héritage en entier, intro des désavantages — en objets { verbatim } sous gate ; 2 apostrophes ASCII (30e écart, clés hors gate) relocalisées depuis le témoin ; 11 corrections d'affichage D14 (xp_permanent, xp_temporaire, intro des désavantages, Boiteux, Borgne ou Myope, Muet, Fragile, Honorable, Peureux, Raciste, restriction du Don) ; p.20 ajoutée à couverture_pages (plancher 55 : 46,9 % sur v1.2.0 → rouge, 59,2 % ici). Aucun chiffre, aucun id, aucun verbatim existant modifié."
+  "corrections_v121": "v1.2.1 (t014, audit ch.5) : p.20 transcrite au complet — intro du chapitre, paragraphe d'XP d'héritage en entier, intro des désavantages — en objets { verbatim } sous gate ; 2 apostrophes ASCII (30e écart, clés hors gate) relocalisées depuis le témoin ; 11 corrections d'affichage D14 (xp_permanent, xp_temporaire, intro des désavantages, Boiteux, Borgne ou Myope, Muet, Fragile, Honorable, Peureux, Raciste, restriction du Don) ; p.20 ajoutée à couverture_pages (plancher 55 : 46,9 % sur v1.2.0 → rouge, 59,2 % ici). Aucun chiffre, aucun id, aucun verbatim existant modifié.",
+  "lot_130": "Ch.1 complet (p.2-4 : conduite, PV/dégâts, combat, fouille, objet porté, symboles, lexique, armes/armures, monnaie), ch.2 complété (Lutte, Sauvegardes, La Magie, lore des 6 races), les 4 tables du ch.4 (p.18-19 — A11 : A). Arbitrages Fred 2026-08-24 : A8 tavernier = marchand · A9 verbatim seul, zéro logique · A10 rang 1 = état de base. Chaque verbatim tranché du témoin par script."
+ },
+ "regles_de_base": {
+  "source": {
+   "pages": [
+    2,
+    3,
+    4
+   ],
+   "section": "Chapitre 1 : les règles de base"
+  },
+  "sections": [
+   {
+    "id": "conduite",
+    "titre": "Les règles de conduite",
+    "source": {
+     "page": 2
+    },
+    "verbatim": "En plus des lois normales à appliquer en hors-jeu (mais pas nécessairement en jeu), nous vous demandons de respecter les règles suivantes : 1. Toute simulation de viol est INTERDITE. 2. Le vol d’objets est interdit. Cependant, avec l’accord du joueur, il est possible d’emprunter un objet en hors-jeu après l’avoir volé en jeu. 3. Toute arme doit être vérifiée par un Maître ou un officiel de jeu."
+   },
+   {
+    "id": "pv_et_degats",
+    "titre": "Point de vie et dégâts",
+    "source": {
+     "page": 2
+    },
+    "verbatim": "Chaque personnage a un certain nombre de points de vie et inflige un certain nombre de dégâts. Lorsqu'un joueur attaque un adversaire et réussit à toucher, il annonce les dégâts infligés à chaque coup. Le joueur touché soustrait ces dégâts à son nombre de points de vie restants, jusqu'à ce que mort s'ensuive. Type de dégâts : Certaines créatures jouées par l'animation sont résistantes, mais vulnérables à certains types de dégâts. Afin que vos dégâts soient pris en compte de la bonne manière, précisez à chaque attaque le type de dégât infligé, comme par exemple \"2 de feu\" ou \"2 de froid\". Maximum : Les points de vie d'un personnage ne peuvent pas dépasser 15. De plus, les dégâts infligés avec une arme à une main sont limités à 3, tandis qu'avec une arme à deux mains (hormis les armes d'hast), ils sont limités à 5. Mort : Un personnage tombe mort s'il atteint 0 point de vie ou moins. - Quand on meurt : Lorsqu'un personnage atteint 0 PV, il meurt et se rend au cimetière en hors-jeu, où il attend 5 minutes. À son retour à la vie, il oublie la dernière demi-heure avant sa mort, ainsi que son passage sous forme de revenant."
+   },
+   {
+    "id": "combat",
+    "titre": "Combat",
+    "source": {
+     "page": 2
+    },
+    "verbatim": "Considéré en combat : plusieurs habiletés peuvent être utilisées un nombre de fois par combat. Une personne est considérée en combat lorsqu’il est en train de combattre un adversaire ou témoin d’un affrontement. Une personne n’est plus considérée en combat environ 5 minutes après que toute action est terminée et récupère donc ses habiletés par combat."
+   },
+   {
+    "id": "fouille",
+    "titre": "Fouille",
+    "source": {
+     "page": 2
+    },
+    "verbatim": "Fouiller une personne : Si la personne est immobilisée (ou morte), il est possible de la fouiller pour lui dérober ses biens. Le vol peut être fait pour vrai ou en hors-jeu, à la préférence de la personne fouillée (si en hors-jeu, elle doit montrer tout ce qu’elle possède). Une victime ne peut se faire dérober que sa monnaie OU 1 objet par mort ou capture. Cacher un objet : Tout objet en jeu doit rester sur une personne, dans un bâtiment ou dans un COFFRE DÉCORUM visible depuis l’un des campements ou sentier. Il n’est pas permis de cacher un objet en jeu dans du matériel hors-jeu (comme une glacière) ou de l’enterrer. Il n’est pas permis non plus de cacher un objet dans ses sous-vêtements. Objet en jeu : Pour tout objet en jeu autre qu’un objet magique, qu’il soit passé par l’animation ou que vous souhaitiez vous-même apporter, vous devez y coller un petit collant orange pour signifier que l’objet peut être dérobé. Objets Spéciaux : Au lieu d’avoir un collant orange, les objets magiques/spéciaux ont un carton plastifié avec leur description. Seul le carton est important, donc si vous volez une épée magique, par exemple, vous ne partez qu’avec le carton, pas l’épée."
+   },
+   {
+    "id": "objet_porte",
+    "titre": "Objet porté",
+    "source": {
+     "page": 3
+    },
+    "verbatim": "Un personnage ne peut porter qu’une arme magique et une amulette magique à la fois, ainsi que 2 armes/boucliers de matériaux rares et une armure en matériel rare. S’il trouve une nouvelle arme magique par exemple, il doit laisser celle qu’il utilisait sur place afin de pouvoir prendre la nouvelle. Le personnage n’est pas limité dans le nombre de monnaie, composante et potion."
+   },
+   {
+    "id": "symboles_universels",
+    "titre": "Symboles universels",
+    "source": {
+     "page": 3
+    },
+    "verbatim": "Certaines capacités et pouvoirs placent les joueurs dans des états particuliers difficiles à reproduire en vrai, comme \"invisibilité\", \"forme immatérielle\", \"invulnérabilité\" et \"vol\". Ces états sont représentés par des symboles que les joueurs doivent former avec leurs bras. Invisible Quelqu'un qui est invisible doit croiser ses bras sur sa poitrine. Dans cet état, le personnage ne peut pas être vu mais peut être entendu s'il émet ou provoque un son. Immatériel ou Hors-Jeu Si quelqu'un est immatériel, il doit croiser les bras au-dessus de sa tête pour signifier qu'il ne peut être ni vu, ni touché, ni entendu. C'est aussi la position à prendre dans le cas de situations exceptionnelles nécessitant de signaler que vous êtes hors-jeu, et que les joueurs ne doivent pas interagir avec vous en jeu. Invulnérable Lorsqu’il est invulnérable, le joueur doit joindre ses mains ensemble devant lui. Un personnage invulnérable ne peut recevoir de dégâts et ne peut être déplacé. Vol Quelqu'un en train de voler doit lever son poing dans les airs pour signifier qu'il est en vol. Dans cet état, le personnage ne peut être atteint par les armes au corps à corps, peu importe leur longueur, et il ne peut pas non plus attaquer ceux au sol. Ils peuvent toutefois être la cible d'armes à distance (arcs, pistolets, armes de jet, etc.) tant que ceux qui les attaquent sont à au moins 5 mètres de lui."
+   },
+   {
+    "id": "lexique",
+    "titre": "Lexique",
+    "source": {
+     "page": 3
+    },
+    "verbatim": "RP. Abréviation pour Rôle-play ou jeux de rôle. Ce terme fait référence à rester en personnage au lieu de faire une action ou parler en hors-jeu. Hors-jeu. Ce terme fait référence aux moments, actions ou connaissance concernant le joueur et non son personnage. Type de dégâts. Plusieurs types de dégâts sont mentionnés dans ce tome. La plupart des types ne font référence qu’aux résistances et vulnérabilités des créatures jouer par l’animation, mais les dégâts percearmure ignore les armures, comme le nom l’indique, et les dégâts divins, ignores tout (invulnérabilité, armures, esquives, etc.). 1/heure. Une capacité avec cette note signifie qu'elle ne peut être réutilisée qu'après une heure après son utilisation."
+   },
+   {
+    "id": "armes_corps_a_corps",
+    "titre": "Armes de corps à corps",
+    "source": {
+     "page": 4
+    },
+    "verbatim": "Les Armes à 1 main infligent 1 dégât de base Les Armes tenues à 2 mains infligent 2 dégâts de base. Les Armes d’haste (lance, halbarde, Naginata, etc.) Sont considéré tenue à 1 main. Les Armes massives peuvent recevoir un bonus de dégâts et/ou une brise bouclier/heure. Les Armes rustiques (bâtons et roches en mousses) infligent 1 dégât, maximum 2. Maximum de 3 de dégâts avec une arme tenue à une main, 5 dégâts avec une arme tenue à 2 mains (excepté les armes d’hast)."
+   },
+   {
+    "id": "armes_a_distance",
+    "titre": "Armes à distance",
+    "source": {
+     "page": 4
+    },
+    "verbatim": "Les Armes de jet (Dague, maillet, etc.) fonctionnent comme les armes de corps à corps. Les Arcs infligent 3 maximum 5. Les Arbalètes infligent 3 dégâts perce-armure, maximum 5. Les Sarbacanes n’infligent aucun dégât, mais permettent d’appliquer du poison."
+   },
+   {
+    "id": "mana_et_armures",
+    "titre": "Mana et armures",
+    "source": {
+     "page": 4
+    },
+    "verbatim": "Un personnage peut porter n’importe quelle armure qu’il souhaite, mais l’armure lui retire 1 Mana pour chaque bloque que l’armure lui procure."
+   },
+   {
+    "id": "port_armures",
+    "titre": "Port d’Armures",
+    "source": {
+     "page": 4
+    },
+    "verbatim": "Pour fonctionner, une armure doit toujours être portée par-dessus les vêtements, à l’exception des capes. Armure : Une armure confère la capacité de bloquer un nombre d’attaques de corps à corps avant d’être considérée comme brisée (et nécessitant réparation). Pour que le porteur de l’armure puisse utiliser un blocage, il est nécessaire que l'attaque ait touché l’armure du porteur. Les dégâts perce-armure permettent de passer cette résistance. Les armures peuvent être cumulées, mais doivent être approuvées par un animateur. Si une armure de corps ne couvre pas le dos, elle perd 1 point de bloc. Le maximum total de bloc est de 10. Casque : Un véritable casque (pas un simple capuchon de cuir) confère à son porteur 1 ou 2 points de bloc (déterminer par un MJ) et une immunité à l’habileté d’assommage. Bouclier : La grandeur maximum d’un bouclier est de 1,2 mètre. Les boucliers en mousse/latex sont acceptés, mais ne bloquent pas les tirs d’arc et d'arbalètes. Un bouclier de 60 cm de diamètre ou moins demande 2 brises bouclier au lieu de 1 pour les briser (simplement dire ‘’résiste’’ lors du premier brise bouclier). Buff : Certaines capacités offrent un Buff (PV, dégâts, bonus de Lutte, etc.) il n’est pas possible de cumuler plus qu’une habileté octroyant un bonus, que ce soit en PV, en dégâts ou conférant une habileté spéciale."
+   },
+   {
+    "id": "monnaie",
+    "titre": "Système monétaire",
+    "source": {
+     "page": 4
+    },
+    "verbatim": "L’argent qui circule prend la forme de pièces de cuivre, de pièces d’argent et de pièces d’or. 5 pièces de cuivre (Pc) valent 1 Pièce d’argent (Pa), et 5 Pa valent 1 Pièce d’or (Po). Argent de départ : un personnage reçoit 1 Pa et 3 Pc à son premier jeu, puis 2 Pc par GN suivant."
+   },
+   {
+    "id": "tableau_armures",
+    "titre": "Tableau des armures",
+    "source": {
+     "page": 4
+    },
+    "colonnes": [
+     "Pièces d’armure",
+     "Montant de bloque"
+    ],
+    "lignes": [
+     {
+      "piece": "Plastron de métal (avec le dos)",
+      "bloc": "3"
+     },
+     {
+      "piece": "Plastron de cuir (avec le dos)",
+      "bloc": "2"
+     },
+     {
+      "piece": "Bracelet/jambières",
+      "bloc": "1 pour 2"
+     },
+     {
+      "piece": "Tacets/épaulettes",
+      "bloc": "1 pour 4"
+     },
+     {
+      "piece": "Casque",
+      "bloc": "1 ou 2"
+     }
+    ]
+   }
+  ]
  },
  "caracteristiques": {
   "source": {
@@ -160,6 +332,20 @@
    "note_creation": "À la création (3-2-1) aucune carac ne dépasse 3 ; les valeurs 4-5 viennent de l'XP d'héritage ou des niveaux."
   }
  },
+ "lutte": {
+  "source": {
+   "page": 5,
+   "section": "Lutte"
+  },
+  "verbatim": "N’importe quel personnage peut tenter à tout moment une action de lutte. La lutte est toujours remportée par la plus grande valeur de lutte (déterminée par la puissance et augmentée par certaines capacités). Il est impossible de réussir une action de lutte contre un adversaire ayant une plus grande valeur de lutte. En cas d’égalité, celui ayant le don Science de la Lutte l'emporte ; sinon, c’est match nul et rien ne se passe. Bousculer : cette action ne nécessite aucune main libre et permet de repousser une cible d'environ 1 mètre plus loin. Retenir : Cette action nécessite 2 mains libres et permet d’immobiliser une cible et de la déplacer tant que les deux mains libres sont fermement sur la cible. Dérober : Cette action nécessite une main libre et permet de prendre des mains d'un adversaire un objet qu'il tient. L’objet en question ne doit pas être dangereux (par exemple une sphère de feu ou une lame d’épée). Il est tout à fait possible de prendre une arme par son manche. Cumuler la lutte : 2 personnes au maximum peuvent s’entraider pour lutter contre quelqu’un, leur lutte s’additionne."
+ },
+ "sauvegardes": {
+  "source": {
+   "page": 5,
+   "section": "Sauvegardes"
+  },
+  "verbatim": "Les sauvegardes sont obtenues à l’aide d’une résistance élevée ou de certaines capacités de classes. Elles servent à éviter un effet néfaste autre que des dégâts et se récupèrent à l’heure. Les sauvegardes peuvent seulement être utilisées en combat."
+ },
  "evolution": {
   "source": {
    "page": 5,
@@ -247,7 +433,8 @@
     "description_physique": "Aucune description spécifique.",
     "langues_depart": [
      "commun"
-    ]
+    ],
+    "lore_verbatim": "L'humain est la race la plus polyvalente qui soit."
    },
    {
     "id": "elfe",
@@ -264,7 +451,8 @@
     "langues_depart": [
      "commun",
      "elfe"
-    ]
+    ],
+    "lore_verbatim": "Les elfes aiment la musique, le chant et la danse. Ils ont un goût marqué pour le raffinement et les arts. On les trouve souvent dans toutes les classes, et ils sont de bons combattants, mais ils ont une affinité particulière pour l'art mystique."
    },
    {
     "id": "nain",
@@ -281,7 +469,8 @@
     "langues_depart": [
      "commun",
      "nain"
-    ]
+    ],
+    "lore_verbatim": "Ils sont trapus et costauds. Ils aiment la bonne cervoise et les festins. Ce sont des combattants robustes et fiers. Bien qu'ils soient grognons et orgueilleux, ils s'emportent assez facilement mais reviennent vite à leur esprit. Les nains sont matérialistes sans être cupides. Ils aiment l'or, les pierres précieuses, les belles armes et armures. Ils aiment la terre et détestent prendre la mer."
    },
    {
     "id": "orc",
@@ -299,7 +488,8 @@
     "langues_depart": [
      "commun",
      "orc"
-    ]
+    ],
+    "lore_verbatim": "Les orcs sont prompts à la colère et d'un naturel grincheux. Ils préfèrent agir et combattre plutôt que de réfléchir et discuter. Ils aiment festoyer, manger, boire, se vanter, chanter et pratiquer la lutte. Les passetemps plus raffinés tels que la danse, la poésie et la philosophie ne sont pas pour eux. Leur clan est aussi dirigé par le plus fort, qui pourrait être détrôné au moindre signe de faiblesse."
    },
    {
     "id": "drow",
@@ -316,7 +506,8 @@
     "langues_depart": [
      "commun",
      "abyssal"
-    ]
+    ],
+    "lore_verbatim": "Tueurs sans pitié, meurtriers dans l'âme, leur profession est souvent liée à l'assassinat. Ils sont également de grands adeptes de la magie profane. Leur société est matriarcale, où la femme Drow a le plein pouvoir sur l'insignifiant mâle Drow. L'amour est pour eux un signe de faiblesse, et tuer son prochain en secret est une façon courante chez eux de monter en hiérarchie."
    },
    {
     "id": "gobelin",
@@ -335,9 +526,11 @@
     "langues_depart": [
      "commun",
      "orc"
-    ]
+    ],
+    "lore_verbatim": "Les Gobelins tuent par plaisir toute créature faible et sans défense. Ils adorent achever les gens déjà au sol. Les Gobelins aiment torturer leurs victimes. Ils ne sont pas braves de nature, et s'ils perçoivent un danger, ils restent en général à l'écart pour mieux finir les blesser. De plus, ils sont très attirés par l'argent."
    }
-  ]
+  ],
+  "intro_verbatim": "Voici la liste des races de base parmi lesquelles vous devez choisir pour votre personnage."
  },
  "langues": {
   "source": {
@@ -457,6 +650,13 @@
     "verbatim": "+1 en Lutte et gagne la Lutte en cas d’égalité."
    }
   ]
+ },
+ "magie": {
+  "source": {
+   "page": 8,
+   "section": "La Magie"
+  },
+  "verbatim": "Certaines capacités de classes ou pouvoir obtenu en jeu utilisent les règles suivantes. Mana. Le mana est la ressource utilisée pour la majorité des capacités magiques. Chaque capacité indique le nombre de points de mana (PM) dépensés au moment de son utilisation. Si le coût en mana n'est pas mentionné, l'habileté ne coûte aucun point de mana. Le mana se récupère entièrement 1 heure après que le personnage n'a pas dépensé de PM. Signe. Les capacités de \"signe\" sont des pouvoirs magiques simples qui ne nécessitent pas d'incantation complète, mais suivent une procédure spécifique : 1. Dire le nom du Signe. 2. Pointer la main ouverte vers une cible située à environ 10 mètres ou moins. 3. Sans bouger la main, compter à voix haute jusqu'à 3, puis dire le nom de l'habileté. 4. Informer la cible de l'effet de l'habileté. Exemple : -IGNIS! (Lève le bras), 3… 2… 1…! FLAMME, TOI 1 DÉGÂTS DE FEU. Si la cible n'est plus en face du bras du lanceur lorsque le compte à rebours est terminé, elle évite l'effet du signe. Incantation. Le personnage doit arrêter de se déplacer, prononcer une incantation de 10 mots, puis le nom du pouvoir et informer la cible de l'effet. L'incantation est interrompue si le personnage se déplace ou subit des dégâts. Exemple: -ERGO FIRMITAS MEA VERBUM IN RE PICARE MEA VOLUNTAS! BOULE DE FEU, TOI 3 DÉGÂTS DE FEU. Si la cible d'un pouvoir magique n'a pas entendu ou compris, le personnage peut aller l'informer en horsjeu, puis revenir à son point de départ."
  },
  "competences": {
   "source": {
@@ -606,10 +806,242 @@
      "verbatim": "Poste de traite. Une fois l’atelier améliorer au rang 2 il sera possible de construire un poste de traite, conférant des avantages aux métiers d’érudit, riches et marchands."
     },
     "laboratoire": {
-     "verbatim": "Laboratoire. Une fois l’atelier améliorer au rang 2 il sera possible de construire un laboratoire conférant des avantages aux métiers de tavernier, herboriste et mineurs."
+     "verbatim": "Laboratoire. Une fois l’atelier améliorer au rang 2 il sera possible de construire un laboratoire conférant des avantages aux métiers de tavernier, herboriste et mineurs.",
+     "affichage": "Laboratoire. Une fois l’atelier améliorer au rang 2 il sera possible de construire un laboratoire conférant des avantages aux métiers de marchand, herboriste et mineurs.",
+     "note_affichage": "A8/Q3 (2026-08-24, Fred) : « tavernier » est un terme oublié du manuel — lire « marchand »."
     },
-    "application_app": "AFFICHER seulement. L’app n’accorde jamais un avantage avancé — c’est le rang de l’atelier de faction qui l’ouvre, hors app (D24 ⑤-bis). Ambiguïtés A8/A9/A10 non tranchées."
+    "application_app": "AFFICHER seulement. L’app n’accorde jamais un avantage avancé — c’est le rang de l’atelier de faction qui l’ouvre, hors app (D24 ⑤-bis). Arbitrages 2026-08-24 : A8 tavernier = marchand (affichage) · A9 l’app n’affiche que le verbatim, zéro logique d’avantage avancé · A10 rang 1 = l’état de base d’un atelier remis en état, « pour avancer » = rang 2."
    }
+  }
+ },
+ "tables_ch4": {
+  "source": {
+   "pages": [
+    18,
+    19
+   ],
+   "section": "Chapitre 4 — tables (Ressources, Substances, Forgeron, Runes)"
+  },
+  "ressources": {
+   "source": {
+    "page": 18
+   },
+   "titre": "Ressources et valeur",
+   "lignes": [
+    {
+     "ressource": "Alchimite",
+     "valeur": "3 Pc"
+    },
+    {
+     "ressource": "Arcanite",
+     "valeur": "1 Po"
+    },
+    {
+     "ressource": "Adamantium",
+     "valeur": "1 Po"
+    },
+    {
+     "ressource": "Aurorium",
+     "valeur": "3 Pa"
+    },
+    {
+     "ressource": "Mythril",
+     "valeur": "2 Pa"
+    }
+   ]
+  },
+  "substances_alchimiques": {
+   "source": {
+    "page": 18
+   },
+   "titre": "Substances alchimiques",
+   "liste": [
+    {
+     "nom": "Potion de soins",
+     "couleur": "Rouge",
+     "compo": "1 Alchimite",
+     "valeur": "6 Pc",
+     "effet_verbatim": "Le buveur récupère tous ses PV et retire tout effet négatif sur lui, à l’exception des malédictions."
+    },
+    {
+     "nom": "Potion de Mana",
+     "couleur": "Bleu",
+     "compo": "1 Alchimite",
+     "valeur": "6 Pc",
+     "effet_verbatim": "Le buveur récupère tous ses points de Mana, ses sauvegardes, et ses capacités pouvant être utilisées plus d’une fois par GN."
+    },
+    {
+     "nom": "Poison",
+     "couleur": "Vert",
+     "compo": "1 Alchimite",
+     "valeur": "6 Pc",
+     "effet_verbatim": "Verser sur une arme inflige +5 dégâts de poison sur la prochaine attaque réussie. Si bue, la cible meurt sans possibilité de sauvegarde."
+    }
+   ]
+  },
+  "objets_forgeron": {
+   "source": {
+    "page": 19
+   },
+   "titre": "Objets spéciaux du Forgeron",
+   "materiaux": [
+    {
+     "materiau": "Adamantium",
+     "valeur_base": "1 Po",
+     "objets": [
+      {
+       "type": "arme",
+       "materiel": "1 Adamantium +1 Pa",
+       "valeur": "2 Po",
+       "effet_verbatim": "L’arme inflige des dégâts percearmure."
+      },
+      {
+       "type": "armure",
+       "materiel": "2 Adamantium +1 Pa",
+       "valeur": "4 Po",
+       "effet_verbatim": "L’armure ignore le perce-armure."
+      },
+      {
+       "type": "bouclier",
+       "materiel": "1 Adamantium +1 Pa",
+       "valeur": "2 Po",
+       "effet_verbatim": "Requière 2 brise-bouclier pour être brisé. Si le bouclier a 60 CM ou moins de diamètre, il est indestructible."
+      }
+     ]
+    },
+    {
+     "materiau": "Aurorium",
+     "valeur_base": "3 Pa",
+     "objets": [
+      {
+       "type": "arme",
+       "materiel": "1 Aurorium +1 Pa",
+       "valeur": "6 Pa",
+       "effet_verbatim": "L’arme peu se briser pour faire un Critique (+3 dégâts divins). Le coup est conservé si rater. Se répare automatiquement hors combat."
+      },
+      {
+       "type": "armure",
+       "materiel": "2 Aurorium +1 Pa",
+       "valeur": "12 Pa",
+       "effet_verbatim": "L’armure peu se briser pour donner 1 sauvegarde (il doit rester 1 bloque). Se répare automatiquement hors combat."
+      },
+      {
+       "type": "bouclier",
+       "materiel": "1 Aurorium +1 Pa",
+       "valeur": "6 Pa",
+       "effet_verbatim": "Le bouclier peu se briser pour donner ‘’esquiver’’ 1 coup reçu. Se répare automatiquement hors combat."
+      }
+     ]
+    },
+    {
+     "materiau": "Mythril",
+     "valeur_base": "2 Pa",
+     "objets": [
+      {
+       "type": "arme",
+       "materiel": "1 Mythril +1 Pa",
+       "valeur": "4 Pa",
+       "effet_verbatim": "L’arme confère +1 de Mana au porteur et peut représenter le bâton des mages/druides/sorciers."
+      },
+      {
+       "type": "armure",
+       "materiel": "2 Mythril +1 Pa",
+       "valeur": "8 Pa",
+       "effet_verbatim": "L’armure ne retire aucun point de Mana au porteur."
+      },
+      {
+       "type": "bouclier",
+       "materiel": "1 Mythril +1 Pa",
+       "valeur": "4 Pa",
+       "effet_verbatim": "Le bouclier peut bloquer les flèches et carreaux même s’il est en mousse."
+      }
+     ]
+    }
+   ]
+  },
+  "runes": {
+   "source": {
+    "page": 19
+   },
+   "verbatim": "OBJET MAGIQUE DE L’ARCANISTE",
+   "affichage": "Objet magique du Runiste",
+   "note_affichage": "A8/Q4 (2026-08-24) : « arcaniste » n’existe pas — l’artisanat est le Runiste.",
+   "runes_arme": [
+    {
+     "nom": "Arme de feu",
+     "materiel": "1 Arcanite +1 Po",
+     "valeur": "3 Po",
+     "effet_verbatim": "L’arme inflige +1 dégât de feu."
+    },
+    {
+     "nom": "Arme de givre",
+     "compo": "1 Arcanite +1 Po",
+     "valeur": "3 Po",
+     "effet_verbatim": "L’arme inflige +1 dégât de froid."
+    },
+    {
+     "nom": "Arme de foudre",
+     "materiel": "1 Arcanite +1 Po",
+     "valeur": "3 Po",
+     "effet_verbatim": "L’arme inflige +1 dégât magique."
+    },
+    {
+     "nom": "Arme acide",
+     "compo": "1 Arcanite +1 Po",
+     "valeur": "3 Po",
+     "effet_verbatim": "L’arme inflige +1 dégât de poison."
+    },
+    {
+     "nom": "Arme massive",
+     "materiel": "1 Arcanites +1 Po",
+     "valeur": "3 Po",
+     "effet_verbatim": "L’arme est toujours considérée comme une arme à 2 mains (pour les capacités, fais 1 dégât de plus seulement si tenu à 2 mains. Fonctionne pour les armes d’hast)."
+    },
+    {
+     "nom": "Arme vicieuse",
+     "materiel": "2 Arcanites +1 Po",
+     "valeur": "5 Po",
+     "effet_verbatim": "L’arme inflige +1 dégât et le premier coup sur une cible inflige +2 dégâts si touchés dans le dos (peut-être combiner avec la capacité backstab pour +4)."
+    }
+   ],
+   "runes_amulette": [
+    {
+     "nom": "Amulette de camouflage",
+     "materiel": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Lorsque le porteur n’est pas observé, il peut devenir invisible dans l’ombre ou la végétation, mais il ne peut pas se déplacer."
+    },
+    {
+     "nom": "Amulette de force",
+     "compo": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Le porteur obtient +1 de lutte."
+    },
+    {
+     "nom": "Amulette de récupération",
+     "materiel": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Après 1 minute hors combat, le porteur récupère tous ses PV et Mana, bouclier, bloque d’armure et capacité étant 1/heure."
+    },
+    {
+     "nom": "Amulette de Téléportation",
+     "compo": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Permets de faire 10 pas de course en étant immatérielle 1/heure. Ne peut pas arrêter à côté de quelqu’un."
+    },
+    {
+     "nom": "Amulette d’endurance",
+     "materiel": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Confère au porteur +2 PV."
+    },
+    {
+     "nom": "Amulette de Mana",
+     "materiel": "1 Arcanite +1 Pa",
+     "valeur": "2 Po",
+     "effet_verbatim": "Confère au porteur +2 Mana."
+    }
+   ]
   }
  },
  "heritage": {
