@@ -57,7 +57,7 @@ import {
 } from '../encyclopedie/modele'
 import { enParagraphes } from '../encyclopedie/texte'
 import { getRules } from '../rules/load'
-import { TexteRegle, texteAffiche } from './creation/ui'
+import { TexteRegle, Tutoriel, texteAffiche } from './creation/ui'
 
 /** Les six chips de D9-ter, dans CET ordre. Libellés d'écran, pas des règles. */
 export const SECTIONS = [
@@ -722,6 +722,19 @@ export default function Encyclopedie() {
             ))}
           </nav>
         </div>
+
+        <Tutoriel
+          etapeId="encyclopedie"
+          titre="Comment fonctionne cette page"
+          gestes={[
+            'Touche un onglet en haut pour changer de section — ☆ Épinglés rassemble ce que tu as étoilé.',
+            "Tape un mot dans la recherche : les règles qui en parlent s'ouvrent toutes seules.",
+            "Touche l'étoile ☆ d'une règle, d'une capacité ou d'un objet pour la retrouver dans Épinglés.",
+            'Les mots dorés soulignés sont des liens : touche-les pour sauter à la règle.',
+            'A · A+ change la taille du texte ; « Tout ouvrir » déplie un groupe au complet.',
+          ]}
+          pourquoi="pour préparer ta fiche la veille du GN avec tout le manuel dans ta poche, même sans réseau."
+        />
 
         {onglet === 'epingles' ? (
           <VueEpingles onglets={onglets} ouverts={etatDOuverture} />
