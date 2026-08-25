@@ -33,11 +33,18 @@
  * 6,8 pt, dons 6,7 pt, listes 4 mm, bandeaux 11,5 pt → 8 mm de jeu sur les
  * grandes classes, et la feuille tient encore en 1 page si la police de
  * repli (Roboto) devait servir.
+ *
+ * D27-quater (t014) : la feuille fixe son INTERLIGNE (1,1 ; bandeaux 1). Sans
+ * ça elle héritait du `line-height: 1.5` que Tailwind pose sur `html`, +30 %
+ * de hauteur sur tout le texte — invisible dans un aperçu autonome, réel dans
+ * l'app : 2 pages Lettre sur le téléphone de l'organisateur. Depuis, l'aperçu
+ * de la gate embarque le CSS construit de l'app (`npm run apercus:feuilles`
+ * exige `dist/`). Dons 6,5 pt. Mesuré dans cette cascade : ≥ 11 mm de jeu.
  */
 .tm-feuille,.tm-feuille *{box-sizing:border-box;margin:0;padding:0;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tm-feuille{width:196mm;background:#fff;color:#000;padding:1.5mm;
-  font-family:TerraSans,Arial,Helvetica,sans-serif;border:1px solid #bbb}
+  font-family:TerraSans,Arial,Helvetica,sans-serif;line-height:1.1;border:1px solid #bbb}
 .tm-feuille table{border-collapse:collapse}
 .tm-feuille .b{font-weight:bold}
 .tm-feuille .u{text-decoration:underline}
@@ -116,7 +123,7 @@
   font-size:7.4pt;width:calc(50% - 0.75mm)}
 
 /* Colonne de droite. */
-.tm-feuille h4{background:#000 !important;color:#fff !important;text-align:center;font-size:11.5pt;
+.tm-feuille h4{background:#000 !important;color:#fff !important;text-align:center;font-size:11.5pt;line-height:1;
   letter-spacing:0.5mm;padding:0.3mm;font-weight:bold}
 .tm-feuille h4 small{font-size:6.5pt;font-weight:bold;margin-left:2mm}
 .tm-feuille h4.espace{margin-top:1mm}
@@ -125,7 +132,7 @@
 .tm-feuille .trace td.rn{font-weight:bold;text-align:center;vertical-align:middle;
   width:13mm;font-size:8.8pt}
 .tm-feuille table.tdons{width:100%}
-.tm-feuille .tdons td{border:0.4mm solid #000;font-size:6.7pt;padding:0.35mm 0.8mm;
+.tm-feuille .tdons td{border:0.4mm solid #000;font-size:6.5pt;padding:0.35mm 0.8mm;
   background:#f2f2f2}
 .tm-feuille .tdons td.dn{font-weight:bold;text-align:center;vertical-align:middle;
   width:15mm;font-size:8.2pt;background:none}

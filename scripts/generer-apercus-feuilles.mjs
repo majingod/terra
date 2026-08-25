@@ -13,7 +13,7 @@
  * Le module TSX se charge par le `ssrLoadModule` de Vite — la même chaîne que
  * l'app, aucune dépendance de plus.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createElement } from 'react'
@@ -60,8 +60,15 @@ try {
     /url\(\.\/polices\//g,
     `url(file://${join(RACINE, 'src/pages/impression/polices')}/`,
   )
+  // D27-quater — l'aperçu embarque le CSS CONSTRUIT de l'app (Tailwind, polices,
+  // resets) : la feuille imprimée hérite de cette cascade (`line-height` de
+  // `html`, entre autres) et une gate qui la mesure sans elle mesure autre chose.
+  const dist = join(RACINE, 'dist/assets')
+  const feuilleCss = existsSync(dist) ? readdirSync(dist).find((f) => /^index-.*\.css$/.test(f)) : undefined
+  if (!feuilleCss) throw new Error('dist/assets/index-*.css introuvable : `npm run build` d’abord')
+  const cssApp = readFileSync(join(dist, feuilleCss), 'utf8').replace(/url\(\/assets\//g, `url(file://${dist}/`)
   const css =
-    CSS_PAGE + polices + readFileSync(join(RACINE, 'src/pages/impression/feuille.css'), 'utf8')
+    cssApp + CSS_PAGE + polices + readFileSync(join(RACINE, 'src/pages/impression/feuille.css'), 'utf8')
   const { classesSquelette } = await vite.ssrLoadModule('/src/rules/stats.ts')
   const { ficheExemple } = await vite.ssrLoadModule('/src/pages/impression/exemples.ts')
   const { default: FeuilleImpression } = await vite.ssrLoadModule(
