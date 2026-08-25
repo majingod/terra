@@ -15,7 +15,9 @@
  *   ② les deux woff2 existent et pèsent moins de 10 KiB chacun (precache) ;
  *   ③ le corps ne porte plus `page-break-inside: avoid` ;
  *   ④ l'impression attend `document.fonts.ready` avant `window.print()` ;
- *   ⑤ la page est LETTRE (papier du Québec), plus A4.
+ *   ⑤ la page est LETTRE (papier du Québec), plus A4 ;
+ *   ⑥ (D27-quater) la feuille fixe son interligne — sinon elle hérite du
+ *      `line-height: 1.5` de Tailwind et gagne 30 % de hauteur dans l'app.
  * La géométrie elle-même (8 classes = 1 page A4) reste la gate d'impression
  * de l'architecte, hors jsdom.
  */
@@ -115,5 +117,22 @@ describe('D27-ter ⑤ — le papier est Lettre, pas A4', () => {
   it('@page déclare size: letter portrait', () => {
     expect(CSS_PAGE).toMatch(/size:\s*letter portrait/)
     expect(CSS_PAGE).not.toMatch(/A4/)
+  })
+})
+
+describe('D27-quater ⑥ — la feuille fixe son interligne, elle n’hérite pas de Tailwind', () => {
+  it('.tm-feuille déclare line-height (≤ 1.2) et les bandeaux h4 aussi', () => {
+    const feuilleRegle = feuille.match(/\.tm-feuille\{[^}]*\}/)![0]
+    const lh = feuilleRegle.match(/line-height:([\d.]+)/)
+    expect(lh, 'line-height absent de .tm-feuille : Tailwind impose 1.5').toBeTruthy()
+    expect(Number(lh![1])).toBeLessThanOrEqual(1.2)
+    const h4 = feuille.match(/\.tm-feuille h4\{[^}]*\}/)![0]
+    expect(h4).toMatch(/line-height:1(\.0+)?[;}]/)
+  })
+
+  it('le script d’aperçus embarque le CSS construit de l’app', () => {
+    const script = readFileSync(join(IMPRESSION, '../../../scripts/generer-apercus-feuilles.mjs'), 'utf8')
+    expect(script).toMatch(/dist\/assets/)
+    expect(script).toMatch(/index-\.\*\\\.css/)
   })
 })
