@@ -21,6 +21,14 @@ import type { Don } from '../rules/load'
 import { normaliserNiveau } from '../rules/niveau'
 import type { Personnage } from '../db'
 import { prisesAilleurs, optionsDuNiveau, type OptionDeCapacite } from './capacites'
+import {
+  agregatAvecPrise,
+  donsDuPalierEsprit,
+  niveauPalierEsprit3,
+  palierNonConsomme,
+  rangDuDroitDePalier,
+  seuilPalierEsprit,
+} from './datation'
 import { avecMontee, estAncienneFiche, niveauCourant, niveauDerive } from './historique'
 import {
   donsPris,
@@ -62,6 +70,37 @@ export function libelleCarteCapacite(niveauAtteint: number): string {
   return `Capacité du niveau ${niveauAtteint}`
 }
 
+/**
+ * D19 ③ — le titre de l'emplacement SUPPLÉMENTAIRE que le palier d'Esprit
+ * ouvre. Le seuil se lit de la table cumulative (D5 : aucun « 3 » écrit ici).
+ */
+export function libelleCarteDonDuPalier(): string {
+  return `Don d'Esprit ${seuilPalierEsprit() ?? ''}`.trim()
+}
+
+/** La ligne sous ce titre : pourquoi cet emplacement est là. */
+export function libelleRaisonDuPalier(niveauDuPalier?: number): string {
+  const seuil = seuilPalierEsprit() ?? ''
+  if (niveauDuPalier === undefined) {
+    return `Ton Esprit atteint ${seuil} : la table des caractéristiques t'ouvre un don.`
+  }
+  return `Ton Esprit a atteint ${seuil} au niveau ${niveauDuPalier} : ce don date de là.`
+}
+
+/**
+ * D19 ③ — le bouton de la carte de réclamation, sur l'écran Fiche : le
+ * personnage est au plafond de la table, son droit de palier n'a jamais eu
+ * d'emplacement où aller, et c'est la seule porte qui lui reste.
+ */
+export function libelleReclamerLePalier(): string {
+  return 'Choisir ce don'
+}
+
+/** Le bouton qui ÉCRIT la réclamation, une fois le don posé. */
+export function libelleConfirmerLaReclamation(): string {
+  return 'Réclamer ce don'
+}
+
 // ---------------------------------------------------------------------------
 // Les choix que la montée demande
 // ---------------------------------------------------------------------------
@@ -84,6 +123,14 @@ export interface ChoixMontee {
    * de niveau ≤ l'échelon atteint. Exclusive avec `don`.
    */
   capTroquee?: string
+  /**
+   * D19 ③ — le don de l'emplacement SUPPLÉMENTAIRE ouvert par le palier
+   * d'Esprit : celui que la montée en cours ouvre, ou celui qu'une montée
+   * passée a laissé non consommé. Ce n'est ni l'emplacement de capacité ni
+   * celui de don de l'échelon : c'est un troisième, qui vient de la table
+   * des caractéristiques.
+   */
+  donPalier?: string
 }
 
 /**
@@ -183,25 +230,122 @@ export function optionsDeTrocDeDonDeLaMontee(
   )
 }
 
+/** Les trois emplacements de la montée qui peuvent recevoir un DON. */
+export type EmplacementDeDon = 'don' | 'donTroque' | 'donPalier'
+
+const EMPLACEMENTS_DE_DON: EmplacementDeDon[] = ['don', 'donTroque', 'donPalier']
+
+/** Les dons que la montée pose AILLEURS que dans l'emplacement qu'on regarde. */
+function donsPosesAilleurs(choix: ChoixMontee, emplacement: EmplacementDeDon): string[] {
+  return EMPLACEMENTS_DE_DON.filter((cle) => cle !== emplacement)
+    .map((cle) => choix[cle])
+    .filter((id): id is string => id !== undefined)
+}
+
 /**
  * Ce don peut-il être pris une fois de plus ? La règle n'est pas réécrite :
  * c'est `refusDons` (un don non cumulable ne se prend qu'une fois) appliquée
  * au compte qu'aurait ce don après la montée.
+ *
+ * D19 ③ : la montée peut désormais poser jusqu'à TROIS dons (l'échelon, le
+ * troc du guerrier, le palier d'Esprit). Un don déjà posé dans un autre
+ * emplacement de la même montée compte comme pris — l'anti-doublon ne dépend
+ * pas de la porte.
  */
-export function donPrenable(personnage: Personnage, don: Don): boolean {
+export function donPrenable(
+  personnage: Personnage,
+  don: Don,
+  choix: ChoixMontee = {},
+  emplacement: EmplacementDeDon = 'don',
+): boolean {
   // D18 : « déjà pris » vaut aussi pour un don rangé dans un emplacement de
   // capacité troqué — l'anti-doublon des dons ne dépend pas de la porte.
-  const compte = (donsPris(ficheDe(personnage))[don.id] ?? 0) + 1
-  return refusDons({ [don.id]: compte }).length === 0
+  const dejaPris = donsPris(ficheDe(personnage))[don.id] ?? 0
+  const enCours = donsPosesAilleurs(choix, emplacement).filter((id) => id === don.id).length
+  return refusDons({ [don.id]: dejaPris + enCours + 1 }).length === 0
+}
+
+// ---------------------------------------------------------------------------
+// D19 ③ — l'emplacement supplémentaire du palier d'Esprit
+// ---------------------------------------------------------------------------
+
+/** L'Esprit qu'aura le personnage une fois CETTE montée confirmée. */
+function espritApresLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee,
+): number {
+  const fiche = ficheDe(personnage)
+  const gains = gainsMontee(niveauAtteint)
+  const pose = choix.carac === 'e' ? gains.caracPoints : 0
+  return valeurCarac(fiche, 'e') + pose
+}
+
+/**
+ * Combien de dons du palier d'Esprit CETTE montée doit faire choisir.
+ *
+ * Deux cas, le même compte : la montée en cours pousse l'Esprit au palier
+ * (le point de la ligne de table posé sur l'Esprit), ou un droit de palier
+ * est resté non consommé d'une montée passée — jusqu'ici il n'avait aucun
+ * emplacement où aller.
+ */
+export function donsDePalierDeLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee = {},
+): number {
+  const fiche = ficheDe(personnage)
+  const ouverts = donsDuPalierEsprit(espritApresLaMontee(personnage, niveauAtteint, choix))
+  // Ce que le palier avait déjà ouvert ET que la fiche a déjà consommé.
+  const consommes = Math.max(
+    0,
+    donsDuPalierEsprit(valeurCarac(fiche, 'e')) - palierNonConsomme(fiche),
+  )
+  return Math.max(0, ouverts - consommes)
+}
+
+/**
+ * Le niveau dont ce don de palier DATERA — celui où l'Esprit a atteint le
+ * palier. Déjà atteint avant cette montée : la dérivation le dit ; atteint
+ * PAR cette montée : c'est l'échelon qu'on est en train de gagner.
+ */
+export function niveauDuPalierDeLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee = {},
+): number | undefined {
+  if (donsDePalierDeLaMontee(personnage, niveauAtteint, choix) === 0) return undefined
+  return niveauPalierEsprit3(ficheDe(personnage)) ?? niveauAtteint
+}
+
+/**
+ * Le bassin de l'emplacement du palier : TOUT le catalogue, comme partout
+ * ailleurs. C'est l'appelant qui éteint ce qui ne se prend pas — la carte de
+ * don ne connaît aucune règle.
+ */
+export function donPrenableAuPalier(
+  personnage: Personnage,
+  don: Don,
+  choix: ChoixMontee = {},
+): boolean {
+  return donPrenable(personnage, don, choix, 'donPalier')
 }
 
 /** Vrai quand chaque gain de l'échelon atteint a reçu son choix. */
-export function choixComplet(niveauAtteint: number, choix: ChoixMontee): boolean {
-  return manquesDeLaMontee(niveauAtteint, choix).length === 0
+export function choixComplet(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee,
+): boolean {
+  return manquesDeLaMontee(personnage, niveauAtteint, choix).length === 0
 }
 
 /** Le même critère, mais qui NOMME ce qui manque (diagnostic des gates). */
-export function manquesDeLaMontee(niveauAtteint: number, choix: ChoixMontee): string[] {
+export function manquesDeLaMontee(
+  personnage: Personnage,
+  niveauAtteint: number,
+  choix: ChoixMontee,
+): string[] {
   const gains = gainsMontee(niveauAtteint)
   const manques: string[] = []
   // D18 : l'emplacement de capacité est rempli par une capacité OU un don ;
@@ -213,6 +357,11 @@ export function manquesDeLaMontee(niveauAtteint: number, choix: ChoixMontee): st
   if (gains.dons > 0 && !choix.don && !choix.capTroquee) manques.push('don non choisi')
   if (choix.don && choix.capTroquee) manques.push('don et capacité dans le même emplacement')
   if (gains.caracPoints > 0 && !choix.carac) manques.push('caractéristique non choisie')
+  // D19 ③ — l'emplacement du palier d'Esprit, quand la montée l'ouvre (ou
+  // qu'une montée passée l'a laissé ouvert).
+  const dusPalier = donsDePalierDeLaMontee(personnage, niveauAtteint, choix)
+  if (dusPalier > 0 && !choix.donPalier) manques.push('don du palier d’Esprit non choisi')
+  if (dusPalier === 0 && choix.donPalier) manques.push('don de palier sans droit de palier')
   return manques
 }
 
@@ -235,7 +384,7 @@ export function miseAJourMontee(
   choix: ChoixMontee,
   maintenant: number,
 ): Partial<Personnage> {
-  const manques = manquesDeLaMontee(niveauAtteint, choix)
+  const manques = manquesDeLaMontee(personnage, niveauAtteint, choix)
   if (manques.length > 0) {
     throw new Error(`Montée refusée — ${manques.join(', ')}.`)
   }
@@ -257,6 +406,13 @@ export function miseAJourMontee(
   // …et l'emplacement de don, un don ou une capacité de niveau ≤ l'échelon.
   const dons = { ...(fiche.dons ?? {}) }
   const capDons = { ...(fiche.capDons ?? {}) }
+  // D19 ③ — le don du palier s'inscrit AVANT celui de l'échelon : il date
+  // d'un niveau antérieur ou égal (l'Esprit y a atteint le palier), et
+  // l'agrégat garde ainsi l'ordre chronologique dont la datation se sert.
+  const dusPalier = donsDePalierDeLaMontee(personnage, niveauAtteint, choix)
+  if (dusPalier > 0) {
+    dons[choix.donPalier!] = (dons[choix.donPalier!] ?? 0) + dusPalier
+  }
   if (gains.dons > 0) {
     if (choix.capTroquee) capDons[String(niveauAtteint)] = choix.capTroquee
     else dons[choix.don!] = (dons[choix.don!] ?? 0) + gains.dons
@@ -300,6 +456,52 @@ export function miseAJourMontee(
       resistance: valeurCarac(creation, 'r'),
       esprit: valeurCarac(creation, 'e'),
     },
+    creation,
+    updatedAt: maintenant,
+  }
+}
+
+/**
+ * D19 ③ — RÉCLAMER le don du palier d'Esprit hors d'une montée.
+ *
+ * Cas résiduel : le personnage est au plafond de la table (il ne monte plus)
+ * et porte un droit de palier que rien n'a consommé. L'écran Fiche lui offre
+ * alors la seule porte qui reste — et elle écrit exactement comme la montée :
+ * une SEULE mise à jour, la fiche du wizard et l'enregistrement d'un coup.
+ *
+ * ⛔ Aucun niveau n'est gagné ici : l'historique n'est pas touché. Le don
+ * garde donc la date que la dérivation lui rend — le niveau où l'Esprit a
+ * atteint le palier — quel que soit le jour où le joueur le choisit.
+ */
+export function miseAJourReclamationPalier(
+  personnage: Personnage,
+  donChoisi: string,
+  maintenant: number,
+): Partial<Personnage> {
+  const fiche = ficheDe(personnage)
+  if (estAncienneFiche(fiche)) {
+    throw new Error(
+      'Réclamation refusée — cette fiche vient d’une version précédente du jeu : il faut la refaire.',
+    )
+  }
+  const du = palierNonConsomme(fiche)
+  if (du <= 0) {
+    throw new Error('Réclamation refusée — aucun droit de palier d’Esprit à réclamer.')
+  }
+  // Le droit réclamé est ANCIEN — il date du niveau où l'Esprit a atteint le
+  // palier. La prise se range donc à SA place dans l'agrégat, pas au bout :
+  // c'est ce qui garde `fiche.dons` dans l'ordre des droits consommés, et
+  // c'est de cet ordre que la datation se sert.
+  let dons = { ...(fiche.dons ?? {}) }
+  const rang = rangDuDroitDePalier(fiche)
+  for (let i = 0; i < du; i++) dons = agregatAvecPrise(dons, donChoisi, rang)
+  const refus = refusDons({ [donChoisi]: dons[donChoisi] })
+  if (refus.length > 0) {
+    throw new Error(`Réclamation refusée — ${refus.join(', ')}.`)
+  }
+  const creation: FicheCreation = { ...fiche, dons }
+  return {
+    dons: Object.keys(donsPris(creation)),
     creation,
     updatedAt: maintenant,
   }

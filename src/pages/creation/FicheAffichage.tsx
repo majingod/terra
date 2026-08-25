@@ -22,6 +22,7 @@ import { languesAcquises, listeLangues } from '../../rules/langues'
 import { getRules } from '../../rules/load'
 import { classeSquelette, raceDe, statsDe, valeurCarac } from '../../rules/stats'
 import { capacitesDeLaFiche } from '../../wizard/capacites'
+import { libelleNiveauDuDon } from '../../wizard/datation'
 import { donsDeLaFiche } from '../../wizard/troc'
 import { texteVersionRegles } from '../../wizard/fiche'
 import type { FicheCreation } from '../../wizard/types'
@@ -41,16 +42,20 @@ function Acquis({
   nom,
   badge,
   badgeOr,
+  /** D19 ③ — le badge de datation, à droite du badge de provenance. */
+  niveau,
   verbatim,
 }: {
   nom: string
   badge: string
   badgeOr?: boolean
+  niveau?: string
   verbatim?: string
 }) {
   return (
     <div className="border-t border-border/30 py-2 first:border-t-0">
       <b>{nom}</b> <Badge variante={badgeOr ? 'gold' : undefined}>{badge}</Badge>
+      {niveau && <Badge>{niveau}</Badge>}
       {verbatim && <TexteRegle source={{ verbatim }} />}
     </div>
   )
@@ -63,7 +68,19 @@ function etiquetteTome(): string {
   return version ? ` — Tome ${version[0]}` : ''
 }
 
-export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
+export default function FicheAffichage({
+  fiche,
+  datation = false,
+}: {
+  fiche: FicheCreation
+  /**
+   * D19 ③ (Q12 : A, Fred 2026-08-24) — le badge « niv N » près de chaque don
+   * acquis. L'écran Fiche l'allume ; le wizard, non (à la création tout date
+   * du niveau 1, le badge n'y apprendrait rien) et la feuille imprimée ne le
+   * connaît même pas — elle vit dans `src/pages/impression/`, intouché.
+   */
+  datation?: boolean
+}) {
   const regles = getRules()
   const race = raceDe(fiche.race)
   const classe = classeSquelette(fiche.classe)
@@ -192,6 +209,7 @@ export default function FicheAffichage({ fiche }: { fiche: FicheCreation }) {
               key={don.id}
               nom={`${don.nom}${n > 1 ? ` ×${n}` : ''}`}
               badge="don"
+              niveau={datation ? libelleNiveauDuDon(fiche, don.id) : undefined}
               verbatim={don.verbatim}
             />
           ))}

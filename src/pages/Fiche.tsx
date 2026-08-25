@@ -39,6 +39,7 @@ import { estAncienneFiche } from '../wizard/historique'
 import {
   miseAJourMontee,
   miseAJourMonteeEnfant,
+  miseAJourReclamationPalier,
   niveauDeLaFiche,
   type ChoixMontee,
 } from '../wizard/montee'
@@ -48,6 +49,7 @@ import AncienneFiche from './AncienneFiche'
 import FicheAffichage from './creation/FicheAffichage'
 import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
 import BoutonMontee from './montee/BoutonMontee'
+import CarteReclamationPalier from './montee/CarteReclamationPalier'
 import EcranMontee from './montee/EcranMontee'
 import EcranMonteeEnfant from './montee/EcranMonteeEnfant'
 
@@ -241,7 +243,8 @@ export default function Fiche() {
         // Fiche du flux ≤11 : elle se lit du corpus de la planche, jamais du Tome.
         <FicheEnfantAffichage fiche={personnage.creation} />
       ) : personnage.creation ? (
-        <FicheAffichage fiche={personnage.creation} />
+        // D19 ③ — l'écran Fiche, et lui seul, date les dons acquis.
+        <FicheAffichage fiche={personnage.creation} datation />
       ) : (
         <>
           <h1 className="text-2xl font-extrabold text-gold">
@@ -270,6 +273,18 @@ export default function Fiche() {
           niveauAtteint={niveauAtteint}
           plafond={plafond}
           onMonter={() => setEnMontee(true)}
+        />
+      )}
+
+      {/* D19 ③ — cas résiduel : au plafond de la table, un droit de palier
+          d'Esprit que plus aucune montée ne pourra offrir. La carte ne
+          s'affiche que là, et seulement s'il reste vraiment un droit. */}
+      {!enfant && personnage.creation && niveauAtteint === undefined && (
+        <CarteReclamationPalier
+          personnage={personnage}
+          onReclamer={(donChoisi) =>
+            void confirmer(miseAJourReclamationPalier(personnage, donChoisi, Date.now()))
+          }
         />
       )}
 
