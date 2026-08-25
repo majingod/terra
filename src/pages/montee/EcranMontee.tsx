@@ -25,11 +25,16 @@ import type { Personnage } from '../../db'
 import {
   choixComplet,
   donPrenable,
+  donPrenableAuPalier,
+  donsDePalierDeLaMontee,
   libelleCarteCapacite,
+  libelleCarteDonDuPalier,
+  libelleRaisonDuPalier,
   libelleChapeau,
   libelleConfirmer,
   libelleMonter,
   optionsDeLaMontee,
+  niveauDuPalierDeLaMontee,
   optionsDeTrocDeLaMontee,
   optionsDeTrocDeDonDeLaMontee,
   type ChoixMontee,
@@ -71,15 +76,35 @@ export default function EcranMontee({
   const regles = getRules()
   const gains = gainsMontee(niveauAtteint)
   const max = regles.caracteristiques.creation.max
-  const complet = choixComplet(niveauAtteint, choix)
+  const complet = choixComplet(personnage, niveauAtteint, choix)
+  // D19 ③ — l'emplacement supplémentaire du palier d'Esprit : il s'ouvre dès
+  // que le point de CETTE montée pousse l'Esprit au palier, et il reste
+  // ouvert quand une montée passée l'a laissé non consommé.
+  const donsDuPalier = donsDePalierDeLaMontee(personnage, niveauAtteint, choix)
 
-  /** Retoucher le jeton posé le reprend — la carte redevient sans choix. */
+  /**
+   * Retoucher le jeton posé le reprend — la carte redevient sans choix. D19 ③ :
+   * si le point retiré est celui qui ouvrait le palier d'Esprit, le don du
+   * palier n'a plus de droit — il se reprend avec lui, jamais silencieusement
+   * gardé.
+   */
   function poserJeton(cle: CleCarac) {
-    setChoix((precedent) => ({ ...precedent, carac: precedent.carac === cle ? undefined : cle }))
+    setChoix((precedent) => {
+      const suite = { ...precedent, carac: precedent.carac === cle ? undefined : cle }
+      if (donsDePalierDeLaMontee(personnage, niveauAtteint, suite) === 0) {
+        return { ...suite, donPalier: undefined }
+      }
+      return suite
+    })
   }
 
   function choisirDon(id: string, n: number) {
     setChoix((precedent) => ({ ...precedent, don: n > 0 ? id : undefined }))
+  }
+
+  /** D19 ③ — le don de l'emplacement ouvert par le palier d'Esprit. */
+  function choisirDonDuPalier(id: string, n: number) {
+    setChoix((precedent) => ({ ...precedent, donPalier: n > 0 ? id : undefined }))
   }
 
   function choisirCapacite(id: string) {
@@ -153,6 +178,31 @@ export default function EcranMontee({
         </CarteGain>
       )}
 
+      {/* D19 ③ — le palier d'Esprit ouvre un don. Il se pose ICI, sous le
+          jeton qui vient de l'ouvrir : la cause et l'effet se lisent d'un
+          coup d'œil. Le don gardera la date du niveau où l'Esprit a atteint
+          le palier, même choisi plus tard. */}
+      {donsDuPalier > 0 && (
+        <CarteGain titre={libelleCarteDonDuPalier()}>
+          <p className="m-0 mb-2 text-[15px] text-muted-foreground">
+            {libelleRaisonDuPalier(
+              niveauDuPalierDeLaMontee(personnage, niveauAtteint, choix),
+            )}
+          </p>
+          {listeDons().map((don) => (
+            <CarteDon
+              key={don.id}
+              don={don}
+              n={choix.donPalier === don.id ? 1 : 0}
+              plein={
+                choix.donPalier !== undefined || !donPrenableAuPalier(personnage, don, choix)
+              }
+              onMaj={choisirDonDuPalier}
+            />
+          ))}
+        </CarteGain>
+      )}
+
       {gains.dons > 0 && (
         <CarteGain titre={`+${gains.dons} don${gains.dons > 1 ? 's' : ''}`}>
           {listeDons().map((don) => (
@@ -163,7 +213,7 @@ export default function EcranMontee({
               plein={
                 choix.don !== undefined ||
                 choix.capTroquee !== undefined ||
-                !donPrenable(personnage, don)
+                !donPrenable(personnage, don, choix, 'don')
               }
               onMaj={choisirDon}
             />
