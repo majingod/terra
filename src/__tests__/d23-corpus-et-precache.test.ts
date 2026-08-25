@@ -28,13 +28,13 @@ const IL_Y_A_UN_BUILD = existsSync(SW)
  * lot-ci n'est pas un lot de logique pure, c'est l'arbitrage attendu.
  */
 const EMPREINTES: Record<string, string> = {
-  'rules.json': '49dcf0308d87e3a031731ec158ab9459cdc3e913839945048fff394c55f2874b',
+  'rules.json': '52f10017c4c15ae74eb7b4088c738def416bed8e420183c22ab268a31052fba0',
   'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
   'tome_extraits.json': '24f4f45838f318f609bc8b701511b0f872defbefd841a41bd11ac1b103ec9462',
 }
 
 /** Le plafond du brief. ⛔ Il ne se monte pas depuis un lot — c'est un arbitrage. */
-const PLAFOND_KIB = 700
+const PLAFOND_KIB = 800
 
 /** Les URL uniques de `precacheAndRoute([...])`, dans l'ordre du fichier. */
 function urlsPrecachees(): string[] {

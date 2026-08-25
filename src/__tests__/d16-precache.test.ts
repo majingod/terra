@@ -41,8 +41,14 @@ const ENTREES_ATTENDUES = 20
  * D27-ter (t014) : la feuille embarque sa police — +2 woff2 TerraSans (≈ 9 KiB
  * chacun), −1 woff2 Cinzel 900 (zéro usage) : 19 → 20 entrées, 17 → 18 URL,
  * 664,58 → 668,40 KiB sur disque.
+ *
+ * Lot corpus 1.3.0 (t015) — tout le manuel dans l'encyclopédie (D9-ter) :
+ * rules.json passe de 77 776 à 101 640 octets inlinés au bundle, 668,43 →
+ * 688,75 KiB sur disque, jeu d'URL et compte INCHANGÉS (20 entrées / 18 URL).
+ * Le plafond passe de 700 à 800 KiB pour loger le lot UI de l'encyclopédie à
+ * venir — arbitrage de l'organisateur, 2026-08-24, jamais une décision du lot.
  */
-const PLAFOND_KIB = 700
+const PLAFOND_KIB = 800
 
 /** Le jeu d'URL précachées, empreintes de contenu retirées. */
 const URLS_ATTENDUES = [
