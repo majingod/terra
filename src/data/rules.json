@@ -1,7 +1,7 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
   "date": "2026-08-24",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
@@ -62,7 +62,8 @@
    }
   ],
   "corrections_v121": "v1.2.1 (t014, audit ch.5) : p.20 transcrite au complet — intro du chapitre, paragraphe d'XP d'héritage en entier, intro des désavantages — en objets { verbatim } sous gate ; 2 apostrophes ASCII (30e écart, clés hors gate) relocalisées depuis le témoin ; 11 corrections d'affichage D14 (xp_permanent, xp_temporaire, intro des désavantages, Boiteux, Borgne ou Myope, Muet, Fragile, Honorable, Peureux, Raciste, restriction du Don) ; p.20 ajoutée à couverture_pages (plancher 55 : 46,9 % sur v1.2.0 → rouge, 59,2 % ici). Aucun chiffre, aucun id, aucun verbatim existant modifié.",
-  "lot_130": "Ch.1 complet (p.2-4 : conduite, PV/dégâts, combat, fouille, objet porté, symboles, lexique, armes/armures, monnaie), ch.2 complété (Lutte, Sauvegardes, La Magie, lore des 6 races), les 4 tables du ch.4 (p.18-19 — A11 : A). Arbitrages Fred 2026-08-24 : A8 tavernier = marchand · A9 verbatim seul, zéro logique · A10 rang 1 = état de base. Chaque verbatim tranché du témoin par script."
+  "lot_130": "Ch.1 complet (p.2-4 : conduite, PV/dégâts, combat, fouille, objet porté, symboles, lexique, armes/armures, monnaie), ch.2 complété (Lutte, Sauvegardes, La Magie, lore des 6 races), les 4 tables du ch.4 (p.18-19 — A11 : A). Arbitrages Fred 2026-08-24 : A8 tavernier = marchand · A9 verbatim seul, zéro logique · A10 rang 1 = état de base. Chaque verbatim tranché du témoin par script.",
+  "lot_131": "Ancres de présentation (D9-ter) sur symboles universels (4 états) et armes cc/distance (6 + 4 items) : les verbatims restent ENTIERS et sous gate, l’UI tranche à l’affichage par ces ancres — découpe vérifiée sans perte par ce script. 2026-08-24."
  },
  "regles_de_base": {
   "source": {
@@ -120,7 +121,29 @@
     "source": {
      "page": 3
     },
-    "verbatim": "Certaines capacités et pouvoirs placent les joueurs dans des états particuliers difficiles à reproduire en vrai, comme \"invisibilité\", \"forme immatérielle\", \"invulnérabilité\" et \"vol\". Ces états sont représentés par des symboles que les joueurs doivent former avec leurs bras. Invisible Quelqu'un qui est invisible doit croiser ses bras sur sa poitrine. Dans cet état, le personnage ne peut pas être vu mais peut être entendu s'il émet ou provoque un son. Immatériel ou Hors-Jeu Si quelqu'un est immatériel, il doit croiser les bras au-dessus de sa tête pour signifier qu'il ne peut être ni vu, ni touché, ni entendu. C'est aussi la position à prendre dans le cas de situations exceptionnelles nécessitant de signaler que vous êtes hors-jeu, et que les joueurs ne doivent pas interagir avec vous en jeu. Invulnérable Lorsqu’il est invulnérable, le joueur doit joindre ses mains ensemble devant lui. Un personnage invulnérable ne peut recevoir de dégâts et ne peut être déplacé. Vol Quelqu'un en train de voler doit lever son poing dans les airs pour signifier qu'il est en vol. Dans cet état, le personnage ne peut être atteint par les armes au corps à corps, peu importe leur longueur, et il ne peut pas non plus attaquer ceux au sol. Ils peuvent toutefois être la cible d'armes à distance (arcs, pistolets, armes de jet, etc.) tant que ceux qui les attaquent sont à au moins 5 mètres de lui."
+    "verbatim": "Certaines capacités et pouvoirs placent les joueurs dans des états particuliers difficiles à reproduire en vrai, comme \"invisibilité\", \"forme immatérielle\", \"invulnérabilité\" et \"vol\". Ces états sont représentés par des symboles que les joueurs doivent former avec leurs bras. Invisible Quelqu'un qui est invisible doit croiser ses bras sur sa poitrine. Dans cet état, le personnage ne peut pas être vu mais peut être entendu s'il émet ou provoque un son. Immatériel ou Hors-Jeu Si quelqu'un est immatériel, il doit croiser les bras au-dessus de sa tête pour signifier qu'il ne peut être ni vu, ni touché, ni entendu. C'est aussi la position à prendre dans le cas de situations exceptionnelles nécessitant de signaler que vous êtes hors-jeu, et que les joueurs ne doivent pas interagir avec vous en jeu. Invulnérable Lorsqu’il est invulnérable, le joueur doit joindre ses mains ensemble devant lui. Un personnage invulnérable ne peut recevoir de dégâts et ne peut être déplacé. Vol Quelqu'un en train de voler doit lever son poing dans les airs pour signifier qu'il est en vol. Dans cet état, le personnage ne peut être atteint par les armes au corps à corps, peu importe leur longueur, et il ne peut pas non plus attaquer ceux au sol. Ils peuvent toutefois être la cible d'armes à distance (arcs, pistolets, armes de jet, etc.) tant que ceux qui les attaquent sont à au moins 5 mètres de lui.",
+    "presentation": {
+     "mode": "items",
+     "avec_prefixe": true,
+     "ancres": [
+      {
+       "nom": "Invisible",
+       "debut": "Invisible Quelqu"
+      },
+      {
+       "nom": "Immatériel ou Hors-Jeu",
+       "debut": "Immatériel ou Hors-Jeu Si quelqu"
+      },
+      {
+       "nom": "Invulnérable",
+       "debut": "Invulnérable Lorsqu"
+      },
+      {
+       "nom": "Vol",
+       "debut": "Vol Quelqu"
+      }
+     ]
+    }
    },
    {
     "id": "lexique",
@@ -136,7 +159,37 @@
     "source": {
      "page": 4
     },
-    "verbatim": "Les Armes à 1 main infligent 1 dégât de base Les Armes tenues à 2 mains infligent 2 dégâts de base. Les Armes d’haste (lance, halbarde, Naginata, etc.) Sont considéré tenue à 1 main. Les Armes massives peuvent recevoir un bonus de dégâts et/ou une brise bouclier/heure. Les Armes rustiques (bâtons et roches en mousses) infligent 1 dégât, maximum 2. Maximum de 3 de dégâts avec une arme tenue à une main, 5 dégâts avec une arme tenue à 2 mains (excepté les armes d’hast)."
+    "verbatim": "Les Armes à 1 main infligent 1 dégât de base Les Armes tenues à 2 mains infligent 2 dégâts de base. Les Armes d’haste (lance, halbarde, Naginata, etc.) Sont considéré tenue à 1 main. Les Armes massives peuvent recevoir un bonus de dégâts et/ou une brise bouclier/heure. Les Armes rustiques (bâtons et roches en mousses) infligent 1 dégât, maximum 2. Maximum de 3 de dégâts avec une arme tenue à une main, 5 dégâts avec une arme tenue à 2 mains (excepté les armes d’hast).",
+    "presentation": {
+     "mode": "items",
+     "avec_prefixe": false,
+     "ancres": [
+      {
+       "nom": "Armes à 1 main",
+       "debut": "Les Armes à 1 main"
+      },
+      {
+       "nom": "Armes à 2 mains",
+       "debut": "Les Armes tenues à 2 mains"
+      },
+      {
+       "nom": "Armes d’hast",
+       "debut": "Les Armes d’haste"
+      },
+      {
+       "nom": "Armes massives",
+       "debut": "Les Armes massives"
+      },
+      {
+       "nom": "Armes rustiques",
+       "debut": "Les Armes rustiques"
+      },
+      {
+       "nom": "Maximums",
+       "debut": "Maximum de 3 de dégâts"
+      }
+     ]
+    }
    },
    {
     "id": "armes_a_distance",
@@ -144,7 +197,29 @@
     "source": {
      "page": 4
     },
-    "verbatim": "Les Armes de jet (Dague, maillet, etc.) fonctionnent comme les armes de corps à corps. Les Arcs infligent 3 maximum 5. Les Arbalètes infligent 3 dégâts perce-armure, maximum 5. Les Sarbacanes n’infligent aucun dégât, mais permettent d’appliquer du poison."
+    "verbatim": "Les Armes de jet (Dague, maillet, etc.) fonctionnent comme les armes de corps à corps. Les Arcs infligent 3 maximum 5. Les Arbalètes infligent 3 dégâts perce-armure, maximum 5. Les Sarbacanes n’infligent aucun dégât, mais permettent d’appliquer du poison.",
+    "presentation": {
+     "mode": "items",
+     "avec_prefixe": false,
+     "ancres": [
+      {
+       "nom": "Armes de jet",
+       "debut": "Les Armes de jet"
+      },
+      {
+       "nom": "Arcs",
+       "debut": "Les Arcs infligent"
+      },
+      {
+       "nom": "Arbalètes",
+       "debut": "Les Arbalètes infligent"
+      },
+      {
+       "nom": "Sarbacanes",
+       "debut": "Les Sarbacanes"
+      }
+     ]
+    }
    },
    {
     "id": "mana_et_armures",

@@ -25,7 +25,7 @@ import { getVersion } from '../rules/load'
 const DONNEES = join(dirname(fileURLToPath(import.meta.url)), '..', 'data')
 
 const EMPREINTES: Record<string, string> = {
-  'rules.json': '52f10017c4c15ae74eb7b4088c738def416bed8e420183c22ab268a31052fba0',
+  'rules.json': '37ce5ba4740f6eb7528849a5955aa680911517d79d94db04baee266c44061c2a',
   'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
 }
 
@@ -43,8 +43,8 @@ describe('D20 ⑧ — les deux corpus sont intouchés à l’octet', () => {
     })
   }
 
-  it('rules.json est toujours en 1.3.0', () => {
-    expect(getVersion()).toBe('1.3.0')
+  it('rules.json est toujours en 1.3.1', () => {
+    expect(getVersion()).toBe('1.3.1')
   })
 })
 
