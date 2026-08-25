@@ -1,10 +1,10 @@
 /**
  * D19 ③ — la carte de RÉCLAMATION du don d'Esprit, sur l'écran Fiche.
  *
- * Cas résiduel, et lui seul : le personnage est au plafond de la table (il ne
- * monte plus, donc l'écran de montée ne lui offrira plus jamais l'emplacement
- * du palier) et porte un droit de palier que rien n'a consommé. Sans cette
- * carte, sa fiche resterait à « dons : N/N+1 » sans issue.
+ * Q2 (t016, Fred 2026-08-25) : elle s'offre À TOUT NIVEAU, pas seulement au
+ * plafond de la table — dès qu'un droit de palier dort sur la fiche, qu'il
+ * reste ou non des montées à venir. Sans elle, une fiche en souffrance
+ * resterait à « dons : N/N+1 » sans issue avant le plafond.
  *
  * Discrète : repliée, elle tient en deux lignes et un bouton. ⛔ Hors zone
  * d'impression (`pas-a-imprimer`) — la feuille du terrain ne connaît pas les
