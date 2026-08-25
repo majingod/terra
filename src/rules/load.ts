@@ -46,12 +46,14 @@ export interface Race {
   malus?: unknown[]
   description_physique: string
   langues_depart: string[]
+  lore_verbatim?: string
 }
 
 export interface Don {
   id: string
   nom: string
   verbatim: string
+  affichage?: string
   cumulable?: boolean
 }
 
@@ -61,11 +63,13 @@ export interface CompetenceSimple {
   materiel?: string
   base: string
   avance: string
+  description?: string
 }
 
 export interface CapaciteArtisanat {
   nom: string
   verbatim: string
+  affichage?: string
   note?: string
 }
 
@@ -75,6 +79,7 @@ export interface Artisanat {
   alias_possible?: string
   materiel?: string
   restriction?: string
+  description?: string
   capacites: CapaciteArtisanat[]
 }
 
@@ -83,6 +88,7 @@ export interface Desavantage {
   nom: string
   xp: number
   verbatim: string
+  affichage?: string
   note?: string
   variante_xp?: number
   interdit_classes?: string[]
@@ -108,6 +114,7 @@ export interface CapaciteDeBase {
   id: string
   nom: string
   verbatim: string
+  affichage?: string
 }
 
 export interface Branche {
@@ -174,8 +181,98 @@ export interface ClasseSquelette {
   ressource_speciale?: { nom: string; verbatim: string; max?: number }
 }
 
+/** Une ancre de présentation posée par le lot corpus 1.3.1. */
+export interface AncreDePresentation {
+  nom: string
+  debut: string
+}
+
+/**
+ * Métadonnées de PRÉSENTATION d'une section : elles disent où trancher le
+ * verbatim pour l'afficher en items. Le verbatim, lui, reste entier.
+ */
+export interface PresentationSection {
+  mode: string
+  avec_prefixe: boolean
+  ancres: AncreDePresentation[]
+}
+
+/** Une section du chapitre 1 : soit un verbatim, soit un tableau. */
+export interface SectionDeRegle {
+  id: string
+  titre: string
+  source: Source
+  verbatim?: string
+  affichage?: string
+  presentation?: PresentationSection
+  colonnes?: string[]
+  lignes?: Array<Record<string, string>>
+}
+
+/** Un texte de règle nu, avec sa correction d'affichage éventuelle (D14). */
+export interface TexteDuTome {
+  verbatim: string
+  affichage?: string
+}
+
+export interface TableauDeReference {
+  source: Source
+  titre: string
+  lignes: Array<Record<string, string>>
+}
+
+export interface Substance {
+  nom: string
+  couleur: string
+  compo: string
+  valeur: string
+  effet_verbatim: string
+}
+
+export interface ObjetDeForgeron {
+  type: string
+  materiel: string
+  valeur: string
+  effet_verbatim: string
+}
+
+export interface MateriauDeForgeron {
+  materiau: string
+  valeur_base: string
+  objets: ObjetDeForgeron[]
+}
+
+export interface Rune {
+  nom: string
+  materiel?: string
+  compo?: string
+  valeur: string
+  effet_verbatim: string
+}
+
+export interface AteliersDeFaction extends TexteDuTome {
+  source: Source
+  poste_de_traite: TexteDuTome
+  laboratoire: TexteDuTome
+}
+
 export interface Rules {
   meta: Meta
+  regles_de_base: { source: Source; sections: SectionDeRegle[] }
+  lutte: TexteDuTome & { source: Source }
+  sauvegardes: TexteDuTome & { source: Source }
+  magie: TexteDuTome & { source: Source }
+  tables_ch4: {
+    source: Source
+    ressources: TableauDeReference
+    substances_alchimiques: { source: Source; titre: string; liste: Substance[] }
+    objets_forgeron: { source: Source; titre: string; materiaux: MateriauDeForgeron[] }
+    runes: TexteDuTome & {
+      source: Source
+      runes_arme: Rune[]
+      runes_amulette: Rune[]
+    }
+  }
   caracteristiques: {
     creation: {
       repartition: number[]
@@ -203,10 +300,11 @@ export interface Rules {
     liste: Faction[]
     avantage_de_depart: { regle: string; critere: string; consequence_ui: string }
   }
-  races: { liste: Race[] }
+  races: { liste: Race[]; intro_verbatim: string }
   langues: { regle: string; liste: Langue[] }
   dons: { intro: string; liste: Don[] }
   competences: {
+    intro: string
     regle_niv1: string
     simples: CompetenceSimple[]
     artisanats: {
@@ -214,6 +312,7 @@ export interface Rules {
       max_par_personnage: number
       interdit_tranche: string
       liste: Artisanat[]
+      ateliers: AteliersDeFaction
     }
   }
   heritage: {
