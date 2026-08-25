@@ -23,9 +23,12 @@
  * les porte (création d'abord, puis chaque montée), s'apparient aux droits de
  * don triés par date — échelons de la table, achats (datés du niveau 1) puis
  * palier d'Esprit. Cet ordre est chronologique des deux côtés, ce qui rend
- * l'appariement juste dans tous les parcours que l'app peut produire. Sa
- * seule limite connue : un don CUMULABLE repris plus tard garde la place de
- * sa première prise dans l'agrégat, et ses instances portent alors la même
+ * l'appariement juste dans tous les parcours que l'app peut produire. Un droit
+ * de palier NON consommé n'a encore aucune instance qui lui réponde : il est
+ * retiré de la liste avant l'appariement, et le rattrapage (montée ou
+ * réclamation) l'y insère à son rang quand le joueur le prend (D19 ③). Seule
+ * limite restante : un don CUMULABLE repris plus tard garde la place de sa
+ * première prise dans l'agrégat, et ses instances portent alors la même
  * date.
  */
 import { compteAchats } from '../rules/heritage'
@@ -190,6 +193,25 @@ export function rangDuDroitDePalier(fiche: FicheCreation): number {
 }
 
 /**
+ * Les droits de don à apparier contre l'agrégat : les droits de palier
+ * NON consommés (`palierNonConsomme`) n'ont encore aucune instance qui leur
+ * réponde dans `fiche.dons` — ce sont les `manquants` DERNIERS droits de
+ * source `'palier'` de la liste triée qu'on retire avant l'appariement,
+ * pour que l'instance suivante de l'agrégat retombe sur le bon droit.
+ */
+function droitsPourAppariement(fiche: FicheCreation): DroitDeDon[] {
+  const droits = droitsDeDon(fiche)
+  const manquants = palierNonConsomme(fiche)
+  if (manquants <= 0) return droits
+  const rangsDePalier = droits
+    .map((droit, rang) => ({ droit, rang }))
+    .filter(({ droit }) => droit.source === 'palier')
+    .map(({ rang }) => rang)
+  const aRetirer = new Set(rangsDePalier.slice(-manquants))
+  return droits.filter((_, rang) => !aRetirer.has(rang))
+}
+
+/**
  * L'agrégat des dons avec une prise de plus, posée au rang demandé. Un don
  * DÉJÀ pris (cumulable repris) garde la place de sa première prise : l'agrégat
  * compte par id, il ne sait pas séparer deux prises du même don.
@@ -249,7 +271,7 @@ export function datesDesDons(fiche: FicheCreation | undefined): DonDate[] {
     return [...agregat, ...troc.map((t) => t.id)].map((id) => ({ id, source: 'indatable' as const }))
   }
 
-  const droits = droitsDeDon(fiche)
+  const droits = droitsPourAppariement(fiche)
   const datees: DonDate[] = agregat.map((id, rang) => {
     const droit = droits[rang]
     // Plus de prises que de droits (fiche en surplus, régime « le joueur

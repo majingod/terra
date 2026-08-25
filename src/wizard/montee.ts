@@ -404,14 +404,24 @@ export function miseAJourMontee(
   else donNiveaux[String(niveauAtteint)] = choix.donTroque!
 
   // …et l'emplacement de don, un don ou une capacité de niveau ≤ l'échelon.
-  const dons = { ...(fiche.dons ?? {}) }
+  let dons = { ...(fiche.dons ?? {}) }
   const capDons = { ...(fiche.capDons ?? {}) }
-  // D19 ③ — le don du palier s'inscrit AVANT celui de l'échelon : il date
-  // d'un niveau antérieur ou égal (l'Esprit y a atteint le palier), et
-  // l'agrégat garde ainsi l'ordre chronologique dont la datation se sert.
+  // D19 ③ — l'origine du droit de palier se lit sur la fiche D'ENTRÉE, avant
+  // toute mutation : un droit ANTÉRIEUR à cette montée (resté en souffrance)
+  // s'insère à son rang dans l'agrégat, comme la carte de réclamation ; un
+  // droit ouvert PAR cette montée (le point posé sur l'Esprit) s'ajoute,
+  // comme avant, avant celui de l'échelon — sa date est `niveauAtteint`, ≥
+  // toutes les dates déjà portées, l'ordre relatif de l'agrégat suffit.
   const dusPalier = donsDePalierDeLaMontee(personnage, niveauAtteint, choix)
   if (dusPalier > 0) {
-    dons[choix.donPalier!] = (dons[choix.donPalier!] ?? 0) + dusPalier
+    if (palierNonConsomme(fiche) > 0) {
+      const rang = rangDuDroitDePalier(fiche)
+      for (let i = 0; i < dusPalier; i++) {
+        dons = agregatAvecPrise(dons, choix.donPalier!, rang)
+      }
+    } else {
+      dons[choix.donPalier!] = (dons[choix.donPalier!] ?? 0) + dusPalier
+    }
   }
   if (gains.dons > 0) {
     if (choix.capTroquee) capDons[String(niveauAtteint)] = choix.capTroquee

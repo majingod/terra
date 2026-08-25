@@ -276,10 +276,11 @@ export default function Fiche() {
         />
       )}
 
-      {/* D19 ③ — cas résiduel : au plafond de la table, un droit de palier
-          d'Esprit que plus aucune montée ne pourra offrir. La carte ne
-          s'affiche que là, et seulement s'il reste vraiment un droit. */}
-      {!enfant && personnage.creation && niveauAtteint === undefined && (
+      {/* D19 ③ — Q2 (t016, Fred 2026-08-25) : un droit de palier d'Esprit
+          en souffrance se réclame à N'IMPORTE QUEL niveau, pas seulement au
+          plafond de la table. La carte se cache déjà toute seule tant qu'il
+          n'en reste vraiment aucun (`palierNonConsomme`). */}
+      {!enfant && personnage.creation && (
         <CarteReclamationPalier
           personnage={personnage}
           onReclamer={(donChoisi) =>
