@@ -18,12 +18,14 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { capacitesDeClasse } from '../../rules/capacites'
 import { db, type Personnage } from '../../db'
 import { niveauMax, niveauMin } from '../../rules/niveau'
 import { valeurCarac } from '../../rules/stats'
 import { droitDons, listeDons } from '../../rules/talents'
 import { niveauxDuDon, palierNonConsomme } from '../../wizard/datation'
 import { niveauCourant } from '../../wizard/historique'
+import { donPrenable, donsDePalierDeLaMontee, manquesDeLaMontee } from '../../wizard/montee'
 import { donsDeLaFiche } from '../../wizard/troc'
 import { consommationDonsDeLaFiche } from '../../wizard/validation'
 import type { FicheCreation } from '../../wizard/types'
@@ -195,5 +197,76 @@ describe('D19 ③ — le cas résiduel : réclamer au plafond de la table', () =
     // Et le don réclamé date du niveau où l'Esprit a atteint le palier.
     const apres = (await db.personnages.get(id))!.creation as FicheCreation
     expect(niveauxDuDon(apres, neufAttendu.id)).toEqual([PALIER_AU])
+  })
+})
+
+describe('D19 ③ — GN4 : Q2 (t016, Fred 2026-08-25) — la carte à N’IMPORTE QUEL niveau', () => {
+  /** Le libellé arbitré de l'emplacement du palier (brief D19 ③). */
+  const TITRE = `Don d'Esprit ${SEUIL}`
+
+  /** Une fiche EN COURS DE ROUTE (pas au plafond) avec un droit en souffrance. */
+  function ficheEnCoursDeRoute(): FicheCreation {
+    return ficheDatee({
+      niveau: PALIER_AU,
+      espritCreation: SEUIL - A_POINT.length,
+      surEsprit: A_POINT,
+      palierNonConsomme: true,
+    })
+  }
+
+  it('témoin : cette fiche n’est PAS au plafond de la table', () => {
+    expect(PALIER_AU).toBeLessThan(PLAFOND)
+  })
+
+  it('une fiche en souffrance sous le plafond offre déjà la carte', async () => {
+    const fiche = ficheEnCoursDeRoute()
+    expect(palierNonConsomme(fiche)).toBeGreaterThan(0)
+    await afficherLaFiche(fiche)
+    expect(screen.queryByRole('heading', { name: TITRE })).not.toBeNull()
+  })
+
+  it('réclamer depuis cette carte, sous le plafond, écrit le don et referme le droit', async () => {
+    const fiche = ficheEnCoursDeRoute()
+    const id = await afficherLaFiche(fiche)
+    const carte = screen.getByRole('heading', { name: TITRE }).parentElement as HTMLElement
+    fireEvent.click(within(carte).getByRole('button', { name: 'Choisir ce don' }))
+    // Un don NON cumulable : l'anti-doublon de la montée suivante s'éprouve dessus.
+    const neufAttendu = listeDons().find(
+      (don) => !don.cumulable && !(fiche.dons ?? {})[don.id],
+    )!
+    const cible = within(carte)
+      .getAllByRole('button')
+      .find((el) => (el.textContent ?? '').startsWith(neufAttendu.nom))!
+    expect(cible.getAttribute('aria-disabled')).not.toBe('true')
+    fireEvent.click(cible)
+    fireEvent.click(within(carte).getByRole('button', { name: 'Réclamer ce don' }))
+
+    await waitFor(async () => {
+      const apres = (await db.personnages.get(id))!.creation as FicheCreation
+      expect(palierNonConsomme(apres)).toBe(0)
+    })
+    const perso = (await db.personnages.get(id))! as Personnage
+    const apres = perso.creation as FicheCreation
+    expect(consommationDonsDeLaFiche(apres)).toBe(
+      droitDons(valeurCarac(apres, 'e'), apres.achats, niveauCourant(apres)),
+    )
+    // Le don réclamé date du niveau où l'Esprit a atteint le palier, pas du jour.
+    expect(niveauxDuDon(apres, neufAttendu.id)).toEqual([PALIER_AU])
+
+    // GN5 — pas de double porte : la montée suivante ne redemande rien, et
+    // passe sans `donPalier`.
+    expect(donsDePalierDeLaMontee(perso, PLAFOND, {})).toBe(0)
+    const capacite = capacitesDeClasse(apres.classe).find(
+      (c) => c.niveau <= PLAFOND && !Object.values(apres.capNiveaux ?? {}).includes(c.id),
+    )!.id
+    const donDeLEchelon = listeDons().find(
+      (d) => d.id !== neufAttendu.id && !(apres.dons ?? {})[d.id],
+    )!.id
+    const manques = manquesDeLaMontee(perso, PLAFOND, { capacite, don: donDeLEchelon })
+    expect(manques, `manques restants : ${manques.join(', ')}`).toEqual([])
+
+    // Et l'anti-doublon : le don réclamé n'est plus prenable à la montée
+    // suivante (il n'est pas cumulable — on l'a choisi ainsi ci-dessus).
+    expect(donPrenable(perso, neufAttendu)).toBe(false)
   })
 })
