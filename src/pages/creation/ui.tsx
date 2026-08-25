@@ -136,34 +136,39 @@ export function ErreurNote({ children }: { children: ReactNode }) {
 
 interface TutorielProps {
   etapeId: string
+  titre?: string
   gestes: ReactNode[]
   pourquoi: ReactNode
 }
 
 /**
  * « 💡 Comment fonctionne cette étape » : cadre repliable, état replié
- * mémorisé pour la session (sessionStorage).
+ * mémorisé pour la session (sessionStorage). Le titre ET le libellé
+ * « Voir plus / Voir moins de détails » basculent l'état.
  */
-export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
+export function Tutoriel({
+  etapeId,
+  titre = 'Comment fonctionne cette étape',
+  gestes,
+  pourquoi,
+}: TutorielProps) {
   const cle = `tuto-${etapeId}`
   const [replie, setReplie] = useState(() => sessionStorage.getItem(cle) === 'replie')
+  const basculer = () => {
+    const suite = !replie
+    setReplie(suite)
+    sessionStorage.setItem(cle, suite ? 'replie' : 'deplie')
+  }
   return (
     <div className="pas-a-imprimer my-2 overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
       <button
         type="button"
         className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-sans text-sm text-secondary-foreground"
-        onClick={() => {
-          const suite = !replie
-          setReplie(suite)
-          sessionStorage.setItem(cle, suite ? 'replie' : 'deplie')
-        }}
+        onClick={basculer}
         aria-expanded={!replie}
       >
         <span aria-hidden>💡</span>
-        <b className="text-secondary-foreground">Comment fonctionne cette étape</b>
-        <span aria-hidden className="ml-auto text-muted-foreground">
-          {replie ? '▸' : '▾'}
-        </span>
+        <b className="text-secondary-foreground">{titre}</b>
       </button>
       {!replie && (
         <div>
@@ -177,6 +182,13 @@ export function Tutoriel({ etapeId, gestes, pourquoi }: TutorielProps) {
           </p>
         </div>
       )}
+      <button
+        type="button"
+        className="block min-h-8 w-full px-3 pb-2.5 pt-0.5 text-right font-sans text-[13px] text-gold underline decoration-dotted underline-offset-4"
+        onClick={basculer}
+      >
+        {replie ? 'Voir plus de détails' : 'Voir moins de détails'}
+      </button>
     </div>
   )
 }
