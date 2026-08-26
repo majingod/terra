@@ -2,8 +2,14 @@
  * Langues (Tome p.7).
  *
  * Les langues acquises viennent de la race (races.liste[].langues_depart) ;
- * le Druidique est acquis d'office par le druide, et la Langue des morts
- * n'est jamais proposée à la création. Les deux règles vivent dans
+ * le Druidique est acquis d'office par le druide.
+ *
+ * D19 ④ (arbitrage Q6, Fred, t016, 2026-08-26) — verbatim de
+ * langues.liste[].restriction pour la Langue des morts : « Uniquement
+ * accessible aux sorciers et chevaliers de la mort, mais ne commence pas
+ * avec. » Elle n'est donc offerte qu'à ces deux classes — à la création OU
+ * en gagnant une langue supplémentaire par un Esprit élevé — jamais aux
+ * autres, et jamais d'office. Les deux règles vivent dans
  * langues.liste[].restriction de rules.json — pas recopiées ici.
  */
 import { getRules, type Langue } from './load'
@@ -12,8 +18,10 @@ import { getRules, type Langue } from './load'
 const LANGUE_DRUIDES = 'druidique'
 /** Id de la classe qui la possède dès le début. */
 const CLASSE_DRUIDE = 'druide'
-/** Id de la langue jamais offerte à la création — même champ restriction. */
-const LANGUE_JAMAIS_A_LA_CREATION = 'des_morts'
+/** Id de la langue réservée aux deux classes de nécromancie — même champ restriction. */
+const LANGUE_DES_MORTS = 'des_morts'
+/** Ids des deux seules classes qui peuvent la prendre (Q6, t016). */
+const CLASSES_LANGUE_DES_MORTS = ['sorcier', 'chevalier_de_la_mort']
 
 export function listeLangues(): Langue[] {
   return getRules().langues.liste
@@ -51,18 +59,20 @@ export function droitLangues(esprit: number, comps: readonly string[] = []): num
 }
 
 /**
- * Langues proposables au choix : toutes sauf celles déjà acquises, la langue
- * des druides (réservée, jamais au choix) et la Langue des morts (jamais à
- * la création).
+ * Langues proposables au choix : toutes sauf celles déjà acquises et la
+ * langue des druides (réservée, jamais au choix). La Langue des morts n'y
+ * entre QUE pour les deux classes de Q6 — sorcier et chevalier de la mort ;
+ * pour les six autres, elle n'est jamais proposable.
  */
 export function languesProposables(raceId?: string, classeId?: string): Langue[] {
   const acquises = new Set(languesAcquises(raceId, classeId))
-  return listeLangues().filter(
-    (l) =>
-      !acquises.has(l.id) &&
-      l.id !== LANGUE_JAMAIS_A_LA_CREATION &&
-      l.id !== LANGUE_DRUIDES,
-  )
+  const desMortsOuverte = classeId !== undefined && CLASSES_LANGUE_DES_MORTS.includes(classeId)
+  return listeLangues().filter((l) => {
+    if (acquises.has(l.id)) return false
+    if (l.id === LANGUE_DRUIDES) return false
+    if (l.id === LANGUE_DES_MORTS) return desMortsOuverte
+    return true
+  })
 }
 
 /** Refus sur un choix de langues (hors compte de droits). */

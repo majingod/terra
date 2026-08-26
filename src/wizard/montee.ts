@@ -14,7 +14,7 @@
  * l'échelon atteint, choix de niveaux ET achats XP retirés.
  */
 import { capacitesEnfantAcquises } from '../rules/kids'
-import { languesAcquises } from '../rules/langues'
+import { droitLangues, languesAcquises, refusLangues } from '../rules/langues'
 import { refusDons } from '../rules/talents'
 import { gainsMontee, gainsMonteeEnfant } from '../rules/montee'
 import { valeurCarac } from '../rules/stats'
@@ -101,6 +101,25 @@ export function libelleReclamerLePalier(): string {
 /** Le bouton qui ÉCRIT la réclamation, une fois le don posé. */
 export function libelleConfirmerLaReclamation(): string {
   return 'Réclamer ce don'
+}
+
+/**
+ * D19 ④ — le titre de la carte de LANGUE du palier d'Esprit, sœur de la
+ * carte de don : même seuil, lu de la même table (D5 : aucun « 3 » écrit ici).
+ */
+export function libelleCarteLangueDuPalier(): string {
+  return `Langue d'Esprit ${seuilPalierEsprit() ?? ''}`.trim()
+}
+
+/** Le chapeau de la carte de langue — libellé arbitré mot pour mot. */
+export function libelleRaisonLangueDuPalier(): string {
+  const seuil = seuilPalierEsprit() ?? ''
+  return `Ton Esprit a atteint ${seuil} : la table t'accorde une langue de plus. Choisis-la quand tu veux — ce droit t'attend.`
+}
+
+/** Le bouton qui ÉCRIT la langue réclamée, une fois qu'elle est choisie. */
+export function libelleApprendreCetteLangue(): string {
+  return 'Apprendre cette langue'
 }
 
 // ---------------------------------------------------------------------------
@@ -516,6 +535,45 @@ export function miseAJourReclamationPalier(
     dons: Object.keys(donsPris(creation)),
     creation,
     updatedAt: maintenant,
+  }
+}
+
+/**
+ * D19 ④ — RÉCLAMER la langue du palier d'Esprit hors d'une montée, sœur de
+ * `miseAJourReclamationPalier` : l'écran Fiche offre la carte tant qu'un
+ * droit de langue dort (`fiche.langChoix.length < droitLangues(...)`),
+ * à tout niveau (Q5, t016).
+ *
+ * ⛔ Les langues ne se datent pas : contrairement au don du palier, aucun
+ * rang ne s'insère dans un agrégat — la langue s'ajoute à la FIN de
+ * `langChoix`, comme n'importe quel choix de langue. Aucun champ nouveau,
+ * aucun bump Dexie, historique intouché.
+ */
+export function miseAJourReclamationLangue(
+  personnage: Personnage,
+  langueId: string,
+  quand: number,
+): Partial<Personnage> {
+  const fiche = ficheDe(personnage)
+  if (estAncienneFiche(fiche)) {
+    throw new Error(
+      'Réclamation refusée — cette fiche vient d’une version précédente du jeu : il faut la refaire.',
+    )
+  }
+  const droit = droitLangues(valeurCarac(fiche, 'e'), fiche.comps ?? [])
+  if ((fiche.langChoix ?? []).length >= droit) {
+    throw new Error('Réclamation refusée — aucune langue supplémentaire à réclamer.')
+  }
+  const langChoix = [...(fiche.langChoix ?? []), langueId]
+  const refus = refusLangues(langChoix, fiche.race, fiche.classe)
+  if (refus.length > 0) {
+    throw new Error(`Réclamation refusée — ${refus.join(', ')}.`)
+  }
+  const creation: FicheCreation = { ...fiche, langChoix }
+  return {
+    langues: [...languesAcquises(creation.race, creation.classe), ...langChoix],
+    creation,
+    updatedAt: quand,
   }
 }
 
