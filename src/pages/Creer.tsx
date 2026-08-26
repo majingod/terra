@@ -38,7 +38,8 @@ import { languesAcquisesEnfant } from '../rules/langues_kids'
 import { classeSquelette, raceDe, valeurCarac } from '../rules/stats'
 import { choixEnfant, etapesActivesEnfant, etapesValidesEnfant } from '../wizard/enfant'
 import { entreeDeCreation, niveauCourant } from '../wizard/historique'
-import { miseAJourMontee, type ChoixMontee } from '../wizard/montee'
+import { miseAJourCorrection, miseAJourMontee, type ChoixMontee } from '../wizard/montee'
+import { niveauCorrigeable } from '../wizard/cascade'
 import { champNomDuJoueur, sansNomDuJoueur } from '../wizard/nomDuJoueur'
 import { capacitesTroquees, donsPris } from '../wizard/troc'
 import type { FicheCreation } from '../wizard/types'
@@ -73,6 +74,7 @@ import EtapeNomEnfant from './creation/enfant/EtapeNomEnfant'
 import Fenetre from './creation/Fenetre'
 import Fil from './creation/Fil'
 import Pastilles from './creation/Pastilles'
+import EcranCorrection from './montee/EcranCorrection'
 import EcranMontee from './montee/EcranMontee'
 
 const ID_BROUILLON = 1
@@ -111,6 +113,11 @@ export default function Creer() {
   const [enTrain, setEnTrain] = useState<{ personnage: Personnage; niveauAtteint: number } | null>(
     null,
   )
+  /**
+   * D20 lot 2 — le niveau DÉJÀ traversé que le joueur rouvre depuis l'étage
+   * « TES NIVEAUX » du fil. `null` = le train roule normalement.
+   */
+  const [enCorrection, setEnCorrection] = useState<number | null>(null)
 
   useEffect(() => {
     let annule = false
@@ -274,6 +281,19 @@ export default function Creer() {
    * montée (D17, une SEULE mise à jour), puis l'app enchaîne sur l'échelon
    * suivant — ou rend la main à la fiche quand la cible est atteinte.
    */
+  /**
+   * D20 lot 2 — une montée DÉJÀ traversée, corrigée sans quitter le train :
+   * les échelons au-dessus restent, et le train reprend où il en était.
+   */
+  async function confirmerLaCorrection(niveau: number, choix: ChoixMontee) {
+    if (!enTrain) return
+    const { personnage, niveauAtteint } = enTrain
+    const maj = miseAJourCorrection(personnage, niveau, choix, Date.now())
+    await db.personnages.update(personnage.id as number, maj)
+    setEnTrain({ personnage: { ...personnage, ...maj }, niveauAtteint })
+    setEnCorrection(null)
+  }
+
   async function confirmerLaMontee(choix: ChoixMontee) {
     if (!enTrain) return
     const { personnage, niveauAtteint } = enTrain
@@ -352,7 +372,21 @@ export default function Creer() {
           barre={!enfant}
           ici={enTrain.niveauAtteint}
           fige
+          onCorrigerLeNiveau={(niveau) => setEnCorrection(niveau)}
         />
+        {enCorrection !== null && niveauCorrigeable(enTrain.personnage, enCorrection) ? (
+          // ⛔ Écran NEUF à chaque ouverture (`key`) : sans elle, les choix
+          // d'un niveau fuiraient dans un autre.
+          <EcranCorrection
+            key={`correction-${enCorrection}`}
+            personnage={enTrain.personnage}
+            niveau={enCorrection}
+            onCorriger={(choix: ChoixMontee) =>
+              void confirmerLaCorrection(enCorrection, choix)
+            }
+            onAnnuler={() => setEnCorrection(null)}
+          />
+        ) : (
         <EcranMontee
           // `key` par échelon : chaque montée est un écran NEUF. Sans elle,
           // React réutilise l'instance et les choix du niveau précédent
@@ -368,6 +402,7 @@ export default function Creer() {
             setEnregistree(true)
           }}
         />
+        )}
       </div>
     )
   }

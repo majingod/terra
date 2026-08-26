@@ -26,6 +26,7 @@ import type { FicheCreation } from '../../../wizard/types'
 import { db } from '../../../db'
 import Fiche from '../../Fiche'
 import { personnageEnfant } from './aide-montee'
+import { ouvrirLaMonteeParLaGarde } from './aide-garde-montee'
 
 /** Le Guerrier de la planche — la première classe du corpus enfant. */
 const CLASSE = classesEnfant()[0]
@@ -60,10 +61,18 @@ function afficherFiche(id: number) {
   )
 }
 
-/** Ouvre l'écran de montée depuis la fiche. */
+/**
+ * Ouvre l'écran de montée depuis la fiche.
+ *
+ * ⚠️ GATE MODIFIÉE PAR D20 lot 2 (Q4, t016), et voici pourquoi : la garde
+ * d'intention s'est glissée entre le bouton et l'écran — elle vaut pour les
+ * DEUX flux, le bouton de montée étant partagé. Ce que la gate garde n'a pas
+ * bougé d'un pouce (l'écran ≤11 ne propose aucun choix, la confirmation écrit
+ * d'un coup) ; seul le chemin pour y arriver a gagné un maintien.
+ */
 async function ouvrirLaMontee(niveau: number, id: number) {
   afficherFiche(id)
-  fireEvent.click(await screen.findByRole('button', { name: `Monter au niveau ${niveau + 1}` }))
+  await ouvrirLaMonteeParLaGarde(niveau + 1)
 }
 
 beforeAll(() => {
