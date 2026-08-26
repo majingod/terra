@@ -24,8 +24,9 @@ import { getVersion } from '../rules/load'
 
 const DONNEES = join(dirname(fileURLToPath(import.meta.url)), '..', 'data')
 
+// GATE MODIFIÉE PAR LE LOT CORPUS 1.3.2 (t017, arbitrages Q7–Q13, 2026-08-26)
 const EMPREINTES: Record<string, string> = {
-  'rules.json': '37ce5ba4740f6eb7528849a5955aa680911517d79d94db04baee266c44061c2a',
+  'rules.json': '47798ac201ff1e01ef00e34cf6e3b728cbca008d00d7dac6decd978f7f33d251',
   'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
 }
 
@@ -43,8 +44,9 @@ describe('D20 ⑧ — les deux corpus sont intouchés à l’octet', () => {
     })
   }
 
-  it('rules.json est toujours en 1.3.1', () => {
-    expect(getVersion()).toBe('1.3.1')
+  // GATE MODIFIÉE PAR LE LOT CORPUS 1.3.2 (t017, arbitrages Q7–Q13, 2026-08-26)
+  it('rules.json est toujours en 1.3.2', () => {
+    expect(getVersion()).toBe('1.3.2')
   })
 })
 

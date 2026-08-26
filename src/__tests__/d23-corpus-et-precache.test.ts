@@ -27,8 +27,9 @@ const IL_Y_A_UN_BUILD = existsSync(SW)
  * D24 met à jour `rules_kids.json` (1.0.0 → 1.1.0, métier + langues) : ce
  * lot-ci n'est pas un lot de logique pure, c'est l'arbitrage attendu.
  */
+// GATE MODIFIÉE PAR LE LOT CORPUS 1.3.2 (t017, arbitrages Q7–Q13, 2026-08-26)
 const EMPREINTES: Record<string, string> = {
-  'rules.json': '37ce5ba4740f6eb7528849a5955aa680911517d79d94db04baee266c44061c2a',
+  'rules.json': '47798ac201ff1e01ef00e34cf6e3b728cbca008d00d7dac6decd978f7f33d251',
   'rules_kids.json': 'e4eb58b87596a4041ca95dc104a92a2f9502ac553793803739575381373998db',
   'tome_extraits.json': '24f4f45838f318f609bc8b701511b0f872defbefd841a41bd11ac1b103ec9462',
 }

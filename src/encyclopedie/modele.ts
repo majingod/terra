@@ -551,7 +551,7 @@ function carteDeRune(rune: Rune): Carte {
       ...(materiel ? [pastille(`${LIBELLES.materiel} ${materiel}`)] : []),
       pastille(`${LIBELLES.valeur} ${rune.valeur}`),
     ],
-    source: { verbatim: rune.effet_verbatim },
+    source: source(rune.effet_verbatim, rune.effet_affichage),
   }
 }
 
@@ -602,7 +602,7 @@ function entreesDesTables(): Entree[] {
                     pastille(`${LIBELLES.materiel} ${objet.materiel}`),
                     pastille(`${LIBELLES.valeur} ${objet.valeur}`),
                   ],
-                  source: { verbatim: objet.effet_verbatim },
+                  source: source(objet.effet_verbatim, objet.effet_affichage),
                 })),
               },
             ],

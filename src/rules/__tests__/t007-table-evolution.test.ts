@@ -48,7 +48,8 @@ describe('PR-B — evolution.table corrigée (données)', () => {
     // 1.1.0 : les corrections d'affichage D14 s'ajoutent à la table corrigée.
     // 1.2.0 (D18) : le champ `troc` des classes s'y ajoute — la table, elle,
     // n'a pas bougé d'un octet.
-    expect(getVersion()).toBe('1.3.1')
+    // GATE MODIFIÉE PAR LE LOT CORPUS 1.3.2 (t017, arbitrages Q7–Q13, 2026-08-26)
+    expect(getVersion()).toBe('1.3.2')
   })
 })
 
