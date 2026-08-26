@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-ssr
+.claude/settings.local.json
 *.local
 .vercel
 .env
