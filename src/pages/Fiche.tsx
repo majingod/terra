@@ -53,6 +53,7 @@ import {
   miseAJourCorrection,
   miseAJourMontee,
   miseAJourMonteeEnfant,
+  miseAJourReclamationLangue,
   miseAJourReclamationPalier,
   niveauDeLaFiche,
   type ChoixMontee,
@@ -66,6 +67,7 @@ import { PastillesNiveaux } from './creation/Fil'
 import BoutonMontee from './montee/BoutonMontee'
 import EcranCorrection from './montee/EcranCorrection'
 import FenetreIntentionMontee from './montee/FenetreIntentionMontee'
+import CarteReclamationLangue from './montee/CarteReclamationLangue'
 import CarteReclamationPalier from './montee/CarteReclamationPalier'
 import EcranMontee from './montee/EcranMontee'
 import EcranMonteeEnfant from './montee/EcranMonteeEnfant'
@@ -350,6 +352,18 @@ export default function Fiche() {
           personnage={personnage}
           onReclamer={(donChoisi) =>
             void confirmer(miseAJourReclamationPalier(personnage, donChoisi, Date.now()))
+          }
+        />
+      )}
+
+      {/* D19 ④ (Q5, t016) — sœur de la carte ci-dessus, pour la langue que
+          la table accorde au même palier d'Esprit. Se cache seule tant que
+          `langChoix` a déjà consommé tout son droit. */}
+      {!enfant && personnage.creation && (
+        <CarteReclamationLangue
+          personnage={personnage}
+          onReclamer={(langueChoisie) =>
+            void confirmer(miseAJourReclamationLangue(personnage, langueChoisie, Date.now()))
           }
         />
       )}

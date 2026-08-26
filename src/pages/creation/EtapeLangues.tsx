@@ -1,7 +1,8 @@
 /**
  * Étape 7 — Langues (maquette A v3) : acquises en chips fixes, puis choix
  * en chips (✕ pour retirer, estompées quand le droit est atteint).
- * La Langue des morts n'est jamais proposée à la création.
+ * D19 ④ (Q6) : la Langue des morts entre dans ce choix pour le sorcier et
+ * le chevalier de la mort — jamais pour les autres classes.
  */
 import { droitLangues, languesAcquises, languesProposables, listeLangues } from '../../rules/langues'
 import { getRules } from '../../rules/load'
@@ -98,8 +99,8 @@ export default function EtapeLangues({ fiche, onMaj }: Props) {
         })}
       </div>
       <Note>
-        Druidique est réservée aux druides (acquise d'office) ; la Langue des morts ne s'obtient
-        jamais à la création (Tome p.7).
+        Druidique est réservée aux druides (acquise d'office) ; la Langue des morts est réservée
+        aux sorciers et chevaliers de la mort (Tome p.7).
       </Note>
     </section>
   )
