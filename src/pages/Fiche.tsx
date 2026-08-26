@@ -21,6 +21,18 @@
  * terrain, pré-remplie. La planche ≤11, qui n'a pas de feuille papier 12+,
  * garde l'impression simple de son propre affichage.
  *
+ * D20 lot 2 (Q3 = B, t016) : la rangée « TES NIVEAUX » vit AUSSI ici. Une
+ * erreur découverte après l'enregistrement — « ton point du niveau 2 aurait dû
+ * aller en Puissance » — se répare en touchant la pastille du niveau fautif,
+ * sans supprimer la fiche. Hors impression : la feuille papier ne change pas
+ * d'un trait. ⚠️ ≤11 : jamais de rangée de niveaux — chez eux le niveau se
+ * déclare, il n'y a ni montée ni historique.
+ *
+ * D20 lot 2 (Q4, t016) : monter de niveau demande désormais de la VOLONTÉ. Une
+ * fenêtre d'intention nomme le personnage et le niveau visé, et le bouton à
+ * maintien de D23 la garde. ⛔ Le train de création, lui, ne la porte pas : la
+ * cible choisie à l'étape « Ton niveau » est déjà l'intention.
+ *
  * D25 : le vrai nom du JOUEUR se lit et s'édite ici, sur cette page — la même
  * pour les ≤11 et les 12+. Toujours optionnel : vide, la fiche est exactement
  * celle d'avant, et la case de la feuille se remplit au crayon. Les contrôles
@@ -35,8 +47,10 @@ import { supprimerFicheDefinitivement } from '../db/suppression'
 import { niveauMaxEnfant, normaliserNiveauEnfant } from '../rules/kids'
 import { niveauAtteignable, niveauAtteignableEnfant } from '../rules/montee'
 import { niveauMax } from '../rules/niveau'
+import { niveauCorrigeable } from '../wizard/cascade'
 import { estAncienneFiche } from '../wizard/historique'
 import {
+  miseAJourCorrection,
   miseAJourMontee,
   miseAJourMonteeEnfant,
   miseAJourReclamationPalier,
@@ -48,7 +62,10 @@ import { exporterPersonnageJSON, importerPersonnageJSON } from '../utils/exportI
 import AncienneFiche from './AncienneFiche'
 import FicheAffichage from './creation/FicheAffichage'
 import FicheEnfantAffichage from './creation/enfant/FicheEnfantAffichage'
+import { PastillesNiveaux } from './creation/Fil'
 import BoutonMontee from './montee/BoutonMontee'
+import EcranCorrection from './montee/EcranCorrection'
+import FenetreIntentionMontee from './montee/FenetreIntentionMontee'
 import CarteReclamationPalier from './montee/CarteReclamationPalier'
 import EcranMontee from './montee/EcranMontee'
 import EcranMonteeEnfant from './montee/EcranMonteeEnfant'
@@ -133,6 +150,10 @@ export default function Fiche() {
   const personnage = useLiveQuery(() => db.personnages.get(idNombre), [idNombre])
   const inputFichier = useRef<HTMLInputElement>(null)
   const [enMontee, setEnMontee] = useState(false)
+  /** Q4 — la fenêtre d'intention : ouverte, elle n'a encore rien monté. */
+  const [intention, setIntention] = useState(false)
+  /** D20 lot 2 — le niveau traversé qu'on rouvre, s'il y en a un. */
+  const [enCorrection, setEnCorrection] = useState<number | null>(null)
   const naviguer = useNavigate()
 
   async function surImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -206,6 +227,24 @@ export default function Fiche() {
   async function confirmer(maj: Partial<Personnage>) {
     await db.personnages.update(personnage!.id as number, maj)
     setEnMontee(false)
+    setIntention(false)
+    setEnCorrection(null)
+  }
+
+  // D20 lot 2 — la montée rouverte. `key` par niveau : chaque ouverture est un
+  // écran NEUF, sinon les choix d'un niveau fuiraient dans un autre.
+  if (enCorrection !== null && niveauCorrigeable(personnage, enCorrection)) {
+    return (
+      <EcranCorrection
+        key={enCorrection}
+        personnage={personnage}
+        niveau={enCorrection}
+        onCorriger={(choix: ChoixMontee) =>
+          void confirmer(miseAJourCorrection(personnage, enCorrection, choix, Date.now()))
+        }
+        onAnnuler={() => setEnCorrection(null)}
+      />
+    )
   }
 
   if (enMontee && niveauAtteint !== undefined) {
@@ -265,16 +304,42 @@ export default function Fiche() {
         </>
       )}
 
+      {/* D20 lot 2 (Q3 = B) — la rangée « TES NIVEAUX » sur la fiche : le même
+          geste que dans le wizard, hors impression. ⚠️ ≤11 : jamais de rangée
+          — chez eux le niveau se déclare, il n'y a pas de montées. */}
+      {!enfant && personnage.creation && (
+        <div className="pas-a-imprimer">
+          <p className="m-0 px-1 pt-1 font-sans text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Tes niveaux
+          </p>
+          <PastillesNiveaux ici={niveauCourant} onCorriger={(niveau) => setEnCorrection(niveau)} />
+        </div>
+      )}
+
       {/* La montée part de la fiche du wizard : une fiche d'avant le wizard
           n'a ni classe identifiée ni emplacements de capacité — elle ne
-          monte pas ici (écart rapporté, rien n'est inventé à sa place). */}
-      {personnage.creation && (
-        <BoutonMontee
-          niveauAtteint={niveauAtteint}
-          plafond={plafond}
-          onMonter={() => setEnMontee(true)}
-        />
-      )}
+          monte pas ici (écart rapporté, rien n'est inventé à sa place).
+
+          Q4 (t016) — le toucher n'ouvre plus l'écran de montée : il ouvre la
+          fenêtre d'intention, et c'est le MAINTIEN qui ouvre l'écran. */}
+      {personnage.creation &&
+        (intention && niveauAtteint !== undefined ? (
+          <FenetreIntentionMontee
+            nom={personnage.nomPerso || 'Sans nom'}
+            niveauAtteint={niveauAtteint}
+            onMonter={() => {
+              setIntention(false)
+              setEnMontee(true)
+            }}
+            onAnnuler={() => setIntention(false)}
+          />
+        ) : (
+          <BoutonMontee
+            niveauAtteint={niveauAtteint}
+            plafond={plafond}
+            onMonter={() => setIntention(true)}
+          />
+        ))}
 
       {/* D19 ③ — Q2 (t016, Fred 2026-08-25) : un droit de palier d'Esprit
           en souffrance se réclame à N'IMPORTE QUEL niveau, pas seulement au

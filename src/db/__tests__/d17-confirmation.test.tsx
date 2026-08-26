@@ -23,6 +23,7 @@ import { niveauMin, niveauxPossibles, tableEvolution } from '../../rules/niveau'
 import { ficheComplete } from '../../wizard/__tests__/aide-fiche-complete'
 import { niveauCourant } from '../../wizard/historique'
 import { personnageDeLaFiche } from '../../pages/montee/__tests__/aide-montee'
+import { ouvrirLaMonteeParLaGarde } from '../../pages/montee/__tests__/aide-garde-montee'
 import Fiche from '../../pages/Fiche'
 import { db, type Personnage } from '../index'
 
@@ -117,7 +118,7 @@ describe('D17 ⑤ — confirmer écrit niveau, capacité et caractéristique d�
     const put = vi.spyOn(db.personnages, 'put')
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
 
     // Le jeton de Puissance, puis la capacité — sa voie ouverte au passage.
     const jetons = choisissables(carteDeGain(`+${POINTS} point de caractéristique`))
@@ -178,7 +179,7 @@ describe('D17 ⑤ — confirmer écrit niveau, capacité et caractéristique d�
     const capacite = capaciteLibre()
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
     fireEvent.click(
       choisissables(carteDeGain(`+${POINTS} point de caractéristique`)).find((el) =>
         (el.textContent ?? '').startsWith('Puissance'),
@@ -216,7 +217,7 @@ describe('D17 ⑤ jumelle — Annuler n’écrit rien', () => {
     const update = vi.spyOn(db.personnages, 'update')
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
     // Des choix sont bel et bien posés : ce sont EUX qui doivent disparaître.
     fireEvent.click(
       choisissables(carteDeGain(`+${POINTS} point de caractéristique`)).find((el) =>

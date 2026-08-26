@@ -25,6 +25,7 @@ import { niveauMin, niveauxPossibles, tableEvolution } from '../../rules/niveau'
 import { TROC_DON_VERS_CAPACITE } from '../../rules/troc'
 import { ficheComplete } from '../../wizard/__tests__/aide-fiche-complete'
 import { personnageDeLaFiche } from '../../pages/montee/__tests__/aide-montee'
+import { ouvrirLaMonteeParLaGarde } from '../../pages/montee/__tests__/aide-garde-montee'
 import Fiche from '../../pages/Fiche'
 import { db, type Personnage } from '../index'
 
@@ -38,7 +39,10 @@ const ATTEINT = tableEvolution()
   .map((ligne) => ligne.niv)[0]
 const DEPART = ATTEINT - 1
 
-const MONTER = `Monter au niveau ${ATTEINT}`
+// ⚠️ GATE MODIFIÉE PAR D20 lot 2 (Q4, t016) : le libellé du bouton de montée
+// n'est plus écrit ici — la garde d'intention s'est glissée entre lui et
+// l'écran, et `ouvrirLaMonteeParLaGarde` tient le geste entier en un endroit.
+// Ce que la gate GARDE n'a pas bougé : une seule écriture, Annuler n'écrit rien.
 const CONFIRMER = `Confirmer le niveau ${ATTEINT}`
 const TITRE_DON = `+${gainsMontee(ATTEINT).dons} don`
 const CARTE_CAPACITE = `Capacité du niveau ${ATTEINT}`
@@ -138,7 +142,7 @@ describe('D18 ⑤ — la montée troquée s’écrit d’un coup', () => {
     const put = vi.spyOn(db.personnages, 'put')
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
 
     // Le don de l'échelon devient une capacité, puis la capacité du niveau.
     poser(TITRE_DON, troquee)
@@ -171,7 +175,7 @@ describe('D18 ⑤ — la montée troquée s’écrit d’un coup', () => {
     const { troquee, duNiveau } = ciblesLibres()
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
     poser(TITRE_DON, troquee)
     poser(CARTE_CAPACITE, duNiveau)
     fireEvent.click(screen.getByRole('button', { name: CONFIRMER }))
@@ -194,7 +198,7 @@ describe('D18 ⑤ jumelle — Annuler n’écrit rien, troc compris', () => {
     const update = vi.spyOn(db.personnages, 'update')
 
     afficherFiche(id)
-    fireEvent.click(await screen.findByRole('button', { name: MONTER }))
+    await ouvrirLaMonteeParLaGarde(ATTEINT)
     poser(TITRE_DON, troquee)
     poser(CARTE_CAPACITE, duNiveau)
     fireEvent.click(screen.getByRole('button', { name: 'Annuler' }))
