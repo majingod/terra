@@ -2,9 +2,26 @@
  * D16 — le parcours du wizard, chemins de RETOUR compris.
  *
  * L'étape de choix de voie est retirée ; « Tes capacités » la remplace, après
- * que la classe ET le niveau sont connus. Reculer, changer de classe ou
- * baisser son niveau doit se comporter comme la fenêtre de répercussions le
- * dit — rien ne s'applique en silence, chaque retrait est nommé.
+ * que la classe ET le niveau sont connus. Reculer ou changer de classe doit se
+ * comporter comme la fenêtre de répercussions le dit — rien ne s'applique en
+ * silence, chaque retrait est nommé.
+ *
+ * ⚠️ GATE MODIFIÉE PAR D20, et voici pourquoi — la raison manquait ici alors
+ * que les deux autres fichiers touchés par D20 la portaient (dette de t010,
+ * soldée par le lot 2 de D20).
+ *
+ * Cet en-tête PROMETTAIT encore que « baisser son niveau » se comporte comme
+ * la fenêtre le dit. C'était faux depuis #23 : D20 a supprimé la chose gardée,
+ * pas la garde — on ne naît plus qu'au niveau 1, on monte, et il n'existe plus
+ * de « baisse de niveau » à la création. La couverture avait été retirée, la
+ * promesse était restée.
+ *
+ * Ce qui reste gardé ICI, et qui n'a pas bougé : la place de l'étape « Tes
+ * capacités » dans le parcours, et le changement de CLASSE — celui-là a bien
+ * toujours ses répercussions nommées. Le retour en arrière sur un niveau déjà
+ * traversé, lui, a trouvé son domicile au lot 2 de D20 : il n'est plus une
+ * baisse mais une CORRECTION (`wizard/cascade`), et ses gates vivent dans
+ * `d20lot2-cascade` et `d20lot2-equivalence`.
  */
 import { describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches } from '../../rules/branches'

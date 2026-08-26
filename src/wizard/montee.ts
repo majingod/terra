@@ -14,6 +14,7 @@
  * l'échelon atteint, choix de niveaux ET achats XP retirés.
  */
 import { capacitesEnfantAcquises } from '../rules/kids'
+import { languesAcquises } from '../rules/langues'
 import { refusDons } from '../rules/talents'
 import { gainsMontee, gainsMonteeEnfant } from '../rules/montee'
 import { valeurCarac } from '../rules/stats'
@@ -21,6 +22,7 @@ import type { Don } from '../rules/load'
 import { normaliserNiveau } from '../rules/niveau'
 import type { Personnage } from '../db'
 import { prisesAilleurs, optionsDuNiveau, type OptionDeCapacite } from './capacites'
+import { corrigerChoix, manquesDeLaCorrection, niveauCorrigeable } from './cascade'
 import {
   agregatAvecPrise,
   donsDuPalierEsprit,
@@ -535,6 +537,71 @@ export function miseAJourMonteeEnfant(
   return {
     niveau: niveauAtteint,
     capacites: capacitesEnfantAcquises(enfant.classe, niveauAtteint).map((c) => c.id),
+    creation,
+    updatedAt: maintenant,
+  }
+}
+
+/**
+ * D20 lot 2 — ÉCRIRE une correction de montée traversée.
+ *
+ * Deux moments, jamais mélangés : la fenêtre s'ouvre sur la DÉRIVATION
+ * (`corrigerChoix`, dérivation pure), et l'écriture n'arrive qu'à la
+ * confirmation — ici, en UNE seule mise à jour, comme la montée et la
+ * réclamation.
+ *
+ * ⛔ Aucun niveau n'est gagné ni perdu : l'historique garde ses entrées, leurs
+ * `niveau` et leurs `le`. Le niveau écrit sur l'enregistrement reste celui que
+ * l'historique dérive — les deux sources ne peuvent pas diverger.
+ */
+export function miseAJourCorrection(
+  personnage: Personnage,
+  niveau: number,
+  nouveauChoix: ChoixMontee,
+  maintenant: number,
+): Partial<Personnage> {
+  const fiche = ficheDe(personnage)
+  if (estAncienneFiche(fiche)) {
+    throw new Error(
+      'Correction refusée — cette fiche vient d’une version précédente du jeu : il faut la refaire.',
+    )
+  }
+  if (!niveauCorrigeable(personnage, niveau)) {
+    throw new Error(`Correction refusée — le niveau ${niveau} n’est pas une montée traversée.`)
+  }
+  const manques = manquesDeLaCorrection(personnage, niveau, nouveauChoix)
+  if (manques.length > 0) {
+    throw new Error(`Correction refusée — ${manques.join(', ')}.`)
+  }
+  const creation = corrigerChoix(personnage, niveau, nouveauChoix).fiche
+
+  // Les capacités de l'enregistrement se REDÉRIVENT de la fiche corrigée :
+  // recopier l'ancienne liste y laisserait la capacité remplacée. Les
+  // capacités de base ne viennent pas de `creation` — elles se relisent de la
+  // classe, comme à l'enregistrement.
+  const deLaFiche = new Set([
+    ...Object.values(fiche.capNiveaux ?? {}),
+    ...Object.values(fiche.capChoix ?? {}).flat(),
+    ...Object.values(fiche.capDons ?? {}),
+  ])
+  const capacites = [
+    ...personnage.capacites.filter((id) => !deLaFiche.has(id)),
+    ...Object.values(creation.capNiveaux ?? {}),
+    ...Object.values(creation.capChoix ?? {}).flat(),
+    ...Object.values(creation.capDons ?? {}),
+  ]
+
+  return {
+    niveau: niveauCourant(creation),
+    capacites,
+    dons: Object.keys(donsPris(creation)),
+    competences: [...(creation.comps ?? [])],
+    langues: [...languesAcquises(creation.race, creation.classe), ...(creation.langChoix ?? [])],
+    caracs: {
+      puissance: valeurCarac(creation, 'p'),
+      resistance: valeurCarac(creation, 'r'),
+      esprit: valeurCarac(creation, 'e'),
+    },
     creation,
     updatedAt: maintenant,
   }
