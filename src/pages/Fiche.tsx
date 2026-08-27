@@ -21,6 +21,16 @@
  * terrain, pré-remplie. La planche ≤11, qui n'a pas de feuille papier 12+,
  * garde l'impression simple de son propre affichage.
  *
+ * t017 (Q24 A, Fred 2026-08-26 — retour terrain du 22 août) : « Tes niveaux »
+ * et Monter remontent SOUS LE BANDEAU d'identité, avant les Statistiques.
+ * Monter voisinait Imprimer en bas de fiche : deux gestes qui n'ont rien à
+ * faire côte à côte. Rien d'autre ne bouge — mêmes composants, mêmes props,
+ * même garde d'intention, et les deux blocs restent `pas-a-imprimer`.
+ * ⚠️ Le bandeau et les Statistiques sont deux sœurs de `FicheAffichage` : la
+ * carte se pose donc par son emplacement `sousIdentite`, pas d'ici.
+ * ⚠️ ≤11 : rien ne bouge chez eux — pas de rangée de niveaux, et leur bouton
+ * de montée reste exactement où il était.
+ *
  * D20 lot 2 (Q3 = B, t016) : la rangée « TES NIVEAUX » vit AUSSI ici. Une
  * erreur découverte après l'enregistrement — « ton point du niveau 2 aurait dû
  * aller en Puissance » — se répare en touchant la pastille du niveau fautif,
@@ -271,6 +281,35 @@ export default function Fiche() {
     )
   }
 
+  /**
+   * La montée, telle quelle (Q4, t016) : le toucher n'ouvre pas l'écran de
+   * montée, il ouvre la fenêtre d'INTENTION, et c'est le maintien qui ouvre
+   * l'écran. t017 ne change ni le geste ni les props — seulement l'endroit où
+   * ce bloc se rend chez les 12+.
+   *
+   * ⛔ Une fiche d'avant le wizard n'a ni classe identifiée ni emplacements de
+   * capacité : elle ne monte pas ici (écart rapporté, rien n'est inventé à sa
+   * place) — d'où la garde sur `creation` chez les deux appelants.
+   */
+  const blocMontee =
+    intention && niveauAtteint !== undefined ? (
+      <FenetreIntentionMontee
+        nom={personnage.nomPerso || 'Sans nom'}
+        niveauAtteint={niveauAtteint}
+        onMonter={() => {
+          setIntention(false)
+          setEnMontee(true)
+        }}
+        onAnnuler={() => setIntention(false)}
+      />
+    ) : (
+      <BoutonMontee
+        niveauAtteint={niveauAtteint}
+        plafond={plafond}
+        onMonter={() => setIntention(true)}
+      />
+    )
+
   return (
     <div className="flex flex-col gap-6">
       {/* D25 — à qui est cette feuille. Une seule page pour les ≤11 et les
@@ -285,7 +324,29 @@ export default function Fiche() {
         <FicheEnfantAffichage fiche={personnage.creation} />
       ) : personnage.creation ? (
         // D19 ③ — l'écran Fiche, et lui seul, date les dons acquis.
-        <FicheAffichage fiche={personnage.creation} datation />
+        // t017 (Q24 A) — et c'est ici que « Tes niveaux » + Monter se posent :
+        // sous le bandeau d'identité, avant les Statistiques.
+        <FicheAffichage
+          fiche={personnage.creation}
+          datation
+          sousIdentite={
+            <div className="pas-a-imprimer my-3 rounded-lg border border-border/50 bg-card/50 p-3.5 backdrop-blur-sm">
+              <p className="m-0 mb-2 px-1 font-sans text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Tes niveaux
+              </p>
+              {/* Maquette t017 : pastilles à gauche, Monter à droite, et sur
+                  écran étroit le bouton passe DESSOUS — ⛔ jamais un
+                  défilement horizontal, la fiche ne part pas de travers. */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                <PastillesNiveaux
+                  ici={niveauCourant}
+                  onCorriger={(niveau) => setEnCorrection(niveau)}
+                />
+                <div className="min-w-[180px] flex-1">{blocMontee}</div>
+              </div>
+            </div>
+          }
+        />
       ) : (
         <>
           <h1 className="text-2xl font-extrabold text-gold">
@@ -306,42 +367,10 @@ export default function Fiche() {
         </>
       )}
 
-      {/* D20 lot 2 (Q3 = B) — la rangée « TES NIVEAUX » sur la fiche : le même
-          geste que dans le wizard, hors impression. ⚠️ ≤11 : jamais de rangée
-          — chez eux le niveau se déclare, il n'y a pas de montées. */}
-      {!enfant && personnage.creation && (
-        <div className="pas-a-imprimer">
-          <p className="m-0 px-1 pt-1 font-sans text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Tes niveaux
-          </p>
-          <PastillesNiveaux ici={niveauCourant} onCorriger={(niveau) => setEnCorrection(niveau)} />
-        </div>
-      )}
-
-      {/* La montée part de la fiche du wizard : une fiche d'avant le wizard
-          n'a ni classe identifiée ni emplacements de capacité — elle ne
-          monte pas ici (écart rapporté, rien n'est inventé à sa place).
-
-          Q4 (t016) — le toucher n'ouvre plus l'écran de montée : il ouvre la
-          fenêtre d'intention, et c'est le MAINTIEN qui ouvre l'écran. */}
-      {personnage.creation &&
-        (intention && niveauAtteint !== undefined ? (
-          <FenetreIntentionMontee
-            nom={personnage.nomPerso || 'Sans nom'}
-            niveauAtteint={niveauAtteint}
-            onMonter={() => {
-              setIntention(false)
-              setEnMontee(true)
-            }}
-            onAnnuler={() => setIntention(false)}
-          />
-        ) : (
-          <BoutonMontee
-            niveauAtteint={niveauAtteint}
-            plafond={plafond}
-            onMonter={() => setIntention(true)}
-          />
-        ))}
+      {/* t017 (Q24 A) — chez les 12+, Monter est remonté sous le bandeau (voir
+          `sousIdentite` plus haut). ⚠️ Le flux ≤11 n'a pas de bandeau du Tome :
+          son bouton reste EXACTEMENT où il était, avec la même garde. */}
+      {enfant && personnage.creation && blocMontee}
 
       {/* D19 ③ — Q2 (t016, Fred 2026-08-25) : un droit de palier d'Esprit
           en souffrance se réclame à N'IMPORTE QUEL niveau, pas seulement au
