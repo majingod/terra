@@ -15,14 +15,14 @@
  * ⛔ Rien de ce qui S'IMPRIME ne change : les deux blocs restent
  * `pas-a-imprimer` (C3), et la feuille papier est un autre composant.
  *
- * ⚠️ ÉCART RAPPORTÉ — C-G3 tel qu'écrit au brief dit « une fiche ≤11 n'affiche
- * ni « Tes niveaux » ni Monter ». La seconde moitié contredit une gate DÉJÀ
- * VERTE sur `origin/main` : `d20lot2-garde-intention` · « ⚠️ ≤11 : la garde
- * s'applique aussi — le bouton de montée est partagé », qui exige ce bouton sur
- * une fiche ≤11. Le flux ≤11 étant ⛔ intact dans ce lot, la gate ci-dessous
- * prouve ce qui est vrai et vérifiable : chez les ≤11, pas de rangée « Tes
- * niveaux », et RIEN n'a bougé sous leur bandeau. C'est Fred qui arbitre si le
- * bouton de montée doit quitter le flux ≤11 — pas ce lot.
+ * ⚠️ Q26 A (Fred, 2026-08-26) — ARBITRAGE. Le brief demandait d'abord « une
+ * fiche ≤11 n'affiche ni « Tes niveaux » ni Monter » ; la moitié « ni Monter »
+ * contredisait une gate déjà verte (`d20lot2-garde-intention` · « ⚠️ ≤11 : la
+ * garde s'applique aussi — le bouton de montée est partagé »). Écart rapporté,
+ * arbitré : la fiche ≤11 PARTAGE ce bouton, et il passe sous LEUR bandeau lui
+ * aussi — la moitié des joueurs sont ≤11, et le voisinage avec Imprimer les
+ * gênait pareillement. Leur carte s'étiquette « Ton niveau », au SINGULIER, et
+ * ne porte ⛔ aucune rangée de pastilles : chez eux le niveau se déclare.
  */
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto'
@@ -48,6 +48,8 @@ const NOM = 'Brakk'
 
 /** Les libellés arbitrés, écrits mot pour mot. */
 const ETIQUETTE_NIVEAUX = 'Tes niveaux'
+/** ≤11 (Q26 A) : au SINGULIER — chez eux le niveau se déclare. */
+const ETIQUETTE_NIVEAU = 'Ton niveau'
 const TITRE_STATS = 'Statistiques'
 const TITRE_IDENTITE = 'Identité'
 const IMPRIMER = 'Imprimer / PDF'
@@ -111,6 +113,13 @@ function rangs(...noeuds: Element[]): number[] {
 function etiquetteNiveaux(): Element | undefined {
   return Array.from(document.querySelectorAll('p')).find(
     (n) => n.textContent?.trim() === ETIQUETTE_NIVEAUX,
+  )
+}
+
+/** L'étiquette « Ton niveau » de la carte ≤11 (Q26 A). */
+function etiquetteSingulier(): Element | undefined {
+  return Array.from(document.querySelectorAll('p')).find(
+    (n) => n.textContent?.trim() === ETIQUETTE_NIVEAU,
   )
 }
 
@@ -190,25 +199,63 @@ describe('t017 · C-G2 — Imprimer n’a plus Monter pour voisin', () => {
   })
 })
 
-describe('t017 · C-G3 (jumelle) — le flux ≤11 n’a pas bougé', () => {
-  it('pas de rangée « Tes niveaux » sur une fiche ≤11', async () => {
+// GATE MODIFIÉE PAR Q26 A (t017, 2026-08-26)
+// AVANT : « le flux ≤11 n'a pas bougé » — leur Monter restait en bas de fiche.
+// Arbitrage : il passe sous LEUR bandeau lui aussi, dans une carte « Ton
+// niveau » (singulier), et ⛔ sans rangée de pastilles.
+describe('t017 · C-G3 — chez les ≤11 aussi, Monter est sous le bandeau', () => {
+  it('l’ordre est identité → carte « Ton niveau » (avec Monter) → statistiques', async () => {
+    await afficherFiche(await poserFicheEnfant())
+
+    const identite = screen.getByRole('heading', { name: TITRE_IDENTITE })
+    const stats = screen.getByRole('heading', { name: TITRE_STATS })
+    const etiquette = etiquetteSingulier()
+    expect(etiquette, `la fiche ≤11 n’affiche pas « ${ETIQUETTE_NIVEAU} »`).toBeTruthy()
+
+    const vise = niveauAtteignableEnfant(normaliserNiveauEnfant(1))!
+    const monter = screen.getByRole('button', { name: `Monter au niveau ${vise}` })
+    expect(
+      etiquette!.closest('div')!.contains(monter),
+      'le bouton Monter du flux ≤11 n’est pas dans la carte « Ton niveau »',
+    ).toBe(true)
+
+    const [rIdentite, rEtiquette, rStats] = rangs(identite, etiquette!, stats)
+    expect(rEtiquette, '« Ton niveau » n’est pas sous le bandeau d’identité').toBeGreaterThan(
+      rIdentite,
+    )
+    expect(rEtiquette, '« Ton niveau » n’est pas avant les statistiques').toBeLessThan(rStats)
+  })
+
+  it('⛔ aucune rangée « Tes niveaux » : chez eux le niveau se DÉCLARE', async () => {
     await afficherFiche(await poserFicheEnfant())
     expect(
       etiquetteNiveaux(),
-      '⛔ la rangée « Tes niveaux » a débordé sur le flux ≤11 : chez eux le niveau se déclare',
+      '⛔ la rangée « Tes niveaux » a débordé sur le flux ≤11 : il n’y a pas de montées à rouvrir',
     ).toBeUndefined()
+    expect(
+      document.body.textContent,
+      '⛔ le texte « Tes niveaux » apparaît sur une fiche ≤11',
+    ).not.toContain(ETIQUETTE_NIVEAUX)
   })
 
-  it('son bouton de montée est resté à sa place — rien ne l’a remonté', async () => {
-    // ⚠️ ÉCART : le brief demandait « ni Monter ». La gate
-    // `d20lot2-garde-intention` (⚠️ ≤11 : la garde s'applique aussi) EXIGE ce
-    // bouton sur une fiche ≤11, et le flux ≤11 est ⛔ intact dans ce lot. Ce
-    // qui se prouve ici, c'est qu'il n'a pas MIGRÉ sous un bandeau.
-    const id = await poserFicheEnfant()
-    await afficherFiche(id)
+  it('Imprimer n’a plus Monter pour voisin sur la planche ≤11 non plus', async () => {
+    await afficherFiche(await poserFicheEnfant())
+
+    // ⚠️ Le flux ≤11 garde l'impression SIMPLE de sa planche : son Imprimer est
+    // un bouton, pas un lien vers la feuille 12+.
+    const imprimer = screen.getByRole('button', { name: IMPRIMER })
+    const section = imprimer.closest('div')!
+    expect(
+      section.textContent,
+      'Monter est encore dans le bloc d’actions, à côté d’Imprimer',
+    ).not.toContain('Monter au niveau')
+
     const vise = niveauAtteignableEnfant(normaliserNiveauEnfant(1))!
     const monter = screen.getByRole('button', { name: `Monter au niveau ${vise}` })
-    expect(monter.closest('div')?.textContent ?? '').not.toContain(ETIQUETTE_NIVEAUX)
+    const stats = screen.getByRole('heading', { name: TITRE_STATS })
+    const [rMonter, rStats, rImprimer] = rangs(monter, stats, imprimer)
+    expect(rMonter, 'Monter est passé sous les statistiques').toBeLessThan(rStats)
+    expect(rStats, 'rien ne sépare plus Monter d’Imprimer').toBeLessThan(rImprimer)
   })
 })
 

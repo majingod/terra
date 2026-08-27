@@ -28,8 +28,16 @@
  * même garde d'intention, et les deux blocs restent `pas-a-imprimer`.
  * ⚠️ Le bandeau et les Statistiques sont deux sœurs de `FicheAffichage` : la
  * carte se pose donc par son emplacement `sousIdentite`, pas d'ici.
- * ⚠️ ≤11 : rien ne bouge chez eux — pas de rangée de niveaux, et leur bouton
- * de montée reste exactement où il était.
+ * t017 (Q26 A, Fred 2026-08-26) : la fiche ≤11 PARTAGE ce bouton Monter, et il
+ * restait en bas, à côté d'Imprimer — le voisinage même qui a gêné sur le
+ * terrain, et la moitié des joueurs sont ≤11. Il passe donc sous leur bandeau
+ * lui aussi, dans une carte « Ton niveau » — au SINGULIER : chez eux le niveau
+ * se DÉCLARE, il n'y a ni rangée de niveaux à parcourir ni montées à corriger.
+ * ⛔ Rien d'autre du flux ≤11 ne bouge : ni règle, ni libellé, ni corpus, et la
+ * garde d'intention reste entière.
+ *
+ * ⛔ Le bloc du bas ne porte plus Monter pour PERSONNE : Imprimer / Exporter /
+ * Importer, Imprimer en tête.
  *
  * D20 lot 2 (Q3 = B, t016) : la rangée « TES NIVEAUX » vit AUSSI ici. Une
  * erreur découverte après l'enregistrement — « ton point du niveau 2 aurait dû
@@ -321,7 +329,21 @@ export default function Fiche() {
 
       {personnage.creation?.enfant ? (
         // Fiche du flux ≤11 : elle se lit du corpus de la planche, jamais du Tome.
-        <FicheEnfantAffichage fiche={personnage.creation} />
+        // t017 (Q26 A) — leur Monter passe sous le bandeau lui aussi.
+        <FicheEnfantAffichage
+          fiche={personnage.creation}
+          sousIdentite={
+            <div className="pas-a-imprimer my-3 rounded-lg border border-border/50 bg-card/50 p-3.5 backdrop-blur-sm">
+              {/* « Ton niveau » au SINGULIER : chez les ≤11 le niveau se
+                  déclare — ⛔ jamais de rangée de pastilles, il n'y a pas de
+                  montées traversées à rouvrir. */}
+              <p className="m-0 mb-2 px-1 font-sans text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Ton niveau
+              </p>
+              {blocMontee}
+            </div>
+          }
+        />
       ) : personnage.creation ? (
         // D19 ③ — l'écran Fiche, et lui seul, date les dons acquis.
         // t017 (Q24 A) — et c'est ici que « Tes niveaux » + Monter se posent :
@@ -366,11 +388,6 @@ export default function Fiche() {
           </div>
         </>
       )}
-
-      {/* t017 (Q24 A) — chez les 12+, Monter est remonté sous le bandeau (voir
-          `sousIdentite` plus haut). ⚠️ Le flux ≤11 n'a pas de bandeau du Tome :
-          son bouton reste EXACTEMENT où il était, avec la même garde. */}
-      {enfant && personnage.creation && blocMontee}
 
       {/* D19 ③ — Q2 (t016, Fred 2026-08-25) : un droit de palier d'Esprit
           en souffrance se réclame à N'IMPORTE QUEL niveau, pas seulement au
