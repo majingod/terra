@@ -1,10 +1,38 @@
+import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { basculerMode, lireMode, type Mode } from '../theme/mode'
 
 const LIENS = [
   { to: '/', label: 'Accueil' },
   { to: '/creer', label: 'Créer' },
   { to: '/encyclopedie', label: 'Encyclopédie' },
 ]
+
+/**
+ * La bascule Soleil / Sombre (t017, Q20 A — retour terrain du 22 août).
+ *
+ * Le libellé nomme ce que le geste FAIT, jamais l'état où l'on est : en sombre
+ * il propose « Soleil », en soleil il propose « Sombre ». `aria-pressed` dit,
+ * lui, l'état — c'est le lecteur d'écran qui a besoin des deux.
+ *
+ * `pas-a-imprimer` : un bouton d'app ne s'imprime jamais (D9).
+ */
+function BasculeMode() {
+  const [mode, setMode] = useState<Mode>(lireMode)
+  const soleil = mode === 'soleil'
+  return (
+    <button
+      type="button"
+      onClick={() => setMode(basculerMode())}
+      aria-pressed={soleil}
+      aria-label="Mode soleil"
+      className="pas-a-imprimer flex min-h-touch items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-2 font-titre text-sm font-bold text-secondary-foreground"
+    >
+      <span aria-hidden="true">{soleil ? '☾' : '☀'}</span>
+      {soleil ? 'Sombre' : 'Soleil'}
+    </button>
+  )
+}
 
 export default function Layout() {
   const { pathname } = useLocation()
@@ -22,10 +50,11 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm px-4 py-4">
+      <header className="flex items-center justify-between border-b border-border/50 bg-card/50 backdrop-blur-sm px-4 py-4">
         <Link to="/" className="block font-wordmark text-2xl font-bold tracking-wide text-gold">
           Terra Mortis
         </Link>
+        <BasculeMode />
       </header>
 
       <main className="flex-1 px-4 py-6">

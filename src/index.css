@@ -25,6 +25,12 @@
       radial-gradient(ellipse at 80% 20%, oklch(0.18 0.04 30 / 0.2) 0%, transparent 50%);
     background-attachment: fixed;
   }
+  /* t017 — les deux halos sont la profondeur de la NUIT : sur le fond clair du
+     mode soleil ils ne posent qu'un voile gris, et la maquette validée (Q25)
+     n'en porte aucun. Rien n'est recoloré à la main ici : ils s'éteignent. */
+  html.soleil body {
+    background-image: none;
+  }
   h1,
   h2,
   h3,

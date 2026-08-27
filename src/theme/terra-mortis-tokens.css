@@ -52,3 +52,34 @@
   --sanctum-texte: 0.65 0.2 240;
   --legion-texte: 0.6 0.25 25;
 }
+
+/**
+ * MODE SOLEIL (t017, Q20 A — retour terrain du 22 août 2025).
+ *
+ * Au GN, en plein soleil, l'écran sombre était illisible. Le mode soleil n'est
+ * pas un second thème : c'est le MÊME jeu de clés, aux valeurs mesurées pour
+ * un fond clair. Aucune classe de composant ne change de couleur à la main —
+ * tout ce qui passe déjà par `oklch(var(--x) / <alpha>)` bascule tout seul.
+ *
+ * Les seuils sont exécutables : `src/theme/__tests__/t017-mode-soleil.test.tsx`
+ * relit CE fichier, convertit chaque jeton en luminance et refuse le lot si un
+ * ratio WCAG tombe.
+ *
+ * ⛔ Les `--chart-*` ne bougent pas : ce lot ne les re-spécifie pas.
+ * ⛔ Le défaut reste SOMBRE (identité visuelle, D11) : rien ne lit
+ * `prefers-color-scheme`, le joueur choisit et l'appareil se souvient.
+ */
+html.soleil {
+  --background: 0.97 0.012 85;  --foreground: 0.18 0.02 260;
+  --card: 0.995 0.006 85;       --card-foreground: 0.18 0.02 260;
+  --popover: 0.99 0.006 85;     --popover-foreground: 0.18 0.02 260;
+  --primary: 0.52 0.19 45;      --primary-foreground: 0.99 0.005 85;
+  --secondary: 0.90 0.015 85;   --secondary-foreground: 0.2 0.02 260;
+  --muted: 0.92 0.012 85;       --muted-foreground: 0.38 0.02 260;
+  --accent: 0.5 0.2 30;         --accent-foreground: 0.99 0.005 85;
+  --destructive: 0.48 0.22 25;  --destructive-foreground: 0.99 0.005 85;
+  --border: 0.58 0.02 85;       --input: 0.995 0.006 85;  --ring: 0.52 0.19 45;
+  --gold: 0.50 0.15 80;         --gold-dark: 0.42 0.13 75;
+  --sanctum: 0.45 0.18 240;     --legion: 0.45 0.22 25;
+  --sanctum-texte: 0.42 0.18 240; --legion-texte: 0.45 0.22 25;
+}
