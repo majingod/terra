@@ -56,10 +56,18 @@ import { niveauCourant } from './historique'
 import { capacitesTroquees, donsPris } from './troc'
 import type { FicheCreation } from './types'
 
+/**
+ * D20-bis (t017, Q23 A, 2026-08-26 — retour terrain) : l'étape « Ton niveau »
+ * n'est PLUS une étape du wizard 12+. Elle arrivait avant que le joueur ait
+ * compris ce qu'on lui demandait. Tout personnage naît niveau 1 et monte
+ * depuis sa fiche, un niveau à la fois. Le camp mène droit à la classe.
+ *
+ * ⚠️ Le flux ≤11 garde la sienne (`ETAPES_ENFANT`) : chez eux le niveau se
+ * DÉCLARE, il n'y a pas de montées.
+ */
 export const ETAPES = [
   { id: 'age', nom: 'Âge' },
   { id: 'camp', nom: 'Camp' },
-  { id: 'niveau', nom: 'Ton niveau' },
   { id: 'classe', nom: 'Classe' },
   { id: 'capacites', nom: 'Tes capacités' },
   { id: 'destin', nom: 'Destin' },
@@ -121,9 +129,14 @@ export function problemesCamp(fiche: FicheCreation): string[] {
 }
 
 /**
- * Étape « Ton niveau » (D20) : elle ne remplit plus le niveau, elle fixe la
- * CIBLE du train de montées. Le personnage, lui, naît toujours au niveau 1.
- * Absente, la cible vaut le niveau minimum — le train ne part pas.
+ * La CIBLE du train de montées (D20). Le personnage naît toujours au niveau 1 ;
+ * absente, la cible vaut le niveau minimum — le train ne part pas.
+ *
+ * ⚠️ CODE DORMANT depuis D20-bis (t017) : plus aucune étape du wizard ne pose
+ * de cible. Ce validateur, le champ `cible` et la migration de brouillon de
+ * `Creer.tsx` restent pour le CHEMIN HÉRITÉ — un brouillon commencé avant ce
+ * lot porte encore une cible, et il monte encore par le train. Chemin assumé,
+ * pas un oubli : ⛔ ne rien y ajouter, ⛔ ne rien y retirer sans arbitrage.
  */
 export function problemesNiveau(fiche: FicheCreation): string[] {
   if (fiche.cible === undefined) return [] // défaut : niveau min de la table
@@ -353,7 +366,7 @@ export function problemesNom(fiche: FicheCreation): string[] {
 const VALIDATEURS: Record<EtapeId, (fiche: FicheCreation) => string[]> = {
   age: problemesAge,
   camp: problemesCamp,
-  niveau: problemesNiveau,
+  // D20-bis : plus d'entrée `niveau` — l'étape n'existe plus dans `ETAPES`.
   classe: problemesClasse,
   capacites: problemesCapacites,
   destin: problemesDestin,
@@ -446,7 +459,8 @@ function nbCapNiveaux(fiche: FicheCreation): number {
 }
 
 /**
- * Changement de CIBLE à l'étape « Ton niveau » (D20).
+ * Changement de CIBLE — porté par l'étape « Ton niveau » jusqu'à D20-bis (t017),
+ * qui l'a retirée du wizard 12+. CODE DORMANT : plus aucun écran ne l'appelle.
  *
  * La cible ne donne rien : elle dit seulement jusqu'où le train de montées
  * mènera le personnage après sa création, qui se fait toujours au niveau 1.

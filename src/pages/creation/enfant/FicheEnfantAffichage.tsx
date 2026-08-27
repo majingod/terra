@@ -32,7 +32,27 @@ function Sheet({ titre, children }: { titre: string; children: React.ReactNode }
   )
 }
 
-export default function FicheEnfantAffichage({ fiche }: { fiche: FicheCreation }) {
+export default function FicheEnfantAffichage({
+  fiche,
+  sousIdentite,
+}: {
+  fiche: FicheCreation
+  /**
+   * t017 (Q26 A, Fred 2026-08-26) — l'emplacement JUSTE SOUS le bandeau
+   * d'identité, avant les Statistiques. Même patron que `FicheAffichage` : la
+   * fiche ≤11 partage le bouton Monter, et il restait en bas, à côté
+   * d'Imprimer — le voisinage même qui a gêné sur le terrain.
+   *
+   * ⚠️ C'est un EMPLACEMENT, pas un contenu : ce composant ne sait pas ce qu'on
+   * y met et ne décide de rien à sa place.
+   *
+   * ⛔ Ce qu'on y pose reste `pas-a-imprimer` : la zone est dans
+   * `fiche-imprimable`, et c'est l'appelant qui garantit que rien n'y entre
+   * dans la planche imprimée (@media print éteint `pas-a-imprimer` avant toute
+   * couleur).
+   */
+  sousIdentite?: React.ReactNode
+}) {
   const choix = choixEnfant(fiche)
   const classe = classeEnfant(choix.classe)
   const faction = factionEnfant(choix.faction)
@@ -88,6 +108,8 @@ export default function FicheEnfantAffichage({ fiche }: { fiche: FicheCreation }
           </div>
         </div>
       </Sheet>
+
+      {sousIdentite}
 
       {stats && (
         <Sheet titre="Statistiques">

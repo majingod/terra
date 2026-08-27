@@ -71,7 +71,10 @@ describe('D16 — l’étape « Tes capacités » dans le parcours', () => {
     expect(ids).toContain('capacites')
     expect(ETAPES.find((e) => e.id === 'capacites')!.nom).toBe('Tes capacités')
     expect(ids.indexOf('capacites')).toBeGreaterThan(ids.indexOf('classe'))
-    expect(ids.indexOf('capacites')).toBeGreaterThan(ids.indexOf('niveau'))
+    // GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26) — branche RETIRÉE,
+    // pas adaptée : « … est APRÈS l'étape niveau » n'a plus d'objet, l'étape
+    // n'existe plus dans `ETAPES` (et tsc refuse le littéral). ⚠️ Gate hors de
+    // la liste du brief : rapportée.
   })
 
   it('elle est AVANT le destin : les achats XP se comptent sur ce qui est déjà pris', () => {

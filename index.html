@@ -12,6 +12,13 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- t017 (Q20 A) — le mode soleil est posé AVANT le premier rendu : sinon
+         l'app s'allumerait en sombre puis clignerait vers le clair au
+         lancement. Même clé que `src/theme/mode.ts` ; un navigateur qui refuse
+         le stockage tombe simplement sur le défaut sombre. -->
+    <script>
+      try { if (localStorage.getItem('tm:mode') === 'soleil') document.documentElement.classList.add('soleil') } catch (e) { /* stockage refusé : sombre */ }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

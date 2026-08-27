@@ -71,6 +71,7 @@ function etiquetteTome(): string {
 export default function FicheAffichage({
   fiche,
   datation = false,
+  sousIdentite,
 }: {
   fiche: FicheCreation
   /**
@@ -80,6 +81,21 @@ export default function FicheAffichage({
    * connaît même pas — elle vit dans `src/pages/impression/`, intouché.
    */
   datation?: boolean
+  /**
+   * t017 (Q24 A, Fred 2026-08-26) — l'emplacement JUSTE SOUS le bandeau
+   * d'identité, avant les Statistiques. L'écran Fiche y pose « Tes niveaux » et
+   * Monter ; le wizard n'y pose rien.
+   *
+   * ⚠️ C'est un EMPLACEMENT, pas un contenu : ce composant ne sait pas ce qu'on
+   * y met et ne décide de rien à sa place. Sans lui, l'ordre demandé (bandeau →
+   * Tes niveaux → Statistiques) serait impossible depuis `Fiche.tsx` seul —
+   * Identité et Statistiques sont deux sœurs D'ICI, pas de là-bas.
+   *
+   * ⛔ Ce qu'on y pose reste `pas-a-imprimer` : la zone est dans
+   * `fiche-imprimable`, et c'est l'appelant qui garantit que rien n'y entre
+   * dans la feuille (@media print éteint `pas-a-imprimer` avant toute couleur).
+   */
+  sousIdentite?: React.ReactNode
 }) {
   const regles = getRules()
   const race = raceDe(fiche.race)
@@ -153,6 +169,8 @@ export default function FicheAffichage({
           <p className="mb-0 mt-2 text-[15px] italic text-secondary-foreground">{fiche.histoire}</p>
         )}
       </Sheet>
+
+      {sousIdentite}
 
       {stats && (
         <Sheet titre="Statistiques">
