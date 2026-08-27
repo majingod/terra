@@ -78,14 +78,16 @@ describe('D14 — composant d’affichage de texte de règle', () => {
     expect(source.verbatim).toBe('Original.')
   })
 
-  it('les_31_corrections_d_affichage_existent_et_different_du_verbatim', () => {
+  it('les_34_corrections_d_affichage_existent_et_different_du_verbatim', () => {
     // Témoin de données (rouge sur 1.0.3, qui n'en portait aucune) : les
     // corrections vivent dans le fichier, et chacune dit vraiment autre chose
     // que son verbatim — sinon le champ serait décoratif.
     // t014 (1.2.1, audit ch.5) : +11 sur la p.20, qui n'en portait aucune.
-    expect(compterAffichages(rules)).toBe(31)
+    // GATE MODIFIÉE PAR LE LOT CORPUS 1.3.2 (t017, arbitrages Q7–Q13, 2026-08-26)
+    // 1.3.2 (t017) : +3 (Critique, Backstab, Lexique p.3)
+    expect(compterAffichages(rules)).toBe(34)
     const paires = relever(rules)
-    expect(paires).toHaveLength(31)
+    expect(paires).toHaveLength(34)
     for (const { chemin, verbatim, affichage } of paires) {
       expect(affichage, chemin).not.toBe(verbatim)
       expect(affichage.trim().length, chemin).toBeGreaterThan(0)

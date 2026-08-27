@@ -234,6 +234,8 @@ export interface ObjetDeForgeron {
   materiel: string
   valeur: string
   effet_verbatim: string
+  effet_affichage?: string
+  note_affichage?: string
 }
 
 export interface MateriauDeForgeron {
@@ -248,6 +250,8 @@ export interface Rune {
   compo?: string
   valeur: string
   effet_verbatim: string
+  effet_affichage?: string
+  note_affichage?: string
 }
 
 export interface AteliersDeFaction extends TexteDuTome {

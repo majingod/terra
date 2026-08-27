@@ -1,7 +1,7 @@
 {
  "meta": {
   "fichier": "rules.json",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "corrections_v110": "17 champs « affichage » ajoutés à côté de leur verbatim (D14) : les coquilles du Tome se corrigent À L'AFFICHAGE, le verbatim sous gate reste intact à l'octet près. Inclut A1 (« tavernier » → « marchand »), qui vivait jusqu'ici en dur dans le code.",
   "date": "2026-08-24",
   "compose_de": "lot1 v0.3.0 + lot2 v0.1.0",
@@ -63,7 +63,8 @@
   ],
   "corrections_v121": "v1.2.1 (t014, audit ch.5) : p.20 transcrite au complet — intro du chapitre, paragraphe d'XP d'héritage en entier, intro des désavantages — en objets { verbatim } sous gate ; 2 apostrophes ASCII (30e écart, clés hors gate) relocalisées depuis le témoin ; 11 corrections d'affichage D14 (xp_permanent, xp_temporaire, intro des désavantages, Boiteux, Borgne ou Myope, Muet, Fragile, Honorable, Peureux, Raciste, restriction du Don) ; p.20 ajoutée à couverture_pages (plancher 55 : 46,9 % sur v1.2.0 → rouge, 59,2 % ici). Aucun chiffre, aucun id, aucun verbatim existant modifié.",
   "lot_130": "Ch.1 complet (p.2-4 : conduite, PV/dégâts, combat, fouille, objet porté, symboles, lexique, armes/armures, monnaie), ch.2 complété (Lutte, Sauvegardes, La Magie, lore des 6 races), les 4 tables du ch.4 (p.18-19 — A11 : A). Arbitrages Fred 2026-08-24 : A8 tavernier = marchand · A9 verbatim seul, zéro logique · A10 rang 1 = état de base. Chaque verbatim tranché du témoin par script.",
-  "lot_131": "Ancres de présentation (D9-ter) sur symboles universels (4 états) et armes cc/distance (6 + 4 items) : les verbatims restent ENTIERS et sous gate, l’UI tranche à l’affichage par ces ancres — découpe vérifiée sans perte par ce script. 2026-08-24."
+  "lot_131": "Ancres de présentation (D9-ter) sur symboles universels (4 états) et armes cc/distance (6 + 4 items) : les verbatims restent ENTIERS et sous gate, l’UI tranche à l’affichage par ces ancres — découpe vérifiée sans perte par ce script. 2026-08-24.",
+  "lot_132": "Couche d’affichage (D14) des 11 fautes de la p.19 — 7 champs « effet_affichage » à côté de leur « effet_verbatim » (forgeron ×5, runes ×2) — et de leurs jumelles du ch.2 (Critique, Backstab) ; « percearmure » (p.19 + Lexique p.3) traité comme artefact de transcription, note_affichage à l’appui ; Lexique : 3 accords de plus signalés. Arbitrages Fred Q7–Q13 du 2026-08-26 (t017). Aucun verbatim, aucun chiffre, aucun id modifié."
  },
  "regles_de_base": {
   "source": {
@@ -151,7 +152,9 @@
     "source": {
      "page": 3
     },
-    "verbatim": "RP. Abréviation pour Rôle-play ou jeux de rôle. Ce terme fait référence à rester en personnage au lieu de faire une action ou parler en hors-jeu. Hors-jeu. Ce terme fait référence aux moments, actions ou connaissance concernant le joueur et non son personnage. Type de dégâts. Plusieurs types de dégâts sont mentionnés dans ce tome. La plupart des types ne font référence qu’aux résistances et vulnérabilités des créatures jouer par l’animation, mais les dégâts percearmure ignore les armures, comme le nom l’indique, et les dégâts divins, ignores tout (invulnérabilité, armures, esquives, etc.). 1/heure. Une capacité avec cette note signifie qu'elle ne peut être réutilisée qu'après une heure après son utilisation."
+    "verbatim": "RP. Abréviation pour Rôle-play ou jeux de rôle. Ce terme fait référence à rester en personnage au lieu de faire une action ou parler en hors-jeu. Hors-jeu. Ce terme fait référence aux moments, actions ou connaissance concernant le joueur et non son personnage. Type de dégâts. Plusieurs types de dégâts sont mentionnés dans ce tome. La plupart des types ne font référence qu’aux résistances et vulnérabilités des créatures jouer par l’animation, mais les dégâts percearmure ignore les armures, comme le nom l’indique, et les dégâts divins, ignores tout (invulnérabilité, armures, esquives, etc.). 1/heure. Une capacité avec cette note signifie qu'elle ne peut être réutilisée qu'après une heure après son utilisation.",
+    "affichage": "RP. Abréviation pour Rôle-play ou jeux de rôle. Ce terme fait référence à rester en personnage au lieu de faire une action ou parler en hors-jeu. Hors-jeu. Ce terme fait référence aux moments, actions ou connaissance concernant le joueur et non son personnage. Type de dégâts. Plusieurs types de dégâts sont mentionnés dans ce tome. La plupart des types ne font référence qu’aux résistances et vulnérabilités des créatures jouées par l’animation, mais les dégâts perce-armure ignorent les armures, comme le nom l’indique, et les dégâts divins ignorent tout (invulnérabilité, armures, esquives, etc.). 1/heure. Une capacité avec cette note signifie qu'elle ne peut être réutilisée qu'après une heure après son utilisation.",
+    "note_affichage": "Q12 A (2026-08-26) : pas une faute du Tome — l’image dit « perce-armure » ; le trait de césure (U+0002) a été avalé par la normalisation. Hors FAUTES_TOME."
    },
    {
     "id": "armes_corps_a_corps",
@@ -968,7 +971,9 @@
        "type": "arme",
        "materiel": "1 Adamantium +1 Pa",
        "valeur": "2 Po",
-       "effet_verbatim": "L’arme inflige des dégâts percearmure."
+       "effet_verbatim": "L’arme inflige des dégâts percearmure.",
+       "effet_affichage": "L’arme inflige des dégâts perce-armure.",
+       "note_affichage": "Q12 A (2026-08-26) : pas une faute du Tome — l’image dit « perce-armure » ; le trait de césure (U+0002) a été avalé par la normalisation. Hors FAUTES_TOME."
       },
       {
        "type": "armure",
@@ -980,7 +985,8 @@
        "type": "bouclier",
        "materiel": "1 Adamantium +1 Pa",
        "valeur": "2 Po",
-       "effet_verbatim": "Requière 2 brise-bouclier pour être brisé. Si le bouclier a 60 CM ou moins de diamètre, il est indestructible."
+       "effet_verbatim": "Requière 2 brise-bouclier pour être brisé. Si le bouclier a 60 CM ou moins de diamètre, il est indestructible.",
+       "effet_affichage": "Requiert 2 brise-bouclier pour être brisé. Si le bouclier a 60 CM ou moins de diamètre, il est indestructible."
       }
      ]
     },
@@ -992,19 +998,22 @@
        "type": "arme",
        "materiel": "1 Aurorium +1 Pa",
        "valeur": "6 Pa",
-       "effet_verbatim": "L’arme peu se briser pour faire un Critique (+3 dégâts divins). Le coup est conservé si rater. Se répare automatiquement hors combat."
+       "effet_verbatim": "L’arme peu se briser pour faire un Critique (+3 dégâts divins). Le coup est conservé si rater. Se répare automatiquement hors combat.",
+       "effet_affichage": "L’arme peut se briser pour faire un Critique (+3 dégâts divins). Le coup est conservé si raté. Se répare automatiquement hors combat."
       },
       {
        "type": "armure",
        "materiel": "2 Aurorium +1 Pa",
        "valeur": "12 Pa",
-       "effet_verbatim": "L’armure peu se briser pour donner 1 sauvegarde (il doit rester 1 bloque). Se répare automatiquement hors combat."
+       "effet_verbatim": "L’armure peu se briser pour donner 1 sauvegarde (il doit rester 1 bloque). Se répare automatiquement hors combat.",
+       "effet_affichage": "L’armure peut se briser pour donner 1 sauvegarde (il doit rester 1 bloque). Se répare automatiquement hors combat."
       },
       {
        "type": "bouclier",
        "materiel": "1 Aurorium +1 Pa",
        "valeur": "6 Pa",
-       "effet_verbatim": "Le bouclier peu se briser pour donner ‘’esquiver’’ 1 coup reçu. Se répare automatiquement hors combat."
+       "effet_verbatim": "Le bouclier peu se briser pour donner ‘’esquiver’’ 1 coup reçu. Se répare automatiquement hors combat.",
+       "effet_affichage": "Le bouclier peut se briser pour donner « esquiver » 1 coup reçu. Se répare automatiquement hors combat."
       }
      ]
     },
@@ -1076,7 +1085,8 @@
      "nom": "Arme vicieuse",
      "materiel": "2 Arcanites +1 Po",
      "valeur": "5 Po",
-     "effet_verbatim": "L’arme inflige +1 dégât et le premier coup sur une cible inflige +2 dégâts si touchés dans le dos (peut-être combiner avec la capacité backstab pour +4)."
+     "effet_verbatim": "L’arme inflige +1 dégât et le premier coup sur une cible inflige +2 dégâts si touchés dans le dos (peut-être combiner avec la capacité backstab pour +4).",
+     "effet_affichage": "L’arme inflige +1 dégât et le premier coup sur une cible inflige +2 dégâts si touchée dans le dos (peut être combiné avec la capacité Backstab pour +4)."
     }
    ],
    "runes_amulette": [
@@ -1102,7 +1112,8 @@
      "nom": "Amulette de Téléportation",
      "compo": "1 Arcanite +1 Pa",
      "valeur": "2 Po",
-     "effet_verbatim": "Permets de faire 10 pas de course en étant immatérielle 1/heure. Ne peut pas arrêter à côté de quelqu’un."
+     "effet_verbatim": "Permets de faire 10 pas de course en étant immatérielle 1/heure. Ne peut pas arrêter à côté de quelqu’un.",
+     "effet_affichage": "Permet de faire 10 pas de course en étant immatériel 1/heure. Ne peut pas s’arrêter à côté de quelqu’un."
     },
     {
      "nom": "Amulette d’endurance",
@@ -1709,7 +1720,8 @@
         "id": "guerrier.ravageur.5",
         "niveau": 5,
         "nom": "Critique",
-        "verbatim": "1/heure, Une attaque de corps à corps infligeant +3 dégâts divins. Le coup est conservé si rater."
+        "verbatim": "1/heure, Une attaque de corps à corps infligeant +3 dégâts divins. Le coup est conservé si rater.",
+        "affichage": "1/heure, Une attaque de corps à corps infligeant +3 dégâts divins. Le coup est conservé si raté."
        }
       ]
      },
@@ -1910,7 +1922,8 @@
         "id": "roublard.assassin.1",
         "niveau": 1,
         "nom": "Backstab",
-        "verbatim": "Le premier coup avec une dague, arc ou arbalète sur une cible inflige +2 dégâts si touchés dans le dos."
+        "verbatim": "Le premier coup avec une dague, arc ou arbalète sur une cible inflige +2 dégâts si touchés dans le dos.",
+        "affichage": "Le premier coup avec une dague, arc ou arbalète sur une cible inflige +2 dégâts si touchée dans le dos."
        },
        {
         "id": "roublard.assassin.2",
