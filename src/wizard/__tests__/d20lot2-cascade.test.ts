@@ -106,7 +106,11 @@ function problemesDeLaFiche(fiche: FicheCreation): string {
     .map((valide, rang) => ({ valide, rang }))
     .filter(({ valide }) => !valide)
     .map(({ rang }) => {
-      const etape = (['age', 'camp', 'niveau', 'classe', 'capacites', 'destin', 'forces', 'talents', 'langues', 'nom', 'fiche'] as const)[rang]
+      // GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26) — 'niveau' RETIRÉ de
+      // ce miroir d'`ETAPES` (aide au diagnostic, aucune assertion) : l'étape
+      // n'existe plus, et sans ça le rang nommerait la mauvaise étape.
+      // ⚠️ Gate hors de la liste du brief : rapportée.
+      const etape = (['age', 'camp', 'classe', 'capacites', 'destin', 'forces', 'talents', 'langues', 'nom', 'fiche'] as const)[rang]
       return `${etape} : ${problemesEtape(fiche, etape).join(' / ')}`
     })
     .join(' | ')

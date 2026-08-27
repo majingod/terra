@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest'
 import { branchesDe, classesAvecBranches } from '../../rules/branches'
 import { donsCumules, niveauMax, niveauMin } from '../../rules/niveau'
 import { listeDons } from '../../rules/talents'
+import { ETAPES_ENFANT } from '../enfant'
 import { ETAPES, changerCible, problemesNiveau, surplusDons } from '../validation'
 import type { FicheCreation } from '../types'
 import { historiqueJusquA } from './aide-fiche-complete'
@@ -81,16 +82,24 @@ describe('D20 — la cible ne répercute rien', () => {
   })
 })
 
+// GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26)
+// AVANT : « D12 — « Ton niveau » est APRÈS le camp et AVANT tout consommateur ».
+// D20-bis retire l'étape du wizard 12+ : il n'y a plus de place à tenir, il y a
+// une absence à prouver — et le fil qui se referme derrière elle.
 describe('t006 — la place de l’étape « Ton niveau »', () => {
-  it('D12 — « Ton niveau » est APRÈS le camp et AVANT tout consommateur', () => {
-    const ids = ETAPES.map((e) => e.id)
-    const iNiveau = ids.indexOf('niveau')
-    expect(iNiveau).toBeGreaterThan(ids.indexOf('camp'))
-    // classe, capacités (un emplacement par niveau), destin (achats de
-    // capacité/don) et talents consomment tous ce que le niveau ouvre.
-    for (const consommateur of ['classe', 'capacites', 'destin', 'talents'] as const) {
-      expect(iNiveau).toBeLessThan(ids.indexOf(consommateur))
-    }
-    expect(ETAPES[iNiveau].nom).toBe('Ton niveau')
+  it('D20-bis — « Ton niveau » n’est plus une étape du wizard 12+', () => {
+    const ids: readonly string[] = ETAPES.map((e) => e.id)
+    expect(ids, 'l’étape « Ton niveau » est encore dans le wizard 12+').not.toContain('niveau')
+    // Le fil se referme : le camp mène DROIT à la classe, sans rien entre les deux.
+    expect(ids.indexOf('classe')).toBe(ids.indexOf('camp') + 1)
+    const noms: readonly string[] = ETAPES.map((e) => e.nom)
+    expect(noms).not.toContain('Ton niveau')
+  })
+
+  it('jumelle : le flux ≤11, lui, garde son étape de niveau', () => {
+    // ⚠️ Chez les ≤11 le niveau se DÉCLARE : il n'y a pas de montées, donc pas
+    // de train à faire partir. Rien de D20-bis ne les touche.
+    const ids: readonly string[] = ETAPES_ENFANT.map((e) => e.id)
+    expect(ids).toContain('niveau')
   })
 })

@@ -189,6 +189,10 @@ describe('D20 lot 2 · GL4 — toucher le bouton de montée ouvre la fenêtre d�
 describe('D20 lot 2 · GL4 — les lignes de coupe de la garde', () => {
   const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
+  // GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26) — commentaire seul,
+  // aucune assertion touchée. Depuis D20-bis le wizard 12+ ne pose plus de
+  // cible : ce train ne part QUE d'un brouillon commencé avant ce lot. La ligne
+  // de coupe garde donc désormais le chemin HÉRITÉ, et elle le garde entier.
   it('⛔ le TRAIN de création ne porte pas la garde — la cible EST l’intention', () => {
     const source = readFileSync(join(RACINE, 'src', 'pages', 'Creer.tsx'), 'utf8')
     expect(

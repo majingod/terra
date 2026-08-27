@@ -2,10 +2,14 @@
  * D20 ⑥① — on ne crée plus au-dessus du niveau 1 d'un trait.
  *
  * Un personnage doit avoir ÉTÉ niveau 1 avant d'être niveau 2. La création se
- * fait au niveau 1 ; l'étape « Ton niveau » ne remplit plus le niveau, elle
- * fixe une CIBLE, et le train de montées traverse les échelons un par un.
+ * fait au niveau 1 ; le train de montées traverse les échelons un par un.
  * Chaque échelon traversé laisse une entrée d'historique datée — c'est elle
  * qui rend le niveau d'acquisition retrouvable (D19 lot 3 en dépend).
+ *
+ * ⚠️ MODIFIÉ PAR D20-bis (t017, Q23 A, 2026-08-26) : l'étape « Ton niveau » a
+ * quitté le wizard 12+. Le premier test parcourt donc le fil SANS elle ; les
+ * deux suivants sèment la cible dans le brouillon et gardent, tels quels, le
+ * chemin hérité.
  *
  * D5 : aucun chiffre de niveau n'est écrit ici. La cible, le nombre
  * d'emplacements et le point de caractéristique témoin viennent tous de la
@@ -85,14 +89,6 @@ function choisir(motif: RegExp) {
     .find((el) => el.className.includes('carte-choix') && motif.test(el.textContent ?? ''))
   expect(carte, `carte introuvable : ${motif}`).toBeTruthy()
   fireEvent.click(carte!)
-}
-
-/** Clique la carte de l'étape « Ton niveau » qui porte ce niveau. */
-function choisirNiveau(valeur: number) {
-  const titre = screen.getByRole('heading', { name: `Niveau ${valeur}` })
-  const carte = titre.closest('.carte-choix')
-  expect(carte, `carte de niveau introuvable : ${valeur}`).toBeTruthy()
-  fireEvent.click(carte as HTMLElement)
 }
 
 function continuer() {
@@ -187,8 +183,13 @@ afterEach(async () => {
   await db.personnages.clear()
 })
 
-describe('D20 ① — l’étape « Ton niveau » fixe une cible, elle ne remplit plus le niveau', () => {
-  it('choisir le niveau le plus haut n’ouvre qu’UN emplacement de capacité', async () => {
+// GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26)
+// AVANT : « choisir le niveau le plus haut n'ouvre qu'UN emplacement » — le
+// parcours passait par l'étape « Ton niveau ». D20-bis la retire du wizard 12+ :
+// même parcours, sans l'étape, et l'assertion « un seul emplacement » reste
+// entière — c'est elle qui prouve qu'on naît toujours au niveau 1.
+describe('D20-bis — le wizard 12+ va de Camp à Classe sans demander de niveau', () => {
+  it('il n’ouvre qu’UN emplacement de capacité : le personnage naît niveau 1', async () => {
     afficheCreer()
     await screen.findByText('Avant de commencer')
 
@@ -204,10 +205,12 @@ describe('D20 ① — l’étape « Ton niveau » fixe une cible, elle ne rempli
     choisir(new RegExp(race.nom))
     continuer()
 
-    // Ton niveau : le joueur dit « je joue niveau HAUT ».
-    await screen.findByRole('heading', { name: 'Ton niveau' })
-    choisirNiveau(HAUT)
-    continuer()
+    // D20-bis : plus d'étape « Ton niveau » — le camp mène droit à la classe.
+    await screen.findByRole('heading', { name: 'Choisis ta classe' })
+    expect(
+      screen.queryByRole('heading', { name: 'Ton niveau' }),
+      'le wizard 12+ demande encore un niveau',
+    ).toBeNull()
 
     choisir(new RegExp(classeSquelette(CLASSE)!.nom))
     continuer()
@@ -227,6 +230,11 @@ describe('D20 ① — l’étape « Ton niveau » fixe une cible, elle ne rempli
   })
 })
 
+// GATE MODIFIÉE PAR D20-bis (t017, Q23 A, 2026-08-26)
+// Ces deux tests SÈMENT la cible dans le brouillon (`semerBrouillon`) : depuis
+// D20-bis aucune étape ne la pose plus, et ils prouvent donc désormais le
+// CHEMIN HÉRITÉ — un brouillon commencé avant ce lot monte encore par le train.
+// Leurs assertions, elles, ne changent pas d'un mot.
 describe('D20 ① — le train : une fiche du haut de la table porte tout son historique', () => {
   it('la création puis les montées laissent une entrée datée par échelon', async () => {
     await semerBrouillon(HAUT)

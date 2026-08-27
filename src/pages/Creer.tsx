@@ -4,14 +4,18 @@
  * (rien ne s'applique avant Continuer), stepper d'étapes nommées, bandeau
  * vivant fixé au-dessus de la navigation.
  *
- * D12 (t006) : l'étape « Ton niveau » s'insère après le camp, avant tout ce
- * qui consomme dons ou capacités.
+ * D20 : la création se fait au NIVEAU 1.
  *
- * D20 : la création se fait au NIVEAU 1. L'étape « Ton niveau » fixe une
- * cible ; une fois le niveau 1 complet, l'app enchaîne directement sur la
- * montée 2, puis la 3, sans renvoyer le joueur à sa fiche entre chaque. Un
- * seul passage pour lui ; autant de niveaux vraiment traversés et datés dans
- * les données.
+ * D20-bis (t017, Q23 A, 2026-08-26 — retour terrain du 22 août) : l'étape
+ * « Ton niveau » est RETIRÉE du wizard 12+. Elle arrivait avant que le joueur
+ * ait compris ce qu'on lui demandait ; le fil va maintenant du Camp droit à la
+ * Classe. Tout personnage naît niveau 1 et monte depuis SA FICHE, un niveau à
+ * la fois (D17 + garde d'intention Q4). D12 (t006), qui plaçait l'étape après
+ * le camp, ne s'applique donc plus à ce flux.
+ *
+ * ⚠️ Le TRAIN de montées reste — mais il ne part plus du wizard : seul un
+ * brouillon commencé AVANT ce lot porte encore une `cible`, et lui seul
+ * l'enchaîne. Chemin hérité assumé, code dormant nommé au rapport.
  *
  * Lot C : l'étape tranche d'âge EMBRANCHE. La tranche enfant suit le flux de
  * la planche (camp → niveau → classe → nom → fiche, corpus rules_kids.json) ;
@@ -60,7 +64,6 @@ import EtapeDestin from './creation/EtapeDestin'
 import EtapeFiche from './creation/EtapeFiche'
 import EtapeForces from './creation/EtapeForces'
 import EtapeLangues from './creation/EtapeLangues'
-import EtapeNiveau from './creation/EtapeNiveau'
 import EtapeNom from './creation/EtapeNom'
 import EtapeTalents from './creation/EtapeTalents'
 import EtapeTerminee from './creation/EtapeTerminee'
@@ -478,7 +481,6 @@ export default function Creer() {
           {etapeId === 'camp' && (
             <EtapeCamp fiche={fiche} onMaj={maj} onChangement={appliquerChangement} />
           )}
-          {etapeId === 'niveau' && <EtapeNiveau fiche={fiche} onChangement={appliquerChangement} />}
           {etapeId === 'classe' && <EtapeClasse fiche={fiche} onChangement={appliquerChangement} />}
           {etapeId === 'capacites' && <EtapeCapacites fiche={fiche} onMaj={maj} />}
           {etapeId === 'destin' && (
